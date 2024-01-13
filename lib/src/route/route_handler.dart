@@ -1,0 +1,121 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:vania/src/enum/http_request_method.dart';
+import 'package:vania/src/route/route_data.dart';
+import 'package:vania/src/route/router.dart';
+
+
+RouteData? httpRouteHandler(HttpRequest req) {
+  final route = _getMatchRoute(
+    req.uri.path,
+    req.method,
+    req.headers.value(HttpHeaders.hostHeader),
+  );
+
+
+  if (route == null) {
+    if (req.method == HttpRequestMethod.OPTIONS.name) {
+      req.response.close();
+      return null;
+    } else {
+
+    if(!req.uri.path.endsWith("/")){
+      //final entityType = FileSystemEntity.typeSync("public/${req.uri.path}");
+      File file = File("public/${req.uri.path}");
+      if (file.existsSync()) {
+        req.response.write('<b>Not Fount 404000</b>');
+        req.response.close();
+        
+        return null;
+      }
+    }
+
+
+      req.response.statusCode = HttpStatus.notFound;
+      if (req.headers.contentType.toString() == "application/json") {
+        req.response.headers.contentType = ContentType.json;
+        req.response.write(jsonEncode({'message': 'Not found'}));
+      } else {
+        req.response.headers.contentType = ContentType.html;
+        req.response.write('<b>Not Fount 404</b>');
+      }
+      req.response.close();
+      return null;
+    }
+  }
+  return route;
+}
+
+RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
+  List<RouteData> methodMatchedRoutes =
+      Router().routes.where((RouteData route) {
+    if (domain != null && route.domain != null) {
+      return route.method.toLowerCase() == method.toLowerCase() &&
+          route.domain?.toLowerCase() == domain.toLowerCase();
+    } else {
+      return route.method.toLowerCase() == method.toLowerCase();
+    }
+  }).toList();
+
+  RouteData? matchRoute;
+  for (RouteData route in methodMatchedRoutes) {
+    route.path = sanitizeRoutePath(route.path);
+    inputRoute = sanitizeRoutePath(inputRoute);
+
+    /// When route is the same route exactly same route.
+    /// route without params, eg. /api/example
+    if (route.path.trim() == inputRoute.trim()) {
+      matchRoute = route;
+      break;
+    }
+
+    /// when route have params
+    /// eg. /api/admin/{adminId}
+    Iterable<String> parameterNames = _getParameterNameFromRoute(route);
+    Iterable<RegExpMatch> matches = _getPatternMatches(inputRoute, route);
+
+    if (matches.isNotEmpty) {
+      matchRoute = route;
+      matchRoute.params = _getParameterAsMap(matches, parameterNames);
+      break;
+    }
+  }
+  return matchRoute;
+}
+
+String sanitizeRoutePath(String path) {
+  path = path.replaceAll(RegExp(r'/+'), '/');
+  return "/${path.replaceAll(RegExp('^\\/+|\\/+\$'), '')}";
+}
+
+/// get parameter name from named route eg. /blog/{id}
+/// eg ('id')
+Iterable<String> _getParameterNameFromRoute(RouteData route) {
+  return route.path
+      .split('/')
+      .where((String part) => part.startsWith('{') && part.endsWith('}'))
+      .map((String part) => part.substring(1, part.length - 1));
+}
+
+/// get pattern matched routes from the list
+Iterable<RegExpMatch> _getPatternMatches(
+  String input,
+  RouteData route,
+) {
+  RegExp pattern = RegExp(
+      '^${route.path.replaceAllMapped(RegExp(r'{[^/]+}'), (Match match) => '([^/]+)').replaceAll('/', '\\/')}\$');
+  return pattern.allMatches(input);
+}
+
+/// get the param from the named route as Map response
+/// eg {'id' : 1}
+Map<String, dynamic> _getParameterAsMap(
+  Iterable<RegExpMatch> matches,
+  Iterable<String> parameterNames,
+) {
+  RegExpMatch match = matches.first;
+  List<String?> parameterValues =
+      match.groups(List<int>.generate(parameterNames.length, (int i) => i + 1));
+  return Map<String, dynamic>.fromIterables(parameterNames, parameterValues);
+}
