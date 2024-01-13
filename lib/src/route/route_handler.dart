@@ -7,6 +7,7 @@ import 'package:vania/src/route/router.dart';
 
 
 RouteData? httpRouteHandler(HttpRequest req) {
+  
   final route = _getMatchRoute(
     req.uri.path,
     req.method,
@@ -20,7 +21,7 @@ RouteData? httpRouteHandler(HttpRequest req) {
       return null;
     } else {
 
-    if(!req.uri.path.endsWith("/")){
+    /*if(!req.uri.path.endsWith("/")){
       //final entityType = FileSystemEntity.typeSync("public/${req.uri.path}");
       File file = File("public/${req.uri.path}");
       if (file.existsSync()) {
@@ -29,7 +30,7 @@ RouteData? httpRouteHandler(HttpRequest req) {
         
         return null;
       }
-    }
+    }*/
 
 
       req.response.statusCode = HttpStatus.notFound;

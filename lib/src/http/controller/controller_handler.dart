@@ -90,7 +90,7 @@ class ControllerHandler {
         if (route.params?.keys.first != null) {
           return route.action.show;
         }
-        return route.action..index;
+        return route.action.index;
       case 'POST':
         return route.action.store;
       case 'PUT':
