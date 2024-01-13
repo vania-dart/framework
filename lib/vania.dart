@@ -27,4 +27,6 @@ export 'src/storage/storage.dart';
 
 export 'src/service/service_provider.dart';
 
+export 'src/http/controller/controller.dart';
+
 
