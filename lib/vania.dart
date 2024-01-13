@@ -17,6 +17,7 @@ export 'src/http/response/response.dart';
 export 'src/exception/base_http_exception.dart';
 
 export 'src/route/router.dart';
+export 'src/route/route.dart';
 
 export 'src/cache/cache_driver.dart';
 export 'src/cache/cache.dart';
@@ -25,3 +26,5 @@ export 'src/storage/storage_driver.dart';
 export 'src/storage/storage.dart';
 
 export 'src/service/service_provider.dart';
+
+
