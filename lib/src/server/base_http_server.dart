@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:vania/src/config/config.dart';
 import 'package:vania/src/http/request/request_handler.dart';
+import 'package:vania/src/websocket/web_socket_handler.dart';
 
 class BaseHttpServer {
   static final BaseHttpServer _singleton = BaseHttpServer._internal();
@@ -22,18 +23,20 @@ class BaseHttpServer {
     print("Server started on $host:$port");
     server.listen(
       (HttpRequest req) {
+        print(Config().get("websocket"));
         if (Config().get("websocket")) {
           if (req.uri.path == '/ws') {
+            WebSocketHandler(req);
             // Upgrade an HttpRequest to a WebSocket connection
-            WebSocketTransformer.upgrade(req).then((WebSocket socket) {
+            /*WebSocketTransformer.upgrade(req).then((WebSocket socket) {
               print('WebSocket client connected!');
 
               // Listen for incoming messages from the WebSocket client
-              socket.listen((message) {
+              /*socket.listen((message) {
                 print('Received message from WebSocket client: $message');
                 socket.add('You sent to WebSocket: $message');
-              });
-            });
+              });*/
+            });*/
           }
         }
 
