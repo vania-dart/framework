@@ -23,23 +23,9 @@ class BaseHttpServer {
     print("Server started on $host:$port");
     server.listen(
       (HttpRequest req) {
-        print(Config().get("websocket"));
-        if (Config().get("websocket")) {
-          if (req.uri.path == '/ws') {
-            WebSocketHandler(req);
-            // Upgrade an HttpRequest to a WebSocket connection
-            /*WebSocketTransformer.upgrade(req).then((WebSocket socket) {
-              print('WebSocket client connected!');
-
-              // Listen for incoming messages from the WebSocket client
-              /*socket.listen((message) {
-                print('Received message from WebSocket client: $message');
-                socket.add('You sent to WebSocket: $message');
-              });*/
-            });*/
-          }
+        if (Config().get("websocket") && req.uri.path == '/ws') {
+          WebSocketHandler().handler(req);
         }
-
         // Handle regular HTTP requests
         if (req.uri.path != '/ws') {
           httpRequestHandler(req);

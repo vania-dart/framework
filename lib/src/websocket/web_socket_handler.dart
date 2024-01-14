@@ -14,27 +14,34 @@ const String WEB_SOCKET_SENDER_KEY = 'sender';
 
 const String WEB_SOCKET_ROOM_KEY = 'room';
 
-class WebSocketHandler{
+class WebSocketHandler {
+  final WebsocketSession _session = WebsocketSession();
 
-WebsocketSession _session = WebsocketSession();
+  Future handler(HttpRequest req) async {
+    WebSocket websocket = await WebSocketTransformer.upgrade(req);
 
-Future handler(HttpRequest req) async {
-  WebSocket websocket = await WebSocketTransformer.upgrade(req);
+    String id = 'ws:${UuidV4()}';
 
-  String id = 'ws:${UuidV4()}';
+    String roomId = 'room:';
 
-  websocket.listen((data) {
-    Map<String, dynamic> payload = jsonDecode(data);
-    String event = payload[WEB_SOCKET_EVENT_KEY];
-    dynamic message = payload[WEB_SOCKET_MESSAGE_KEY];
+    _session.addNewSession(id, websocket);
 
-    if(event == WEB_SOCKET_JOIN_ROOM_EVENT_NAME){
-      String room = payload[WEB_SOCKET_ROOM_KEY];
-      v.joinRoom(id, room);
-    }
+    websocket.listen((data) {
+      Map<String, dynamic> payload = jsonDecode(data);
+      String event = payload[WEB_SOCKET_EVENT_KEY];
+      dynamic message = payload[WEB_SOCKET_MESSAGE_KEY];
 
-  }, onDone: () {}, onError: (error) {});
+      if (event == WEB_SOCKET_JOIN_ROOM_EVENT_NAME) {
+        if (message is! String) {
+          String room = "$roomId$message";
+          _session.joinRoom(id, room);
+          return;
+        }
+      }
+    }, onDone: () {
+      _session.removeSession(id);
+    }, onError: (error) {
+      _session.removeSession(id);
+    });
+  }
 }
-}
-
-
