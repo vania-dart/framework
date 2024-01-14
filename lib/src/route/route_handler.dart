@@ -1,51 +1,41 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:vania/src/enum/http_request_method.dart';
+import 'package:vania/src/exception/not_found_exception.dart';
+import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/router.dart';
-
+import 'package:vania/src/route/set_static_path.dart';
+import 'package:vania/src/utils/functions.dart';
 
 RouteData? httpRouteHandler(HttpRequest req) {
-  
   final route = _getMatchRoute(
     req.uri.path,
     req.method,
     req.headers.value(HttpHeaders.hostHeader),
   );
 
-
   if (route == null) {
     if (req.method == HttpRequestMethod.OPTIONS.name) {
       req.response.close();
       return null;
     } else {
-
-    /*if(!req.uri.path.endsWith("/")){
-      //final entityType = FileSystemEntity.typeSync("public/${req.uri.path}");
-      File file = File("public/${req.uri.path}");
-      if (file.existsSync()) {
-        req.response.write('<b>Not Fount 404000</b>');
-        req.response.close();
-        
-        return null;
-      }
-    }*/
-
-
-      req.response.statusCode = HttpStatus.notFound;
-      if (req.headers.contentType.toString() == "application/json") {
-        req.response.headers.contentType = ContentType.json;
-        req.response.write(jsonEncode({'message': 'Not found'}));
-      } else {
-        req.response.headers.contentType = ContentType.html;
-        req.response.write('<b>Not Fount 404</b>');
-      }
-      req.response.close();
-      return null;
+      setStaticPath(req).then((isFile) {
+        if (isFile == null) {
+          if (req.headers.contentType.toString() == "application/json") {
+            throw NotFoundException(message: {'message': 'Not found'});
+          } else {
+            throw NotFoundException(
+                message: '<b>Not Fount 404</b>',
+                responseType: ResponseType.html);
+          }
+        }
+      });
     }
-  }
-  return route;
+  } 
+  
+    return route;
+  
 }
 
 RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
@@ -85,11 +75,12 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
   return matchRoute;
 }
 
+/*
 String sanitizeRoutePath(String path) {
   path = path.replaceAll(RegExp(r'/+'), '/');
   return "/${path.replaceAll(RegExp('^\\/+|\\/+\$'), '')}";
 }
-
+*/
 /// get parameter name from named route eg. /blog/{id}
 /// eg ('id')
 Iterable<String> _getParameterNameFromRoute(RouteData route) {
