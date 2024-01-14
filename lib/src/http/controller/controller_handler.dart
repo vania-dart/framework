@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:vania/src/exception/base_http_exception.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/vania.dart';
 

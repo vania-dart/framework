@@ -9,6 +9,7 @@ class NotFoundException extends BaseHttpException {
   NotFoundException({
     required super.message,
     super.code = HttpStatus.notFound,
-    super.errorCode = 'Not found 404'
+    super.errorCode = 'Not found 404',
+    super.responseType
   });
 }

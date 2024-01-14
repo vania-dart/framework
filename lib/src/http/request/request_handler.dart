@@ -12,7 +12,7 @@ Future httpRequestHandler(HttpRequest req) async {
     HttpCros(req);
     Request request = await Request(request: req, route: httpRouteHandler(req)).call();
     RouteData? route = request.route;
-
+        
     if (route == null) return;
 
     for (Middleware middleware in route.preMiddleware) {
@@ -20,8 +20,8 @@ Future httpRequestHandler(HttpRequest req) async {
     }
 
     ControllerHandler(route: route, request: request).call();
-  } on BaseHttpException {
-    Response().makeResponse(req.response);
+  } on BaseHttpException catch(e) {
+    e.call().makeResponse(req.response);
   }
   
 }
