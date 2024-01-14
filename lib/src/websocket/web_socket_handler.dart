@@ -20,28 +20,30 @@ class WebSocketHandler {
   Future handler(HttpRequest req) async {
     WebSocket websocket = await WebSocketTransformer.upgrade(req);
 
-    String id = 'ws:${UuidV4()}';
+    String sessionId = 'ws:${UuidV4()}';
 
     String roomId = 'room:';
 
-    _session.addNewSession(id, websocket);
+    _session.addNewSession(sessionId, websocket);
+
+    print(req);
 
     websocket.listen((data) {
       Map<String, dynamic> payload = jsonDecode(data);
       String event = payload[WEB_SOCKET_EVENT_KEY];
       dynamic message = payload[WEB_SOCKET_MESSAGE_KEY];
-
+      print(message);
       if (event == WEB_SOCKET_JOIN_ROOM_EVENT_NAME) {
         if (message is! String) {
           String room = "$roomId$message";
-          _session.joinRoom(id, room);
+          _session.joinRoom(sessionId, room);
           return;
         }
       }
     }, onDone: () {
-      _session.removeSession(id);
+      _session.removeSession(sessionId);
     }, onError: (error) {
-      _session.removeSession(id);
+      _session.removeSession(sessionId);
     });
   }
 }

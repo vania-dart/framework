@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:vania/src/config/config.dart';
 import 'package:vania/src/http/request/request_handler.dart';
-import 'package:vania/src/websocket/web_socket_handler.dart';
 
 class BaseHttpServer {
   static final BaseHttpServer _singleton = BaseHttpServer._internal();
@@ -20,20 +19,17 @@ class BaseHttpServer {
       port!,
       shared: true,
     );
-    print("Server started on $host:$port");
     server.listen(
       (HttpRequest req) {
-        if (Config().get("websocket") && req.uri.path == '/ws') {
-          WebSocketHandler().handler(req);
-        }
-        // Handle regular HTTP requests
-        if (req.uri.path != '/ws') {
           httpRequestHandler(req);
-        }
       },
       onError: onError ?? (dynamic error) => print(error),
     );
     httpServer = server;
+
+    if(Config().get("debug")){
+      print("Server started on $host:$port");
+    }
     return httpServer;
   }
 }
