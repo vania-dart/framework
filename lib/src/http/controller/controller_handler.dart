@@ -40,7 +40,6 @@ class ControllerHandler {
 
     String requestArgName = getRequestVar(function.toString());
 
-
     if (requestArgName.isNotEmpty) {
       params[requestArgName] = request;
     }
@@ -85,22 +84,26 @@ class ControllerHandler {
   }
 
   Function? getDefaultControllerMethodName(RouteData route) {
-    switch (route.method) {
-      case 'GET':
-        if (route.params?.keys.first != null) {
-          return route.action.show;
-        }
-        return route.action.index;
-      case 'POST':
-        return route.action.store;
-      case 'PUT':
-        return route.action.update;
-      case 'PATCH':
-        return route.action.patch;
-      case 'DELETE':
-        return route.action.destroy;
-      default:
-        return null;
+    try {
+      switch (route.method) {
+        case 'GET':
+          if (route.params?.keys.first != null) {
+            return route.action.show;
+          }
+          return route.action.index;
+        case 'POST':
+          return route.action.store;
+        case 'PUT':
+          return route.action.update;
+        case 'PATCH':
+          return route.action.patch;
+        case 'DELETE':
+          return route.action.destroy;
+        default:
+          return null;
+      }
+    } catch (_) {
+      return null;
     }
   }
 
@@ -120,13 +123,16 @@ class ControllerHandler {
   List extractFunctionArgs(Function function) {
     String functionString = function.toString();
     String paramsString = functionString.split(RegExp(r'\(|\)'))[1].trim();
-    
+
     RegExp regex = RegExp(r'(.+?)\s*\{(.+?)\}');
     Match? match =
         regex.firstMatch(paramsString.replaceAll('[', '').replaceAll(']', ''));
 
     if (match == null) {
-      return removeDynamicPart(paramsString).replaceAll('[', '').replaceAll(']', '').split(',');
+      return removeDynamicPart(paramsString)
+          .replaceAll('[', '')
+          .replaceAll(']', '')
+          .split(',');
     } else {
       return removeDynamicPart(match.group(1).toString()).split(',');
     }
