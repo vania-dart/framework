@@ -3,5 +3,5 @@
 
 String sanitizeRoutePath(String path) {
     path = path.replaceAll(RegExp(r'/+'), '/');
-    return "${path.replaceAll(RegExp('^\\/+|\\/+\$'), '')}";
+    return path.replaceAll(RegExp('^\\/+|\\/+\$'), '');
   }

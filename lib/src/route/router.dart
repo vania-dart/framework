@@ -1,5 +1,7 @@
+
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/route/route_data.dart';
+import 'package:vania/src/websocket/web_socket_handler.dart';
 import 'package:vania/vania.dart';
 
 class Router {
@@ -58,6 +60,11 @@ class Router {
           prifix.endsWith("/") ? "$prifix$basePath" : "$prifix/$basePath";
     }
     return this;
+  }
+
+  static void websocket(String path,Function(WebSocketEvent) eventCallBack)  {
+    WebSocketEvent event = WebSocketHandler();
+    eventCallBack(event);
   }
 
   static void group(List<GroupRouter> routes,
