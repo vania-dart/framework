@@ -1,14 +1,28 @@
 name: vania
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+description: vania
+version: 0.0.1
+#homepage: 
+#repository: 
+#issue_tracker: 
+#documentation: 
+#topics: [server, backend, httpserver]
+
+#screenshots:
+#  - description: 'Vania logo.'
+#    path: assets/logo.png
 
 environment:
   sdk: ^3.2.3
 
 # Add regular dependencies here.
 dependencies:
-  # path: ^1.8.0
+  crypto: ^3.0.3
+  meta: ^1.11.0
+  mime: ^1.0.4
+  path: ^1.9.0
+  sprintf: ^7.0.0
+  string_scanner: ^1.2.0
+  uuid: ^4.3.3
 
 dev_dependencies:
   lints: ^2.1.0
