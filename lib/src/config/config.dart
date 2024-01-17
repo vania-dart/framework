@@ -57,3 +57,23 @@ class CORSConfig{
     this.maxAge,
   });
 }
+
+
+class DatabaseConfig{
+  final String host;
+  final int port;
+  final String? username;
+  final String? password;
+  final String database;
+  final DatabaseDriver? driver;
+
+
+  const DatabaseConfig({
+    required this.driver,
+    this.host = 'localhost',
+    this.port = 3306,
+    this.username = 'root',
+    this.password,
+    this.database = 'db',
+  });
+}

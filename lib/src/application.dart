@@ -15,7 +15,7 @@ class Application extends Container{
   BaseHttpServer get server => BaseHttpServer();
 
 
-  void initialize({required Map<String,dynamic> config }) {
+  void initialize({required Map<String,dynamic> config }) async{
     
     Config().setApplicationConfig = config;
 
@@ -25,6 +25,9 @@ class Application extends Container{
     for(ServiceProvider provider in provider){
       provider.register();
     }
+
+    DatabaseDriver db = Config().get('database').driver;
+    await db.init();
 
     server.startServer(host: config['host'], port: config['port']);
   }

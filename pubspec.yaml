@@ -17,6 +17,10 @@ environment:
 # Add regular dependencies here.
 dependencies:
   crypto: ^3.0.3
+  eloquent:
+   git: 
+     url: https://github.com/insinfo/eloquent_dart.git
+     ref: main # branch name
   meta: ^1.11.0
   mime: ^1.0.4
   path: ^1.9.0

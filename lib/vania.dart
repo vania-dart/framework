@@ -32,4 +32,9 @@ export 'src/service/service_provider.dart';
 
 export 'src/http/controller/controller.dart';
 
+export 'src/database/model.dart';
+export 'src/database/database_driver.dart';
+export 'src/database/mysql_driver.dart';
+export 'src/database/postgresql_driver.dart';
+
 
