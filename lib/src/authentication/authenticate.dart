@@ -1,13 +1,41 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
 class Authenticate extends Middleware {
   Model authenticatable;
-  Authenticate(this.authenticatable);
+  bool refreshToken;
+  Authenticate(this.authenticatable, [this.refreshToken = false]);
 
   @override
   handle(Request req) async {
     String? token = req.header('authorization');
-    await Auth().check(authenticatable, token ?? '');
-    next?.handle(req);
+    try {
+      await Auth().check(authenticatable, token ?? '');
+      next?.handle(req);
+    } on JWTExpiredException {
+      if (refreshToken) {
+        _tokenExpired(req, token!);
+        rethrow;
+      } else {
+        throw Unauthenticated(message: 'Token expired');
+      }
+    }
+  }
+
+  void _tokenExpired(Request req, String token) {
+    Duration expiresIn = Duration(hours: 24);
+    String refreshToken =
+        Auth().createRefreshToken(token, expiresIn: expiresIn);
+    req.response.headers.contentType = ContentType.json;
+    req.response.statusCode = 200;
+    req.response.write(jsonEncode({
+      'refresh_token': refreshToken,
+      'expires_in': DateTime.now().add(expiresIn).toIso8601String(),
+    }));
+    req.response.close();
   }
 }

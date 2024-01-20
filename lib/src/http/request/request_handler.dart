@@ -31,6 +31,6 @@ Future httpRequestHandler(HttpRequest req) async {
       ControllerHandler(route: route, request: request).call();
     } on BaseHttpException catch (e) {
       e.call().makeResponse(req.response);
-    }
+    }catch(_){}
   }
 }

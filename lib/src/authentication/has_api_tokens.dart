@@ -18,9 +18,20 @@ class HasApiTokens {
     Duration? expiresIn,
   ]) {
     final jwt = JWT({'id': _userPayload?['id']});
-    String token =
-        jwt.sign(SecretKey(Config().get('key')), expiresIn: expiresIn ?? const Duration(hours: 24));
+    String token = jwt.sign(SecretKey(Config().get('key')),
+        expiresIn: expiresIn ?? const Duration(hours: 24));
     return token;
+  }
+
+  String refreshToken(
+    String token, [
+    Duration? expiresIn,
+  ]) {
+    Map<String, dynamic> payload = JWT.decode(token).payload;
+    final jwt = JWT({'id': payload['id']});
+    String rTtoken = jwt.sign(SecretKey(Config().get('key')),
+        expiresIn: expiresIn ?? const Duration(hours: 24));
+    return rTtoken;
   }
 
   Map<String, dynamic> verify(String token) {
@@ -28,9 +39,9 @@ class HasApiTokens {
       final jwt = JWT.verify(token, SecretKey(Config().get('key')));
       return jwt.payload;
     } on JWTExpiredException {
-      throw Unauthenticated(message:  'token expired');
+      rethrow;
     } on JWTException {
-      throw Unauthenticated(message:  'Invalid token');
+      throw Unauthenticated(message: 'Invalid token');
     }
   }
 }

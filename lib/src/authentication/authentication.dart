@@ -15,8 +15,9 @@ class Auth {
 
   final Map<String, dynamic> _user = {};
 
-  void guard(String guard) {
+  Auth guard(String guard) {
     _userGuard = guard;
+    return this;
   }
 
   Auth login(Map<String, dynamic> user) {
@@ -30,8 +31,12 @@ class Auth {
 
   dynamic get(String filed) => _user[_userGuard][filed];
 
-  String createToken([Duration? expiresIn]) {
+  String createToken({Duration? expiresIn}) {
     return HasApiTokens().setPayload(_user[_userGuard]).createToken(expiresIn);
+  }
+
+  String createRefreshToken(String token,{Duration? expiresIn}) {
+    return HasApiTokens().refreshToken(token,expiresIn);
   }
 
   Future<bool> check(Model authenticatable, String token) async {
