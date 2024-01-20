@@ -9,9 +9,7 @@ import 'package:vania/vania.dart';
 
 Future httpRequestHandler(HttpRequest req) async {
   if (Config().get("websocket") && WebSocketTransformer.isUpgradeRequest(req)) {
-    
-      WebSocketHandler().handler(req);
-    
+    WebSocketHandler().handler(req);
   } else {
     try {
       HttpCros(req);
@@ -21,8 +19,13 @@ Future httpRequestHandler(HttpRequest req) async {
 
       if (route == null) return;
 
-      for (Middleware middleware in route.preMiddleware) {
-        middleware.handle(request);
+      /// check if pre middleware exist and call it
+      if (route.preMiddleware.isNotEmpty) {
+        List<Middleware> middlewares = route.preMiddleware;
+        for (int i = 0; i < middlewares.length - 1; i++) {
+          middlewares[i].setNext(middlewares[i + 1]);
+        }
+        await middlewares.first.handle(request);
       }
 
       ControllerHandler(route: route, request: request).call();

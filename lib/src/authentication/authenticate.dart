@@ -8,5 +8,6 @@ class Authenticate extends Middleware {
   handle(Request req) async {
     String? token = req.header('authorization');
     await Auth().check(authenticatable, token ?? '');
+    next?.handle(req);
   }
 }
