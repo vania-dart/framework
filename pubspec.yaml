@@ -17,6 +17,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   crypto: ^3.0.3
+  dart_jsonwebtoken: ^2.12.2
   eloquent:
    git: 
      url: https://github.com/insinfo/eloquent_dart.git

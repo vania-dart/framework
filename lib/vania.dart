@@ -38,3 +38,7 @@ export 'src/database/mysql_driver.dart';
 export 'src/database/postgresql_driver.dart';
 
 
+export 'src/authentication/authentication.dart';
+export 'src/authentication/authenticate.dart';
+
+
