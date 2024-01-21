@@ -13,17 +13,17 @@ class MysqlDriver implements DatabaseDriver {
 
   @override
   Future<void> init() async {
-    DatabaseConfig config = Config().get('database');
+    DatabaseConfig? config = Config().get('database');
 
     try {
       var manager = Manager();
       manager.addConnection({
         'driver': 'mysql',
-        'host': config.host,
-        'port': config.port,
-        'database': config.database,
-        'username': config.username,
-        'password': config.password,
+        'host': config?.host,
+        'port': config?.port,
+        'database': config?.database,
+        'username': config?.username,
+        'password': config?.password,
         'sslmode': 'require',
       });
       manager.setAsGlobal();

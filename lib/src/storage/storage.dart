@@ -19,7 +19,7 @@ class Storage {
 
   Map<String, StorageDriver> storageDriver = <String, StorageDriver>{
     'local': LocalStorage(),
-    ...Config().get("storage").drivers
+    ...Config().get("storage")?.drivers
   };
 
   Storage disk(String disk) {
@@ -29,7 +29,7 @@ class Storage {
 
   StorageDriver get _driver {
     return storageDriver[_disk] ??
-        storageDriver[Config().get("storage").defaultDriver] ??
+        storageDriver[Config().get("storage")?.defaultDriver] ??
         LocalStorage();
   }
 

@@ -7,7 +7,10 @@ class Model {
 
   String? _table;
   Connection _connection(){
-    DatabaseDriver driver = Config().get('database').driver;
+    DatabaseDriver? driver = Config().get('database')?.driver;
+    if(driver == null){
+      throw Exception('Database driver not found');
+    }
     return driver.connection;
   }
 
