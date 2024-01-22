@@ -1,4 +1,3 @@
-import 'package:vania/src/database/model.dart';
 import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
