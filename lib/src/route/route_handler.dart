@@ -2,40 +2,34 @@ import 'dart:io';
 
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/exception/not_found_exception.dart';
-import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/router.dart';
 import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
 
-RouteData? httpRouteHandler(HttpRequest req) {
+Future<RouteData?> httpRouteHandler(HttpRequest req) async {
   final route = _getMatchRoute(
     req.uri.path,
     req.method,
     req.headers.value(HttpHeaders.hostHeader),
   );
-
   if (route == null) {
     if (req.method == HttpRequestMethod.OPTIONS.name) {
+      req.response.statusCode = HttpStatus.ok;
       req.response.close();
       return null;
     } else {
-      setStaticPath(req).then((isFile) {
-        if (isFile == null) {
-          if (req.headers.contentType.toString() == "application/json") {
-            throw NotFoundException(message: {'message': 'Not found'});
-          } else {
-            throw NotFoundException(
-                message: '<b>Not Fount 404</b>',
-                responseType: ResponseType.html);
-          }
+      final isFile = await setStaticPath(req);
+      if (isFile == null) {
+        if (req.headers.contentType.toString() == "application/json") {
+          throw NotFoundException(message: {'message': 'Not found'});
+        } else {
+          throw NotFoundException();
         }
-      });
+      }
     }
-  } 
-  
-    return route;
-  
+  }
+  return route;
 }
 
 RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
