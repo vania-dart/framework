@@ -37,7 +37,7 @@ class Auth {
   }
 
   String createRefreshToken(String token, {Duration? expiresIn}) {
-    return HasApiTokens().refreshToken(token,_userGuard, expiresIn);
+    return HasApiTokens().refreshToken(token.replaceFirst('Bearer ', ''),_userGuard, expiresIn);
   }
 
   Future<bool> check(String token) async {
@@ -48,7 +48,7 @@ class Auth {
       throw InvalidArgumentException('Authenticatable class not found');
     }
 
-    Map<String, dynamic> payload = HasApiTokens().verify(token,_userGuard);
+    Map<String, dynamic> payload = HasApiTokens().verify(token.replaceFirst('Bearer ', ''),_userGuard);
     Map<String, dynamic>? user =
         await authenticatable.query().where('id', '=', payload['id']).first();
     if (user != null) {

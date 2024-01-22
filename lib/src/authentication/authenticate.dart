@@ -11,7 +11,7 @@ class Authenticate extends Middleware {
 
   @override
   handle(Request req) async {
-    String? token = req.header('authorization');
+    String? token = req.header('authorization')?.replaceFirst('Bearer ', '');
     try {
       await Auth().check(token ?? '');
       next?.handle(req);
