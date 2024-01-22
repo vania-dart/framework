@@ -95,4 +95,6 @@ class GroupRouter {
       : method = HttpRequestMethod.DELETE;
   const GroupRouter.patch(this.path, this.action, {this.middleware})
       : method = HttpRequestMethod.PATCH;
+  const GroupRouter.options(this.path, this.action, {this.middleware})
+      : method = HttpRequestMethod.OPTIONS;
 }
