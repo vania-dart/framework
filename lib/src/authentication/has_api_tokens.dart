@@ -15,28 +15,30 @@ class HasApiTokens {
   }
 
   String createToken([
+    String guard = '',
     Duration? expiresIn,
   ]) {
     final jwt = JWT({'id': _userPayload?['id']});
-    String token = jwt.sign(SecretKey(Config().get('key')),
+    String token = jwt.sign(SecretKey('${Config().get('key')}$guard'),
         expiresIn: expiresIn ?? const Duration(hours: 24));
     return token;
   }
 
   String refreshToken(
     String token, [
+    String guard = '',
     Duration? expiresIn,
   ]) {
     Map<String, dynamic> payload = JWT.decode(token).payload;
     final jwt = JWT({'id': payload['id']});
-    String rTtoken = jwt.sign(SecretKey(Config().get('key')),
+    String rTtoken = jwt.sign(SecretKey('${Config().get('key')}$guard'),
         expiresIn: expiresIn ?? const Duration(hours: 24));
     return rTtoken;
   }
 
-  Map<String, dynamic> verify(String token) {
+  Map<String, dynamic> verify(String token, String guard) {
     try {
-      final jwt = JWT.verify(token, SecretKey(Config().get('key')));
+      final jwt = JWT.verify(token, SecretKey('${Config().get('key')}$guard'));
       return jwt.payload;
     } on JWTExpiredException {
       rethrow;

@@ -6,15 +6,14 @@ import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
 class Authenticate extends Middleware {
-  Model authenticatable;
   bool refreshToken;
-  Authenticate(this.authenticatable, [this.refreshToken = false]);
+  Authenticate([this.refreshToken = false]);
 
   @override
   handle(Request req) async {
     String? token = req.header('authorization');
     try {
-      await Auth().check(authenticatable, token ?? '');
+      await Auth().check(token ?? '');
       next?.handle(req);
     } on JWTExpiredException {
       if (refreshToken) {
@@ -31,9 +30,10 @@ class Authenticate extends Middleware {
     String refreshToken =
         Auth().createRefreshToken(token, expiresIn: expiresIn);
     req.response.headers.contentType = ContentType.json;
-    req.response.statusCode = 200;
+    req.response.statusCode = HttpStatus.unauthorized;
     req.response.write(jsonEncode({
-      'refresh_token': refreshToken,
+      'token': refreshToken,
+      'message': 'refresh_token',
       'expires_in': DateTime.now().add(expiresIn).toIso8601String(),
     }));
     req.response.close();
