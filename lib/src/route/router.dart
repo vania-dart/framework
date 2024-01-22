@@ -25,7 +25,7 @@ class Router {
     return Router()._addRoute(HttpRequestMethod.PUT, path, action);
   }
 
-  static Router path(String path, dynamic action) {
+  static Router patch(String path, dynamic action) {
     return Router()._addRoute(HttpRequestMethod.PATCH, path, action);
   }
 
