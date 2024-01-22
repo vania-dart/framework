@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:vania/src/config/http_cors.dart';
+import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/http/controller/controller_handler.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/route_handler.dart';
@@ -31,7 +32,9 @@ Future httpRequestHandler(HttpRequest req) async {
       ControllerHandler(route: route, request: request).call();
     } on BaseHttpException catch (e) {
       e.call().makeResponse(req.response);
-    }catch(e){
+    } on InvalidArgumentException catch (e) {
+      print("InvalidArgumentException ${e.message}");
+    } catch (e) {
       print("catch ${e.toString()}");
     }
   }
