@@ -1,4 +1,4 @@
 abstract class Route {
   const Route();
-  void registery();
+  void register();
 }
