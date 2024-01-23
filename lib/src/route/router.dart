@@ -1,5 +1,7 @@
+
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/route/route_data.dart';
+import 'package:vania/src/websocket/web_socket_handler.dart';
 import 'package:vania/vania.dart';
 
 class Router {
@@ -23,7 +25,7 @@ class Router {
     return Router()._addRoute(HttpRequestMethod.PUT, path, action);
   }
 
-  static Router path(String path, dynamic action) {
+  static Router patch(String path, dynamic action) {
     return Router()._addRoute(HttpRequestMethod.PATCH, path, action);
   }
 
@@ -60,6 +62,11 @@ class Router {
     return this;
   }
 
+  static void websocket(String path,Function(WebSocketEvent) eventCallBack)  {
+    WebSocketEvent event = WebSocketHandler();
+    eventCallBack(event);
+  }
+
   static void group(List<GroupRouter> routes,
       {String? prefix, List<Middleware>? middleware}) {
     for (GroupRouter route in routes) {
@@ -88,4 +95,6 @@ class GroupRouter {
       : method = HttpRequestMethod.DELETE;
   const GroupRouter.patch(this.path, this.action, {this.middleware})
       : method = HttpRequestMethod.PATCH;
+  const GroupRouter.options(this.path, this.action, {this.middleware})
+      : method = HttpRequestMethod.OPTIONS;
 }

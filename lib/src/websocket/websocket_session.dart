@@ -1,8 +1,8 @@
 import 'dart:collection';
 import 'dart:io';
 
-final Map<String, dynamic> _activeSessions = HashMap();
-final Map<String, dynamic> _rooms = HashMap();
+final Map<String, SessionInfo> _activeSessions = HashMap();
+final Map<String, List<String>> _rooms = <String, List<String>>{};
 
 class SessionInfo {
   final String sessionId;
@@ -40,41 +40,40 @@ class WebsocketSession {
     return _activeSessions[sessionId];
   }
 
- /// remove session of connected socket
+  /// remove session of connected socket
   void removeSession(String sessionId) {
     SessionInfo? info = _activeSessions[sessionId];
-    if(info != null && info.activeRoom != null){
-       _activeSessions.remove(sessionId);
-       leaveRoom(sessionId, info.activeRoom);
-       info.websocket.close();
+    if (info != null) {
+      leftRoom(sessionId, info.activeRoom);
+      _activeSessions.remove(sessionId);
+      info.websocket.close();
     }
   }
 
- 
   void joinRoom(String sessionId, String roomId) {
-    if(_rooms[roomId] == null){
-      _rooms.addAll({roomId:<String>[]});
+    if (_rooms[roomId] == null) {
+      _rooms[roomId] = <String>[];
     }
     _rooms[roomId]?.add(sessionId);
-
     SessionInfo? info = _activeSessions[sessionId];
-    if(info != null){
-      if(info.previousRoom != null){
-       leaveRoom(sessionId, info.previousRoom);
+    if (info != null) {
+      if (info.previousRoom != null) {
+        leftRoom(sessionId, info.previousRoom);
       }
       info.activeRoom = roomId;
       info.activeRoom = roomId;
     }
+
   }
 
-  void leaveRoom(String sessionId, String? roomId) {
-    if(_rooms[roomId] == null && roomId != null){
+  void leftRoom(String sessionId, String? roomId) {
+    if (_rooms[roomId] != null && roomId != null) {
       SessionInfo? info = _activeSessions[sessionId];
-    if(info != null){
-      info.previousRoom = null;
-      info.activeRoom = null;
-      _rooms[roomId]?.remove(sessionId);
-    }
+      if (info != null) {
+        info.previousRoom = null;
+        info.activeRoom = null;
+        _rooms[roomId]?.remove(sessionId);
+      }
     }
   }
 
@@ -84,5 +83,15 @@ class WebsocketSession {
     return _rooms[roomId] ?? <String>[];
   }
 
+  bool isRoom(String roomId) {
+    return _rooms[roomId] != null ? true : false;
+  }
 
+  bool isSession(String sessionId) {
+    return _activeSessions[sessionId] != null ? true : false;
+  }
+
+  List<SessionInfo> getActiveSessions() {
+    return _activeSessions.values.toList();
+  }
 }

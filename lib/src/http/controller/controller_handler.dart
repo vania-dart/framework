@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/vania.dart';
 
@@ -79,6 +80,8 @@ class ControllerHandler {
       data.makeResponse(request.response);
     } on BaseHttpException catch (e) {
       e.call().makeResponse(request.response);
+    }on InvalidArgumentException catch(e){
+      print(e.message);
     }
   }
 

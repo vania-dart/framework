@@ -15,7 +15,11 @@ class Application extends Container{
   BaseHttpServer get server => BaseHttpServer();
 
 
-  void initialize({required Map<String,dynamic> config }) {
+  Future<void> initialize({required Map<String,dynamic> config }) async{
+
+    if(config['key'] == '' || config['key'] == null){
+      throw Exception('Key not found');
+    }
     
     Config().setApplicationConfig = config;
 
@@ -25,6 +29,13 @@ class Application extends Container{
     for(ServiceProvider provider in provider){
       provider.register();
     }
+
+      DatabaseDriver? db = Config().get('database')?.driver ;
+      if(db !=null){
+          await db.init();
+      }
+    
+    
 
     server.startServer(host: config['host'], port: config['port']);
   }

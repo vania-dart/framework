@@ -6,7 +6,7 @@ class Cache {
 
   Map<String, CacheDriver> cacheDrivers = <String, CacheDriver>{
     'file': LocalCacheDriver(),
-    ...Config().get("cache").drivers
+    ...Config().get("cache")?.drivers
   };
 
   /// Set where to store the cache.
@@ -20,7 +20,7 @@ class Cache {
 
   CacheDriver get _driver {
     return cacheDrivers[_store] ??
-        cacheDrivers[Config().get("cache").defaultDriver] ??
+        cacheDrivers[Config().get("cache")?.defaultDriver] ??
         LocalCacheDriver();
   }
 

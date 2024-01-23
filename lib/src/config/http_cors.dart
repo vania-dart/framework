@@ -4,8 +4,8 @@ import 'package:vania/vania.dart';
 
 class HttpCros {
   HttpCros(HttpRequest req) {
-    CORSConfig cors = Config().get('cros');
-    if (cors.enabled) {
+    CORSConfig? cors = Config().get('cros');
+    if (cors != null && cors.enabled) {
       Map<String, dynamic> headers = <String, dynamic>{
         HttpHeaders.accessControlAllowOriginHeader: cors.origin,
         HttpHeaders.accessControlAllowMethodsHeader: cors.methods,

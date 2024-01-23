@@ -3,5 +3,10 @@
 import 'package:vania/vania.dart';
 
 abstract class Middleware {
-  handle(Request req);
+  Future handle(Request req);
+  Middleware? next;
+  
+  void setNext(Middleware middleware){
+    next = middleware;
+  }
 }

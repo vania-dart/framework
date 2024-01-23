@@ -3,13 +3,14 @@
 
 import 'dart:io';
 
-import 'base_http_exception.dart';
+import 'package:vania/vania.dart';
+
 
 class NotFoundException extends BaseHttpException {
   NotFoundException({
-    required super.message,
+    super.message = '<b>Not Fount 404</b>',
     super.code = HttpStatus.notFound,
     super.errorCode = 'Not found 404',
-    super.responseType
+    super.responseType = ResponseType.json,
   });
 }
