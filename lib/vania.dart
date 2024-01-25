@@ -15,6 +15,7 @@ export 'src/http/request/request_file.dart';
 export 'src/http/response/response.dart';
 
 export 'src/exception/base_http_exception.dart';
+export 'src/exception/http_exception.dart';
 
 export 'src/websocket/websocket_client.dart';
 export 'src/websocket/websocket_event.dart';
