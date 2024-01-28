@@ -216,8 +216,8 @@ class Request {
     }
   }
 
-  String? header(String key) {
-    return _httpHeaders.value(key);
+  String? header(String key,[String? defaultHeader]) {
+    return _httpHeaders.value(key) ?? defaultHeader;
   }
 
   Map<String, dynamic> get headers {
