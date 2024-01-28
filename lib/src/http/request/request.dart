@@ -99,7 +99,7 @@ class Request {
     return hasKey;
   }
 
-  Future<String?> whenHas(String key) async {
+  Future whenHas(String key) async {
     if (_all[key] != null) {
       return Future.value(_all[key]);
     } else {
