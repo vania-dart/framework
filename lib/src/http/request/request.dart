@@ -45,6 +45,10 @@ class Request {
 
   Map<String, dynamic> body = <String, dynamic>{};
 
+  bool isMethod(String method){
+    return route?.method.toLowerCase() == method.toLowerCase();
+  }
+
   Map<String, dynamic> all() {
     return {...body, ..._query, ...params()};
   }
