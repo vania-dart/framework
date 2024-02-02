@@ -1,8 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:vania/src/enum/column_index.dart';
 
-
-
 class Migration {
   String tableName = '';
   List<String> queries = [];
@@ -123,19 +121,20 @@ class Migration {
     String columnName,
     String referencesTable,
     String referencesColumn, {
-    String? constraint,
+    bool constrained = false,
     String onUpdate = 'NO ACTION',
     String onDelete = 'NO ACTION',
   }) {
-    constraint ??= 'FK_${tableName}_$referencesTable';
+    String constraint = '';
+    if (constrained) {
+      constraint = 'FK_${tableName}_$referencesTable';
+    }
 
     final fk =
-        'CONSTRAINT `$constraint` FOREIGN KEY (`$columnName`) REFERENCES `$referencesTable` (`$referencesColumn`) ON UPDATE $onUpdate ON DELETE $onDelete';
+        '$constraint FOREIGN KEY (`$columnName`) REFERENCES `$referencesTable` (`$referencesColumn`) ON UPDATE $onUpdate ON DELETE $onDelete';
     foreignKey.add(fk);
   }
 
-
-  
   void integer(
     String name, {
     bool nullable = false,
@@ -303,4 +302,193 @@ class Migration {
     );
   }
 
+  void string(
+    String name, {
+    bool nullable = false,
+    int length = 255,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'VARCHAR',
+      nullable: nullable,
+      length: length,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void char(
+    String name, {
+    bool nullable = false,
+    int length = 50,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'CHAR',
+      nullable: nullable,
+      length: length,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void tinyText(
+    String name, {
+    bool nullable = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'TINYTEXT',
+      nullable: nullable,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void text(
+    String name, {
+    bool nullable = false,
+    int length = 255,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'TEXT',
+      nullable: nullable,
+      length: length,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void mediumText(
+    String name, {
+    bool nullable = false,
+    int length = 255,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'MEDIUMTEXT',
+      nullable: nullable,
+      length: length,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void longText(
+    String name, {
+    bool nullable = false,
+    int length = 255,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'LONGTEXT',
+      nullable: nullable,
+      length: length,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void json(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'JSON',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void uuid(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'UUID',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
 }
