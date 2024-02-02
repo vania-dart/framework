@@ -127,7 +127,7 @@ class Migration {
   }) {
     String constraint = '';
     if (constrained) {
-      constraint = 'FK_${tableName}_$referencesTable';
+      constraint = 'CONSTRAINT FK_${tableName}_$referencesTable';
     }
 
     final fk =
