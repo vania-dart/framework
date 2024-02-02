@@ -133,4 +133,174 @@ class Migration {
         'CONSTRAINT `$constraint` FOREIGN KEY (`$columnName`) REFERENCES `$referencesTable` (`$referencesColumn`) ON UPDATE $onUpdate ON DELETE $onDelete';
     foreignKey.add(fk);
   }
+
+
+  
+  void integer(
+    String name, {
+    bool nullable = false,
+    int length = 10,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+    bool increment = false,
+  }) {
+    addColumn(
+      name,
+      'INT',
+      nullable: nullable,
+      length: length,
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+      increment: increment,
+    );
+  }
+
+  void tinyInt(
+    String name, {
+    bool nullable = false,
+    int length = 1,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+    bool increment = false,
+  }) {
+    addColumn(
+      name,
+      'TINYINT',
+      nullable: nullable,
+      length: length,
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void smallInt(
+    String name, {
+    bool nullable = false,
+    int length = 1,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+    bool increment = false,
+  }) {
+    addColumn(
+      name,
+      'SMALLINT',
+      nullable: nullable,
+      length: length,
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void mediumInt(
+    String name, {
+    bool nullable = false,
+    int length = 10,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+    bool increment = false,
+  }) {
+    addColumn(
+      name,
+      'MEDIUMINT',
+      nullable: nullable,
+      length: length,
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void bigInt(
+    String name, {
+    bool nullable = false,
+    int length = 20,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+    bool increment = false,
+  }) {
+    addColumn(
+      name,
+      'BIGINT',
+      nullable: nullable,
+      length: length,
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void bit(
+    String name, {
+    bool nullable = false,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'BIT',
+      nullable: nullable,
+      length: 1,
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
 }
