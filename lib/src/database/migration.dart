@@ -317,9 +317,8 @@ class Migration {
   }) {
     addColumn(
       name,
-      'FLOAT',
+      'FLOAT($precision,$scale)',
       nullable: nullable,
-      length: '$precision,$scale',
       unsigned: unsigned,
       zeroFill: zeroFill,
       defaultValue: defaultValue,
@@ -345,9 +344,8 @@ class Migration {
   }) {
     addColumn(
       name,
-      'DOUBLE',
+      'DOUBLE($precision,$scale)',
       nullable: nullable,
-      length: '$precision,$scale',
       unsigned: unsigned,
       zeroFill: zeroFill,
       defaultValue: defaultValue,
@@ -373,9 +371,8 @@ class Migration {
   }) {
     addColumn(
       name,
-      'DECIMAL',
+      'DECIMAL($precision,$scale)',
       nullable: nullable,
-      length: '$precision,$scale',
       unsigned: unsigned,
       zeroFill: zeroFill,
       defaultValue: defaultValue,
@@ -974,6 +971,52 @@ class Migration {
     addColumn(
       name,
       'GEOMETRYCOLLECTION',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void enumType(
+    String name,
+    List<String> enumValues, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    final enumValuesString = enumValues.map((value) => "'$value'").join(', ');
+    addColumn(
+      name,
+      'ENUM($enumValuesString)',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void setType(
+    String name,
+    List<String> setValues, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    final setValuesString = setValues.map((value) => "'$value'").join(', ');
+    addColumn(
+      name,
+      'SET($setValuesString)',
       nullable: nullable,
       defaultValue: defaultValue,
       comment: comment,
