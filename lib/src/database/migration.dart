@@ -302,8 +302,6 @@ class Migration {
     );
   }
 
-
-
   void float(
     String name, {
     bool nullable = false,
@@ -387,7 +385,7 @@ class Migration {
       virtuality: virtuality,
     );
   }
-  
+
   void string(
     String name, {
     bool nullable = false,
@@ -578,4 +576,137 @@ class Migration {
     );
   }
 
+  void binary(
+    String name, {
+    bool nullable = false,
+    int length = 50,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'BINARY',
+      nullable: nullable,
+      length: length,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      zeroFill: zeroFill,
+      virtuality: virtuality,
+    );
+  }
+
+  void varBinary(
+    String name, {
+    bool nullable = false,
+    int length = 50,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'VARBINARY',
+      nullable: nullable,
+      length: length,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      zeroFill: zeroFill,
+      virtuality: virtuality,
+    );
+  }
+
+  void tinyBlob(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'TINYBLOB',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void blob(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'BLOB',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void mediumBlob(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'MEDIUMBLOB',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void longBlob(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'LONGBLOB',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
 }
