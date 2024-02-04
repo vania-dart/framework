@@ -814,4 +814,172 @@ class Migration {
       virtuality: virtuality,
     );
   }
+
+  void point(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'POINT',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void lineString(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'LINESTRING',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void polygon(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'POLYGON',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void geometry(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'GEOMETRY',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void multiPoint(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'MULTIPOINT',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void multiLineString(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'MULTILINESTRING',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void multiPolygon(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'MULTIPOLYGON',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void geometryCollection(
+    String name, {
+    bool nullable = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'GEOMETRYCOLLECTION',
+      nullable: nullable,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
 }
