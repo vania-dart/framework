@@ -302,6 +302,92 @@ class Migration {
     );
   }
 
+
+
+  void float(
+    String name, {
+    bool nullable = false,
+    int? precision,
+    int? scale,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'FLOAT',
+      nullable: nullable,
+      length: '$precision,$scale',
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void double(
+    String name, {
+    bool nullable = false,
+    int? precision,
+    int? scale,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'DOUBLE',
+      nullable: nullable,
+      length: '$precision,$scale',
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+
+  void decimal(
+    String name, {
+    bool nullable = false,
+    int? precision,
+    int? scale,
+    bool unsigned = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'DECIMAL',
+      nullable: nullable,
+      length: '$precision,$scale',
+      unsigned: unsigned,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+    );
+  }
+  
   void string(
     String name, {
     bool nullable = false,
@@ -491,4 +577,5 @@ class Migration {
       virtuality: virtuality,
     );
   }
+
 }
