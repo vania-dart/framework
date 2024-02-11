@@ -135,6 +135,11 @@ class Migration {
     foreignKey.add(fk);
   }
 
+  void id(){
+    bigInt('id',unsigned: true,increment: true);
+  }
+  
+
   void integer(
     String name, {
     bool nullable = false,
