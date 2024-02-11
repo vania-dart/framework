@@ -8,7 +8,7 @@ class BaseHttpServer {
   factory BaseHttpServer() => _singleton;
   BaseHttpServer._internal();
 
-  late HttpServer httpServer;
+  HttpServer? httpServer;
 
   Future<HttpServer> startServer(
       {String? host, int? port, Function? onError}) async {
@@ -30,6 +30,6 @@ class BaseHttpServer {
     if(Config().get("debug")){
       print("Server started on $host:$port");
     }
-    return httpServer;
+    return httpServer!;
   }
 }

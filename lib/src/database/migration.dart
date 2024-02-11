@@ -1,5 +1,27 @@
+import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
 import 'package:vania/src/enum/column_index.dart';
+import 'package:vania/vania.dart';
+
+class MigrationConnection {
+  static final MigrationConnection _singleton = MigrationConnection._internal();
+  factory MigrationConnection() => _singleton;
+  MigrationConnection._internal();
+  Connection? dbConnection;
+  Future<void> setup(DatabaseConfig databaseConfig) async {
+    DatabaseDriver? database = databaseConfig.driver;
+    try {
+      await database?.init(databaseConfig);
+      dbConnection = database!.connection;
+    } catch (_) {
+      throw 'Error establishing a database connection';
+    }
+  }
+
+  Future<void> closeConnection() async{
+    await dbConnection?.disconnect();
+  }
+}
 
 class Migration {
   String tableName = '';
@@ -8,26 +30,33 @@ class Migration {
   String primaryField = '';
   String primaryAlgorithm = '';
   List<String> indexes = [];
-
+  
   @mustBeOverridden
-  void up() {}
+  @mustCallSuper
+  Future<void> up() async {
+    if (MigrationConnection().dbConnection == null) {
+      throw 'Database not defined';
+    }
+  }
 
-  void createTable(String name, Function callback) {
+  
+
+  Future<void>  createTable(String name, Function callback) async {
     final query = StringBuffer();
     tableName = name;
     callback();
-    String index = indexes.isNotEmpty ? '${indexes.join(',')},\n' : '';
-    String foreig = foreignKey.isNotEmpty ? '${foreignKey.join(',')}\n' : '';
+    String index = indexes.isNotEmpty ? ',${indexes.join(',')}' : '';
+    String foreig = foreignKey.isNotEmpty ? ',${foreignKey.join(',')}' : '';
     String primary = primaryField.isNotEmpty
-        ? 'PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm,\n'
+        ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
         : '';
     query.write(
-        """DROP TABLE IF EXISTS $name; CREATE TABLE `$name` (${queries.join(',\n\t')},\n$primary$index$foreig)""");
-
-    print('Table $name created');
+        """DROP TABLE IF EXISTS $name; CREATE TABLE `$name` (${queries.join(',')}$primary$index$foreig)""");
+    await MigrationConnection().dbConnection?.execute(query.toString());
+    print(' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
-  void createTableNotExists(String name, Function callback) {
+  Future<void>  createTableNotExists(String name, Function callback) async {
     final query = StringBuffer();
     tableName = name;
     callback();
@@ -39,12 +68,16 @@ class Migration {
     query.write(
         """CREATE TABLE IF NOT EXISTS `$name` (${queries.join(',\n\t')},\n$primary$index$foreig)""");
 
-    print('Table $name created');
+    await MigrationConnection().dbConnection?.execute(query.toString());
+
+    print(' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
-  void dropTable(String name) {
+  Future<void>  dropTable(String name) async {
     String query = 'DROP TABLE IF EXISTS $name;';
-    print('Table $name droped');
+
+    await MigrationConnection().dbConnection?.execute(query.toString());
+    print(' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
   void addColumn(
@@ -135,10 +168,10 @@ class Migration {
     foreignKey.add(fk);
   }
 
-  void id(){
-    bigInt('id',unsigned: true,increment: true);
+  void id() {
+    bigInt('id', unsigned: true, increment: true);
+    primary('id');
   }
-  
 
   void integer(
     String name, {
@@ -194,6 +227,7 @@ class Migration {
       collation: collation,
       expression: expression,
       virtuality: virtuality,
+      increment: increment,
     );
   }
 
@@ -222,6 +256,7 @@ class Migration {
       collation: collation,
       expression: expression,
       virtuality: virtuality,
+      increment: increment,
     );
   }
 
@@ -250,6 +285,7 @@ class Migration {
       collation: collation,
       expression: expression,
       virtuality: virtuality,
+      increment: increment,
     );
   }
 
@@ -273,6 +309,7 @@ class Migration {
       length: length,
       unsigned: unsigned,
       zeroFill: zeroFill,
+      increment: increment,
       defaultValue: defaultValue,
       comment: comment,
       collation: collation,

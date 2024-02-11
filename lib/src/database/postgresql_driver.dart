@@ -12,9 +12,7 @@ class PostgreSQLDriver implements DatabaseDriver {
   Connection get connection => _connection!;
 
   @override
-  Future<void> init() async {
-    DatabaseConfig? config = Config().get('database');
-
+  Future<void> init([DatabaseConfig? config]) async {
     try {
       var manager = Manager();
       manager.addConnection({
@@ -33,5 +31,10 @@ class PostgreSQLDriver implements DatabaseDriver {
     } on InvalidArgumentException catch (e) {
       print(e.cause);
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await connection.disconnect();
   }
 }

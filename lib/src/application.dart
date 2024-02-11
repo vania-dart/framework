@@ -25,11 +25,12 @@ class Application extends Container {
 
     for (ServiceProvider provider in provider) {
       provider.register();
+      provider.boot();
     }
 
-    DatabaseDriver? db = Config().get('database')?.driver;
+    DatabaseConfig? db = Config().get('database');
     if (db != null) {
-      await db.init();
+      await db.driver?.init(Config().get('database'));
     }
 
     server.startServer(host: config['host'], port: config['port']);
