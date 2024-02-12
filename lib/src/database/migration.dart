@@ -13,9 +13,8 @@ class MigrationConnection {
     try {
       await database?.init(databaseConfig);
       dbConnection = database!.connection;
-    } catch (_) {
+    }  on InvalidArgumentException catch (_) {
       print('Error establishing a database connection');
-      throw 'Error establishing a database connection';
     }
   }
 

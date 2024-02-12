@@ -80,8 +80,8 @@ class ControllerHandler {
       data.makeResponse(request.response);
     } on BaseHttpException catch (e) {
       e.call().makeResponse(request.response);
-    }on InvalidArgumentException catch(e){
-      print(e.message);
+    }on InvalidArgumentException catch(_){
+      rethrow;
     }
   }
 
