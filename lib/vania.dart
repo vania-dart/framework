@@ -15,6 +15,7 @@ export 'src/http/request/request_file.dart';
 export 'src/http/response/response.dart';
 
 export 'src/exception/base_http_exception.dart';
+export 'src/exception/http_exception.dart';
 
 export 'src/websocket/websocket_client.dart';
 export 'src/websocket/websocket_event.dart';
@@ -36,6 +37,7 @@ export 'src/database/model.dart';
 export 'src/database/database_driver.dart';
 export 'src/database/mysql_driver.dart';
 export 'src/database/postgresql_driver.dart';
+export 'src/database/migration.dart';
 
 
 export 'src/authentication/authentication.dart';

@@ -45,6 +45,10 @@ class Request {
 
   Map<String, dynamic> body = <String, dynamic>{};
 
+  bool isMethod(String method){
+    return route?.method.toLowerCase() == method.toLowerCase();
+  }
+
   Map<String, dynamic> all() {
     return {...body, ..._query, ...params()};
   }
@@ -95,7 +99,7 @@ class Request {
     return hasKey;
   }
 
-  Future<String?> whenHas(String key) async {
+  Future whenHas(String key) async {
     if (_all[key] != null) {
       return Future.value(_all[key]);
     } else {
@@ -212,8 +216,8 @@ class Request {
     }
   }
 
-  String? header(String key) {
-    return _httpHeaders.value(key);
+  String? header(String key,[String? defaultHeader]) {
+    return _httpHeaders.value(key) ?? defaultHeader;
   }
 
   Map<String, dynamic> get headers {

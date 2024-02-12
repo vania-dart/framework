@@ -9,6 +9,15 @@ class Router {
   factory Router() => _singleton;
   Router._internal();
 
+  String? _prefix;
+
+  void basePrefix(String prefix) {
+    if (prefix.endsWith("/")) {
+      prefix = prefix.substring(0, prefix.length - 1);
+    }
+    _prefix = prefix;
+  }
+
   final List<RouteData> _routes = [];
 
   List<RouteData> get routes => _routes;
@@ -42,6 +51,7 @@ class Router {
       method: method.name,
       path: path,
       action: action,
+      prefix: _prefix
     ));
     return this;
   }

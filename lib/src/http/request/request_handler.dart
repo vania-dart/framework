@@ -34,7 +34,7 @@ Future httpRequestHandler(HttpRequest req) async {
     } on BaseHttpException catch (e) {
       e.call().makeResponse(req.response);
     } on InvalidArgumentException catch (e) {
-      print("InvalidArgumentException ${e.message}");
+      print(e.message);
     } catch (e) {
       print("catch ${e.toString()}");
     }

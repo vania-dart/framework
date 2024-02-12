@@ -33,6 +33,7 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
 }
 
 RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
+
   List<RouteData> methodMatchedRoutes =
       Router().routes.where((RouteData route) {
     if (domain != null && route.domain != null) {
@@ -47,19 +48,23 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
   for (RouteData route in methodMatchedRoutes) {
     route.path = sanitizeRoutePath(route.path);
     inputRoute = sanitizeRoutePath(inputRoute);
-
+    String routePath = route.path.trim();
+    
+    if(route.prefix != null){
+      routePath = "${route.prefix}/$routePath";
+    }
     /// When route is the same route exactly same route.
     /// route without params, eg. /api/example
-    if (route.path.trim() == inputRoute.trim()) {
+    if ( routePath == inputRoute.trim()) {
       matchRoute = route;
       break;
     }
 
+
     /// when route have params
     /// eg. /api/admin/{adminId}
     Iterable<String> parameterNames = _getParameterNameFromRoute(route);
-    Iterable<RegExpMatch> matches = _getPatternMatches(inputRoute, route);
-
+    Iterable<RegExpMatch> matches = _getPatternMatches(inputRoute, routePath);
     if (matches.isNotEmpty) {
       matchRoute = route;
       matchRoute.params = _getParameterAsMap(matches, parameterNames);
@@ -87,10 +92,10 @@ Iterable<String> _getParameterNameFromRoute(RouteData route) {
 /// get pattern matched routes from the list
 Iterable<RegExpMatch> _getPatternMatches(
   String input,
-  RouteData route,
+  String route,
 ) {
   RegExp pattern = RegExp(
-      '^${route.path.replaceAllMapped(RegExp(r'{[^/]+}'), (Match match) => '([^/]+)').replaceAll('/', '\\/')}\$');
+      '^${route.replaceAllMapped(RegExp(r'{[^/]+}'), (Match match) => '([^/]+)').replaceAll('/', '\\/')}\$');
   return pattern.allMatches(input);
 }
 

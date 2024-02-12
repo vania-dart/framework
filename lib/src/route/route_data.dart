@@ -11,6 +11,7 @@ class RouteData {
   List<Middleware> preMiddleware;
   final String? domain;
   final bool? corsEnabled;
+  final String? prefix;
 
   RouteData({
     required this.method,
@@ -20,5 +21,6 @@ class RouteData {
     this.params,
     this.preMiddleware = const <Middleware>[],
     this.domain,
+    this.prefix,
   });
 }

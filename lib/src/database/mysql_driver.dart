@@ -12,9 +12,7 @@ class MysqlDriver implements DatabaseDriver {
   Connection get connection => _connection!;
 
   @override
-  Future<void> init() async {
-    DatabaseConfig? config = Config().get('database');
-
+  Future<void> init([DatabaseConfig? config]) async {
     try {
       var manager = Manager();
       manager.addConnection({
@@ -31,6 +29,12 @@ class MysqlDriver implements DatabaseDriver {
       _connection = await manager.connection();
     } on InvalidArgumentException catch (e) {
       print(e.cause);
+      rethrow;
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await connection.disconnect();
   }
 }
