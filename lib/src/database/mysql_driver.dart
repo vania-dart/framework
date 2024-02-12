@@ -29,9 +29,10 @@ class MysqlDriver implements DatabaseDriver {
       _connection = await manager.connection();
     } on InvalidArgumentException catch (e) {
       print(e.cause);
+      rethrow;
     }
   }
-  
+
   @override
   Future<void> close() async {
     await connection.disconnect();

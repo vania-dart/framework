@@ -14,6 +14,7 @@ class MigrationConnection {
       await database?.init(databaseConfig);
       dbConnection = database!.connection;
     } catch (_) {
+      print('Error establishing a database connection');
       throw 'Error establishing a database connection';
     }
   }
@@ -35,7 +36,8 @@ class Migration {
   @mustCallSuper
   Future<void> up() async {
     if (MigrationConnection().dbConnection == null) {
-      throw 'Database not defined';
+      print('Database is not defined');
+      throw 'Database is not defined';
     }
   }
 
