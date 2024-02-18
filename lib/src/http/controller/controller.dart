@@ -1,4 +1,3 @@
-
-abstract class Controller{
+abstract class Controller {
   const Controller();
 }

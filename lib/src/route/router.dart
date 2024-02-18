@@ -1,4 +1,3 @@
-
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/websocket/web_socket_handler.dart';
@@ -23,36 +22,32 @@ class Router {
   List<RouteData> get routes => _routes;
 
   static Router get(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.GET, path, action);
+    return Router()._addRoute(HttpRequestMethod.get, path, action);
   }
 
   static Router post(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.POST, path, action);
+    return Router()._addRoute(HttpRequestMethod.post, path, action);
   }
 
   static Router put(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.PUT, path, action);
+    return Router()._addRoute(HttpRequestMethod.put, path, action);
   }
 
   static Router patch(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.PATCH, path, action);
+    return Router()._addRoute(HttpRequestMethod.patch, path, action);
   }
 
   static Router delete(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.DELETE, path, action);
+    return Router()._addRoute(HttpRequestMethod.delete, path, action);
   }
 
   static Router options(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.OPTIONS, path, action);
+    return Router()._addRoute(HttpRequestMethod.options, path, action);
   }
 
   Router _addRoute(HttpRequestMethod method, String path, dynamic action) {
     _routes.add(RouteData(
-      method: method.name,
-      path: path,
-      action: action,
-      prefix: _prefix
-    ));
+        method: method.name, path: path, action: action, prefix: _prefix));
     return this;
   }
 
@@ -72,7 +67,7 @@ class Router {
     return this;
   }
 
-  static void websocket(String path,Function(WebSocketEvent) eventCallBack)  {
+  static void websocket(String path, Function(WebSocketEvent) eventCallBack) {
     WebSocketEvent event = WebSocketHandler();
     eventCallBack(event);
   }
@@ -96,15 +91,15 @@ class GroupRouter {
   final HttpRequestMethod method;
   final List<Middleware>? middleware;
   const GroupRouter.get(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.GET;
+      : method = HttpRequestMethod.get;
   const GroupRouter.post(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.POST;
+      : method = HttpRequestMethod.post;
   const GroupRouter.put(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.PUT;
+      : method = HttpRequestMethod.put;
   const GroupRouter.delete(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.DELETE;
+      : method = HttpRequestMethod.delete;
   const GroupRouter.patch(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.PATCH;
+      : method = HttpRequestMethod.patch;
   const GroupRouter.options(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.OPTIONS;
+      : method = HttpRequestMethod.options;
 }

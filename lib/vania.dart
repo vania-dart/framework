@@ -1,6 +1,4 @@
-
 library vania;
-
 
 // Export Application
 export 'src/application.dart';
@@ -38,9 +36,7 @@ export 'src/database/database_driver.dart';
 export 'src/database/mysql_driver.dart';
 export 'src/database/postgresql_driver.dart';
 export 'src/database/migration.dart';
-
+export 'src/enum/column_index.dart';
 
 export 'src/authentication/authentication.dart';
 export 'src/authentication/authenticate.dart';
-
-

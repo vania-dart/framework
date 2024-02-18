@@ -1,5 +1,3 @@
-
-
 import 'package:vania/vania.dart';
 
 class Config {
@@ -7,15 +5,11 @@ class Config {
   factory Config() => _singleton;
   Config._internal();
 
+  Map<String, dynamic> _config = {};
+  set setApplicationConfig(Map<String, dynamic> conf) => _config = conf;
 
-  Map<String,dynamic> _config = {};
- set setApplicationConfig(Map<String,dynamic> conf) => _config = conf;
-
- dynamic get(String key) => _config[key];
-
+  dynamic get(String key) => _config[key];
 }
-
-
 
 class CacheConfig {
   final String defaultDriver;
@@ -37,8 +31,7 @@ class FileStorageConfig {
   });
 }
 
-
-class CORSConfig{
+class CORSConfig {
   final bool enabled;
   final dynamic origin;
   final dynamic methods;
@@ -58,15 +51,13 @@ class CORSConfig{
   });
 }
 
-
-class DatabaseConfig{
+class DatabaseConfig {
   final String host;
   final int port;
   final String? username;
   final String? password;
   final String database;
   final DatabaseDriver? driver;
-
 
   const DatabaseConfig({
     required this.driver,

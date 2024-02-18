@@ -14,9 +14,10 @@ Future httpRequestHandler(HttpRequest req) async {
   } else {
     try {
       HttpCros(req);
-      
+
       Request request =
-          await Request(request: req, route: await httpRouteHandler(req)).call();
+          await Request(request: req, route: await httpRouteHandler(req))
+              .call();
       RouteData? route = request.route;
 
       if (route == null) return;

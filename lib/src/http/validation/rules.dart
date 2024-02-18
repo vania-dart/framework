@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:vania/src/http/request/request_file.dart';
 
 class Rules {

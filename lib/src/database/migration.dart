@@ -1,6 +1,5 @@
 import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
-import 'package:vania/src/enum/column_index.dart';
 import 'package:vania/vania.dart';
 
 class MigrationConnection {
@@ -13,12 +12,12 @@ class MigrationConnection {
     try {
       await database?.init(databaseConfig);
       dbConnection = database!.connection;
-    }  on InvalidArgumentException catch (_) {
+    } on InvalidArgumentException catch (_) {
       print('Error establishing a database connection');
     }
   }
 
-  Future<void> closeConnection() async{
+  Future<void> closeConnection() async {
     await dbConnection?.disconnect();
   }
 }
@@ -30,7 +29,7 @@ class Migration {
   String primaryField = '';
   String primaryAlgorithm = '';
   List<String> indexes = [];
-  
+
   @mustBeOverridden
   @mustCallSuper
   Future<void> up() async {
@@ -40,9 +39,7 @@ class Migration {
     }
   }
 
-  
-
-  Future<void>  createTable(String name, Function callback) async {
+  Future<void> createTable(String name, Function callback) async {
     final query = StringBuffer();
     tableName = name;
     callback();
@@ -54,10 +51,11 @@ class Migration {
     query.write(
         """DROP TABLE IF EXISTS $name; CREATE TABLE `$name` (${queries.join(',')}$primary$index$foreig)""");
     await MigrationConnection().dbConnection?.execute(query.toString());
-    print(' Create $name table....................................\x1B[32mDONE\x1B[0m');
+    print(
+        ' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
-  Future<void>  createTableNotExists(String name, Function callback) async {
+  Future<void> createTableNotExists(String name, Function callback) async {
     final query = StringBuffer();
     tableName = name;
     callback();
@@ -71,14 +69,16 @@ class Migration {
 
     await MigrationConnection().dbConnection?.execute(query.toString());
 
-    print(' Create $name table....................................\x1B[32mDONE\x1B[0m');
+    print(
+        ' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
-  Future<void>  dropTable(String name) async {
+  Future<void> dropTable(String name) async {
     String query = 'DROP TABLE IF EXISTS $name;';
 
     await MigrationConnection().dbConnection?.execute(query.toString());
-    print(' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+    print(
+        ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
   void addColumn(

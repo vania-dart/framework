@@ -1,6 +1,6 @@
 enum ColumnIndex {
-  UNIQUE,
+  unique,
   INDEX,
-  FULLTEXT,
-  SPATIAL,
+  flutext,
+  spatial,
 }

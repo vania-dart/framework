@@ -21,13 +21,13 @@ class BaseHttpServer {
     );
     server.listen(
       (HttpRequest req) {
-          httpRequestHandler(req);
+        httpRequestHandler(req);
       },
       onError: onError ?? (dynamic error) => print(error),
     );
     httpServer = server;
 
-    if(Config().get("debug")){
+    if (Config().get("debug")) {
       print("Server started on $host:$port");
     }
     return httpServer!;
