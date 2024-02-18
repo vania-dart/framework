@@ -1,6 +1,3 @@
-
-
-
-abstract class WebSocketEvent{
-   void on(String event, Function function);
+abstract class WebSocketEvent {
+  void on(String event, Function function);
 }

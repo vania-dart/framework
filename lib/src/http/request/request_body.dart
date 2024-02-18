@@ -3,14 +3,11 @@ import 'dart:io';
 
 import 'package:vania/src/http/request/request_form_data.dart';
 
-
 class RequestBody {
   const RequestBody();
 
   static Future<Map<String, dynamic>> extractBody(
       {required HttpRequest request}) async {
-
-
     if (isJson(request.headers.contentType)) {
       String bodyString = await utf8.decoder.bind(request).join();
       try {
@@ -19,7 +16,6 @@ class RequestBody {
         return <String, dynamic>{};
       }
     }
-
 
     if (isUrlencoded(request.headers.contentType)) {
       try {
@@ -32,33 +28,30 @@ class RequestBody {
 
     if (isFormData(request.headers.contentType)) {
       RequestFormData formData = RequestFormData(request: request);
-        await formData.extractData();
+      await formData.extractData();
       return formData.inputs;
     }
 
     return <String, dynamic>{};
   }
 
-  
-
-static Map<String, dynamic> _extractUrlEncodedData(String inputString) {
-  Map<String, dynamic> resultMap = {};
-  List<String> keyValuePairs = inputString.split('&');
-  for (String pair in keyValuePairs) {
-    List<String> keyValue = pair.split('=');
-    if (keyValue.length == 2) {
-      resultMap[keyValue[0]] = keyValue[1];
+  static Map<String, dynamic> _extractUrlEncodedData(String inputString) {
+    Map<String, dynamic> resultMap = {};
+    List<String> keyValuePairs = inputString.split('&');
+    for (String pair in keyValuePairs) {
+      List<String> keyValue = pair.split('=');
+      if (keyValue.length == 2) {
+        resultMap[keyValue[0]] = keyValue[1];
+      }
     }
-  }
 
-  return resultMap;
-}
+    return resultMap;
+  }
 
   // static bool _extractUrlEncodedData(String encodedData) {
   //   List data = encodedData.split("&");
 
   // }
-
 
   static bool isUrlencoded(ContentType? contentType) {
     return contentType?.mimeType.toLowerCase().contains('urlencoded') == true;

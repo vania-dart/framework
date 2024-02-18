@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:vania/src/storage/storage_driver.dart';
 import 'package:vania/src/utils/functions.dart';
 
-
 class LocalStorage implements StorageDriver {
   String storagePath = "${Directory.current.path}/storage/app/public";
 
@@ -45,6 +44,4 @@ class LocalStorage implements StorageDriver {
     await file.writeAsBytes(bytes);
     return file.path.replaceFirst(storagePath, '');
   }
-
-  
 }

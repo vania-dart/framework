@@ -63,7 +63,6 @@ class WebsocketSession {
       info.activeRoom = roomId;
       info.activeRoom = roomId;
     }
-
   }
 
   void leftRoom(String sessionId, String? roomId) {

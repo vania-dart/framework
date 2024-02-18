@@ -3,7 +3,6 @@ import 'package:mime/mime.dart';
 import 'package:string_scanner/string_scanner.dart';
 import 'package:vania/vania.dart';
 
-
 class RequestFormData {
   final HttpRequest request;
 
@@ -17,21 +16,19 @@ class RequestFormData {
   RequestFormData({required this.request});
 
   Future extractData() async {
-    
     MimeMultipartTransformer transformer = MimeMultipartTransformer(
         request.headers.contentType!.parameters['boundary']!);
 
-
-    List<MimeMultipart> formData = await request.cast<List<int>>().transform(transformer).toList();
+    List<MimeMultipart> formData =
+        await request.cast<List<int>>().transform(transformer).toList();
 
     for (MimeMultipart formItem in formData) {
-      
       String partHeaders = formItem.headers['content-disposition']!;
       String? contentType = formItem.headers['content-type'];
 
       Map<String, String> data = _parseFormDataContentDisposition(partHeaders);
       String? inputName = data['name'];
-      
+
       if (inputName != null) {
         if (data['filename'] == null || data['filename']!.isEmpty) {
           String value = String.fromCharCodes(await formItem.first);
@@ -42,18 +39,18 @@ class RequestFormData {
             filetype: contentType.toString(),
             stream: formItem,
           );
-          if(inputName.contains('[]')){
+          if (inputName.contains('[]')) {
             List<RequestFile> files = [];
             files.add(file);
             String clearedInputName = inputName.replaceAll('[]', '');
-            if(inputs.containsKey(clearedInputName)){
-              if(inputs[clearedInputName] is List<RequestFile>){
+            if (inputs.containsKey(clearedInputName)) {
+              if (inputs[clearedInputName] is List<RequestFile>) {
                 inputs[clearedInputName].add(file);
               }
-            }else{
+            } else {
               inputs[clearedInputName] = files;
             }
-          }else{
+          } else {
             inputs[inputName] = file;
           }
         }

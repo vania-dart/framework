@@ -1,6 +1,4 @@
-
-
 class InvalidArgumentException {
-final String message;
-const InvalidArgumentException(this.message);
+  final String message;
+  const InvalidArgumentException(this.message);
 }

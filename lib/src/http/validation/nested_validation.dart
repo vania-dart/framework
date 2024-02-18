@@ -1,4 +1,3 @@
-
 import 'package:vania/src/extensions/map_extension.dart';
 
 import 'validation_item.dart';

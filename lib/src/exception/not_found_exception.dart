@@ -1,10 +1,6 @@
-
-
-
 import 'dart:io';
 
 import 'package:vania/vania.dart';
-
 
 class NotFoundException extends BaseHttpException {
   NotFoundException({

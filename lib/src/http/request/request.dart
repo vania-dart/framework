@@ -6,17 +6,15 @@ import 'package:vania/src/http/validation/validator.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/vania.dart';
 
-
-
 class Request {
   final HttpRequest request;
   final RouteData? route;
   Request({required this.request, this.route});
 
   Future<Request> call() async {
-    try{
+    try {
       body = await RequestBody.extractBody(request: request);
-    }catch(_){}
+    } catch (_) {}
 
     return this;
   }
@@ -45,7 +43,7 @@ class Request {
 
   Map<String, dynamic> body = <String, dynamic>{};
 
-  bool isMethod(String method){
+  bool isMethod(String method) {
     return route?.method.toLowerCase() == method.toLowerCase();
   }
 
@@ -216,7 +214,7 @@ class Request {
     }
   }
 
-  String? header(String key,[String? defaultHeader]) {
+  String? header(String key, [String? defaultHeader]) {
     return _httpHeaders.value(key) ?? defaultHeader;
   }
 
@@ -277,5 +275,4 @@ class Request {
     });
     return ret;
   }
-
 }

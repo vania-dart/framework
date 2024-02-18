@@ -43,8 +43,7 @@ class RequestFile {
   /// RequestFile image = req.input('image');
   /// String filename = await image.store();
   /// ```
-  Future<String> store(
-      {required String path, required String filename}) async {
+  Future<String> store({required String path, required String filename}) async {
     path = path.endsWith("/") ? path : "$path/";
     return Storage().put(path, filename, await bytes);
   }

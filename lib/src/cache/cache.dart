@@ -31,7 +31,7 @@ class Cache {
   /// await Cache().put('foo', 'bar', duration: Duration(hours: 24));
   /// ```
   Future<void> put(String key, String value, {Duration? duration}) async {
-     await _driver.put(key, value, duration: duration);
+    await _driver.put(key, value, duration: duration);
   }
 
   /// set key => value to cache forever

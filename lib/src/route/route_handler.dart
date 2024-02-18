@@ -14,7 +14,7 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
     req.headers.value(HttpHeaders.hostHeader),
   );
   if (route == null) {
-    if (req.method == HttpRequestMethod.OPTIONS.name) {
+    if (req.method == HttpRequestMethod.options.name) {
       req.response.statusCode = HttpStatus.ok;
       req.response.close();
       return null;
@@ -33,7 +33,6 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
 }
 
 RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
-
   List<RouteData> methodMatchedRoutes =
       Router().routes.where((RouteData route) {
     if (domain != null && route.domain != null) {
@@ -49,17 +48,17 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
     route.path = sanitizeRoutePath(route.path);
     inputRoute = sanitizeRoutePath(inputRoute);
     String routePath = route.path.trim();
-    
-    if(route.prefix != null){
+
+    if (route.prefix != null) {
       routePath = "${route.prefix}/$routePath";
     }
+
     /// When route is the same route exactly same route.
     /// route without params, eg. /api/example
-    if ( routePath == inputRoute.trim()) {
+    if (routePath == inputRoute.trim()) {
       matchRoute = route;
       break;
     }
-
 
     /// when route have params
     /// eg. /api/admin/{adminId}

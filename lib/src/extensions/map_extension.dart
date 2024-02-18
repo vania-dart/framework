@@ -1,5 +1,4 @@
 extension MapExtensions on Map<dynamic, dynamic> {
-
   Map<String, dynamic> removeParam(String keys) {
     dynamic value = this;
     List<String> parts = keys.split('.');
@@ -28,4 +27,3 @@ extension MapExtensions on Map<dynamic, dynamic> {
     return data[parts.last];
   }
 }
-

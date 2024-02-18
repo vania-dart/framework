@@ -1,15 +1,15 @@
 name: vania
-description: vania
+description: 
 version: 0.0.1
-#homepage: 
-#repository: 
-#issue_tracker: 
-#documentation: 
-#topics: [server, backend, httpserver]
+homepage: https://vdart.dev
+repository: https://github.com/vania-dart/framework
+issue_tracker: https://github.com/vania-dart/framework/issues
+documentation: https://vdart.dev/docs/intro
+topics: [server, backend, httpserver, framework, web]
 
-#screenshots:
-#  - description: 'Vania logo.'
-#    path: assets/logo.png
+screenshots:
+  - description: 'Vania web application'
+    path: assets/logo.png
 
 environment:
   sdk: ^3.2.3
@@ -17,9 +17,9 @@ environment:
 # Add regular dependencies here.
 dependencies:
   crypto: ^3.0.3
-  dart_jsonwebtoken: ^2.12.2
+  dart_jsonwebtoken: ^2.13.0
   eloquent: ^3.0.0
-  meta: ^1.11.0
+  meta: ^1.12.0
   mime: ^1.0.5
   path: ^1.9.0
   sprintf: ^7.0.0
