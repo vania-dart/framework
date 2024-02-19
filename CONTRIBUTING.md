@@ -6,7 +6,7 @@ Before creating a pull request please:
 
 1. Fork the repository and create your branch from `main`.
 2. Install all dependencies (`dart pub get`).
-3. Squash your commits and ensure you have a meaningful, [semantic][conventional_commits_link] commit message.
+3. Squash your commits and ensure you have a meaningful, [semantic](https://www.conventionalcommits.org/en/v1.0.0/) commit message.
 4. Add tests! Pull Requests without 100% test coverage will not be approved.
 5. Ensure the existing test suite passes locally.
 6. Format your code (`dart format .`).
