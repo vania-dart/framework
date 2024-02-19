@@ -170,8 +170,34 @@ class Migration {
   }
 
   void id() {
-    bigInt('id', unsigned: true, increment: true);
-    primary('id');
+    bigIncrements('id');
+  }
+
+  void bigIncrements(
+    String name, {
+    bool nullable = false,
+    bool zeroFill = false,
+    String? defaultValue,
+    String? comment,
+    String? collation,
+    String? expression,
+    String? virtuality,
+  }) {
+    addColumn(
+      name,
+      'BIGINT',
+      nullable: nullable,
+      length: 20,
+      unsigned: true,
+      zeroFill: zeroFill,
+      defaultValue: defaultValue,
+      comment: comment,
+      collation: collation,
+      expression: expression,
+      virtuality: virtuality,
+      increment: true,
+    );
+    primary(name);
   }
 
   void integer(
@@ -852,6 +878,13 @@ class Migration {
       collation: collation,
       expression: expression,
       virtuality: virtuality,
+    );
+  }
+
+  void softDeletes(String name) {
+    timeStamp(
+      name,
+      nullable: true,
     );
   }
 
