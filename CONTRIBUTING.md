@@ -11,5 +11,5 @@ Before creating a pull request please:
 5. Ensure the existing test suite passes locally.
 6. Format your code (`dart format .`).
 7. Analyze your code (`dart analyze --fatal-infos --fatal-warnings .`).
-8. Create the Pull Request.
+8. Create the Pull Request on `dev`
 9. Verify that all status checks are passing.
