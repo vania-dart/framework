@@ -22,7 +22,7 @@ class MysqlDriver implements DatabaseDriver {
         'database': config?.database,
         'username': config?.username,
         'password': config?.password,
-        'sslmode': 'require',
+        'sslmode': config?.sslmode == true ? 'require' : '',
       });
       manager.setAsGlobal();
 
