@@ -7,8 +7,9 @@ class MigrationConnection {
   factory MigrationConnection() => _singleton;
   MigrationConnection._internal();
   Connection? dbConnection;
+  DatabaseDriver? database;
   Future<void> setup(DatabaseConfig databaseConfig) async {
-    DatabaseDriver? database = databaseConfig.driver;
+    database = databaseConfig.driver;
     try {
       await database?.init(databaseConfig);
       dbConnection = database!.connection;
@@ -49,8 +50,16 @@ class Migration {
         ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
         : '';
     query.write(
-        """DROP TABLE IF EXISTS $name; CREATE TABLE `$name` (${queries.join(',')}$primary$index$foreig)""");
-    await MigrationConnection().dbConnection?.execute(query.toString());
+        '''DROP TABLE IF EXISTS "$name"; CREATE TABLE "$name" (${queries.join(',')}$primary$index$foreig)''');
+
+    if (MigrationConnection().database?.driver == 'Postgresql') {
+      await MigrationConnection()
+          .dbConnection
+          ?.execute(_mysqlToPosgresqlMapper(query.toString()));
+    } else {
+      await MigrationConnection().dbConnection?.execute(query.toString());
+    }
+
     print(
         ' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
@@ -67,15 +76,21 @@ class Migration {
     query.write(
         """CREATE TABLE IF NOT EXISTS `$name` (${queries.join(',\n\t')},\n$primary$index$foreig)""");
 
-    await MigrationConnection().dbConnection?.execute(query.toString());
+    if (MigrationConnection().database?.driver == 'Postgresql') {
+      await MigrationConnection()
+          .dbConnection
+          ?.execute(_mysqlToPosgresqlMapper(query.toString()));
+    } else {
+      await MigrationConnection().dbConnection?.execute(query.toString());
+    }
 
     print(
         ' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
   Future<void> dropTable(String name) async {
-    String query = 'DROP TABLE IF EXISTS $name;';
-
+    String query = 'DROP TABLE IF EXISTS "$name";';
+  
     await MigrationConnection().dbConnection?.execute(query.toString());
     print(
         ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
@@ -1100,5 +1115,107 @@ class Migration {
       expression: expression,
       virtuality: virtuality,
     );
+  }
+
+  /// Mapper for mysql to postgresql query
+  String _mysqlToPosgresqlMapper(String queryStr) {
+    List strList = queryStr.split(',');
+    List<String> queryList = [];
+    for (String str in strList) {
+      str = _mysqlAiToSerial(str);
+
+      String query = str
+          .replaceAll(RegExp(r"BIGINT\((\d+)\)"), "BIGINT")
+          .replaceAll(
+              RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " INTEGER")
+          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
+              " INTEGER")
+          .replaceAll(
+              RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "INTEGER")
+          .replaceAll(
+              RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+          .replaceAll(
+              RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+          .replaceAll(RegExp(r"BINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"BIT\((\d+)\)", caseSensitive: false), "BOOLEAN")
+          .replaceAllMapped(
+              RegExp(r"VARCHAR\((\d+)\)"), (match) => "VARCHAR(${match[1]})")
+          .replaceAllMapped(RegExp(r"VARCHARACTER\((\d+)\)"),
+              (match) => "CHARACTER(${match[1]})")
+          .replaceAllMapped(RegExp(r"FLOAT\((\d+)\)"), (match) => "REAL")
+          .replaceAll(
+              RegExp(r"DATETIME\((\d+)\)", caseSensitive: false), "TIMESTAMP")
+          .replaceAll(RegExp(r"DOUBLE\((\d+)\)", caseSensitive: false),
+              "DOUBLE PRECISION")
+          .replaceAll(RegExp(r"TINYBLOB", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"VARBYTEA", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"BLOB", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"MEDIUMBLOB", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"LONGBLOB", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"MEDIUMBYTEA", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"LONGBYTEA", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"TINYTEXT", caseSensitive: false), "TEXT")
+          .replaceAll(RegExp(r"MEDIUMTEXT", caseSensitive: false), "TEXT")
+          .replaceAll(
+              RegExp(r"LONGTEXT\((\d+)\)", caseSensitive: false), "TEXT")
+          .replaceAll(RegExp(r"LINESTRING", caseSensitive: false), "LINE")
+          .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
+          .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
+          .replaceAll(
+              RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+          .replaceAll(
+              RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+          .replaceAll(
+              RegExp(r"ENUM\((?:'[^']*'(?:\s*,\s*'[^']*')*)\)",
+                  caseSensitive: false),
+              "VARCHAR")
+          .replaceAll(RegExp(r"COLLATE '[\w\d_-]+'", caseSensitive: false), "")
+          .replaceAll(
+              RegExp(
+                  r"DEFAULT\s+('(?:[^'\\]|\\.)*'|NULL|CURRENT_TIMESTAMP(?:\s+ON\s+UPDATE\s+CURRENT_TIMESTAMP)?|\d+)",
+                  caseSensitive: false),
+              "")
+          .replaceAll('`', '"');
+
+      queryList.add(query);
+    }
+
+    return queryList.join(',').replaceAll(RegExp(r',\s?\)'), ')');
+  }
+
+  String _mysqlAiToSerial(String str) {
+    if (str.contains("AUTO_INCREMENT")) {
+      str = str
+          .replaceAll("AUTO_INCREMENT", "PRIMARY KEY")
+          .replaceAll(
+              RegExp(r"BIGINT\((\d+)\)", caseSensitive: false), "BIGSERIAL")
+          .replaceAll(
+              RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " SERIAL")
+          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
+              " SERIAL")
+          .replaceAll(
+              RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "SERIAL")
+          .replaceAll(
+              RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL")
+          .replaceAll(
+              RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL");
+    }
+
+    if (RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE").hasMatch(str)) {
+      str = str.replaceAll(
+          RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE", caseSensitive: false),
+          "");
+    }
+
+    if (RegExp(r"PRIMARY KEY \(`.*?`\)").hasMatch(str)) {
+      str = str.replaceAll(
+          RegExp(r"PRIMARY KEY \(`.*?`\)", caseSensitive: false), "");
+    }
+
+    if (RegExp(r"UNSIGNED").hasMatch(str)) {
+      str = str.replaceAll(RegExp(r"UNSIGNED", caseSensitive: false), "");
+    }
+
+    return str;
   }
 }
