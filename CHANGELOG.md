@@ -1,3 +1,8 @@
+## 0.0.3+1
+
+- Fixed bug: migration columns length
+- Added sslmode to the MySqldriver
+
 ## 0.0.3
 
 - Fixed Bug: Resolved issue with table creation in PostgreSQL
