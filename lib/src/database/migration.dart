@@ -50,7 +50,7 @@ class Migration {
         ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
         : '';
     query.write(
-        """DROP TABLE IF EXISTS $name; CREATE TABLE `$name` (${queries.join(',')}$primary$index$foreig)""");
+        '''DROP TABLE IF EXISTS "$name"; CREATE TABLE "$name" (${queries.join(',')}$primary$index$foreig)''');
 
     if (MigrationConnection().database?.driver == 'Postgresql') {
       await MigrationConnection()
@@ -89,8 +89,8 @@ class Migration {
   }
 
   Future<void> dropTable(String name) async {
-    String query = 'DROP TABLE IF EXISTS $name;';
-
+    String query = 'DROP TABLE IF EXISTS "$name";';
+  
     await MigrationConnection().dbConnection?.execute(query.toString());
     print(
         ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
@@ -1180,7 +1180,7 @@ class Migration {
       queryList.add(query);
     }
 
-    return queryList.join(',');
+    return queryList.join(',').replaceAll(RegExp(r',\s?\)'), ')');
   }
 
   String _mysqlAiToSerial(String str) {
