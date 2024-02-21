@@ -1,14 +1,16 @@
+## 0.0.2+2
+
+- Fixed Bug: Resolved issue with table creation in PostgreSQL
+
 ## 0.0.2+1
 
-- Adding bigIncrements column
-
+- Added bigIncrements and  softDeletes columns
 
 ## 0.0.2
 
-- Adding column index to vania file
-- Code format 
+- Added column index to vania file
+- Code formatted
 
- 
 ## 0.0.1
 
 - Initial version.

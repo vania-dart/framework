@@ -37,7 +37,7 @@ class MysqlDriver implements DatabaseDriver {
   Future<void> close() async {
     await connection.disconnect();
   }
-  
+
   @override
   String get driver => 'Mysql';
 }

@@ -90,7 +90,7 @@ class Migration {
 
   Future<void> dropTable(String name) async {
     String query = 'DROP TABLE IF EXISTS "$name";';
-  
+
     await MigrationConnection().dbConnection?.execute(query.toString());
     print(
         ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
