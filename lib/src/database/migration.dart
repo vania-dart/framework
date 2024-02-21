@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
 import 'package:vania/vania.dart';
@@ -15,6 +17,9 @@ class MigrationConnection {
       dbConnection = database!.connection;
     } on InvalidArgumentException catch (_) {
       print('Error establishing a database connection');
+    } catch (e) {
+      print(e);
+      exit(0);
     }
   }
 
@@ -41,51 +46,66 @@ class Migration {
   }
 
   Future<void> createTable(String name, Function callback) async {
-    final query = StringBuffer();
-    tableName = name;
-    callback();
-    String index = indexes.isNotEmpty ? ',${indexes.join(',')}' : '';
-    String foreig = foreignKey.isNotEmpty ? ',${foreignKey.join(',')}' : '';
-    String primary = primaryField.isNotEmpty
-        ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
-        : '';
-    query.write(
-        '''DROP TABLE IF EXISTS "$name"; CREATE TABLE "$name" (${queries.join(',')}$primary$index$foreig)''');
+    try {
+      final query = StringBuffer();
+      tableName = name;
+      callback();
+      String index = indexes.isNotEmpty ? ',${indexes.join(',')}' : '';
+      String foreig = foreignKey.isNotEmpty ? ',${foreignKey.join(',')}' : '';
+      String primary = primaryField.isNotEmpty
+          ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
+          : '';
+      query.write(
+          '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${queries.join(',')}$primary$index$foreig)''');
 
-    if (MigrationConnection().database?.driver == 'Postgresql') {
-      await MigrationConnection()
-          .dbConnection
-          ?.execute(_mysqlToPosgresqlMapper(query.toString()));
-    } else {
-      await MigrationConnection().dbConnection?.execute(query.toString());
+      if (MigrationConnection().database?.driver == 'Postgresql') {
+        await MigrationConnection()
+            .dbConnection
+            ?.execute(_mysqlToPosgresqlMapper(query.toString()));
+      } else {
+        await MigrationConnection()
+            .dbConnection
+            ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
+      }
+
+      print(
+          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+    } catch (e) {
+      print(e);
+      exit(0);
     }
-
-    print(
-        ' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
   Future<void> createTableNotExists(String name, Function callback) async {
-    final query = StringBuffer();
-    tableName = name;
-    callback();
-    String index = indexes.isNotEmpty ? '${indexes.join(',')},\n' : '';
-    String foreig = foreignKey.isNotEmpty ? '${foreignKey.join(',')}\n' : '';
-    String primary = primaryField.isNotEmpty
-        ? 'PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm,\n'
-        : '';
-    query.write(
-        """CREATE TABLE IF NOT EXISTS `$name` (${queries.join(',\n\t')},\n$primary$index$foreig)""");
+    try {
+      final query = StringBuffer();
+      tableName = name;
+      callback();
+      String index = indexes.isNotEmpty ? ',${indexes.join(',')}' : '';
+      String foreig = foreignKey.isNotEmpty ? ',${foreignKey.join(',')}' : '';
+      String primary = primaryField.isNotEmpty
+          ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
+          : '';
+      query.write(
+          '''CREATE TABLE IF NOT EXISTS `$name` (${queries.join(',')}$primary$index$foreig)''');
 
-    if (MigrationConnection().database?.driver == 'Postgresql') {
-      await MigrationConnection()
-          .dbConnection
-          ?.execute(_mysqlToPosgresqlMapper(query.toString()));
-    } else {
-      await MigrationConnection().dbConnection?.execute(query.toString());
+      if (MigrationConnection().database?.driver == 'Postgresql') {
+        await MigrationConnection()
+            .dbConnection
+            ?.execute(_mysqlToPosgresqlMapper(query.toString()));
+      } else {
+        await MigrationConnection()
+            .dbConnection
+            ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
+      }
+
+      print(
+          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+      
+    } catch (e) {
+      print(e);
+      exit(0);
     }
-
-    print(
-        ' Create $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
   Future<void> dropTable(String name) async {
@@ -375,7 +395,6 @@ class Migration {
       name,
       'BIT',
       nullable: nullable,
-      length: 1,
       unsigned: unsigned,
       zeroFill: zeroFill,
       defaultValue: defaultValue,
@@ -543,7 +562,6 @@ class Migration {
   void text(
     String name, {
     bool nullable = false,
-    int length = 255,
     bool zeroFill = false,
     String? defaultValue,
     String? comment,
@@ -555,7 +573,6 @@ class Migration {
       name,
       'TEXT',
       nullable: nullable,
-      length: length,
       zeroFill: zeroFill,
       defaultValue: defaultValue,
       comment: comment,
@@ -568,7 +585,6 @@ class Migration {
   void mediumText(
     String name, {
     bool nullable = false,
-    int length = 255,
     bool zeroFill = false,
     String? defaultValue,
     String? comment,
@@ -580,7 +596,6 @@ class Migration {
       name,
       'MEDIUMTEXT',
       nullable: nullable,
-      length: length,
       zeroFill: zeroFill,
       defaultValue: defaultValue,
       comment: comment,
@@ -593,7 +608,6 @@ class Migration {
   void longText(
     String name, {
     bool nullable = false,
-    int length = 255,
     bool zeroFill = false,
     String? defaultValue,
     String? comment,
@@ -605,7 +619,6 @@ class Migration {
       name,
       'LONGTEXT',
       nullable: nullable,
-      length: length,
       zeroFill: zeroFill,
       defaultValue: defaultValue,
       comment: comment,

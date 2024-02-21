@@ -57,6 +57,7 @@ class DatabaseConfig {
   final String? username;
   final String? password;
   final String database;
+  final bool? sslmode;
   final DatabaseDriver? driver;
 
   const DatabaseConfig({
@@ -66,5 +67,6 @@ class DatabaseConfig {
     this.username = 'root',
     this.password,
     this.database = 'db',
+    this.sslmode = true,
   });
 }
