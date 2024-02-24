@@ -101,7 +101,6 @@ class Migration {
 
       print(
           ' Create $name table....................................\x1B[32mDONE\x1B[0m');
-      
     } catch (e) {
       print(e);
       exit(0);
