@@ -16,6 +16,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  crypto: ^3.0.3
   dart_jsonwebtoken: ^2.13.0
   eloquent: ^3.0.0
   meta: ^1.12.0
