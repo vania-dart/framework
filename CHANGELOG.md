@@ -1,5 +1,10 @@
 ## 0.0.3+1
 
+- Fixed bug: Authentication refresh token
+
+
+## 0.0.3+1
+
 - Fixed bug: migration columns length
 - Added sslmode to the MySqldriver
 
