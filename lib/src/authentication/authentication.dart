@@ -31,13 +31,15 @@ class Auth {
 
   dynamic get(String filed) => _user[_userGuard][filed];
 
-  String createToken({Duration? expiresIn}) {
+  Map<String, dynamic> createToken(
+      {Duration? expiresIn, bool withRefreshToken = false}) {
     return HasApiTokens()
         .setPayload(_user[_userGuard])
-        .createToken(_userGuard, expiresIn);
+        .createToken(_userGuard, expiresIn, withRefreshToken);
   }
 
-  String createRefreshToken(String token, {Duration? expiresIn}) {
+  Map<String, dynamic> createTokenByRefreshToken(String token,
+      {Duration? expiresIn}) {
     return HasApiTokens()
         .refreshToken(token.replaceFirst('Bearer ', ''), _userGuard, expiresIn);
   }
@@ -50,8 +52,8 @@ class Auth {
       throw InvalidArgumentException('Authenticatable class not found');
     }
 
-    Map<String, dynamic> payload =
-        HasApiTokens().verify(token.replaceFirst('Bearer ', ''), _userGuard);
+    Map<String, dynamic> payload = HasApiTokens()
+        .verify(token.replaceFirst('Bearer ', ''), _userGuard, 'access_token');
     Map<String, dynamic>? user =
         await authenticatable.query().where('id', '=', payload['id']).first();
     if (user != null) {
