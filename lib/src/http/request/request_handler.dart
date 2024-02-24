@@ -9,12 +9,10 @@ import 'package:vania/src/websocket/web_socket_handler.dart';
 import 'package:vania/vania.dart';
 
 Future httpRequestHandler(HttpRequest req) async {
-
   /// Check the incoming request is web socket or not
   if (Config().get("websocket") && WebSocketTransformer.isUpgradeRequest(req)) {
     WebSocketHandler().handler(req);
   } else {
-
     try {
       /// Check if cors is enabled
       HttpCros(req);
@@ -37,7 +35,6 @@ Future httpRequestHandler(HttpRequest req) async {
 
       /// Controller and method handler
       ControllerHandler(route: route, request: request).call();
-      
     } on BaseHttpException catch (e) {
       e.call().makeResponse(req.response);
     } on InvalidArgumentException catch (e) {
