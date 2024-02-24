@@ -177,7 +177,7 @@ class Migration {
   }
 
   void index(ColumnIndex type, String name, List<String> columns) {
-    if (type == ColumnIndex.INDEX) {
+    if (type == ColumnIndex.indexKey) {
       indexes.add('INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
     } else {
       indexes.add(
