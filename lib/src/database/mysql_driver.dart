@@ -22,7 +22,7 @@ class MysqlDriver implements DatabaseDriver {
         'database': config?.database,
         'username': config?.username,
         'password': config?.password,
-        'sslmode': 'require',
+        'sslmode': config?.sslmode == true ? 'require' : '',
       });
       manager.setAsGlobal();
 
@@ -37,4 +37,7 @@ class MysqlDriver implements DatabaseDriver {
   Future<void> close() async {
     await connection.disconnect();
   }
+
+  @override
+  String get driver => 'Mysql';
 }
