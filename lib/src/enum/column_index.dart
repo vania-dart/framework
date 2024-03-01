@@ -1,6 +1,6 @@
 enum ColumnIndex {
   unique,
-  INDEX,
+  indexKey,
   flutext,
   spatial,
 }

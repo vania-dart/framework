@@ -29,11 +29,11 @@ class WebSocketHandler implements WebSocketEvent {
 
     websocket.listen((data) {
       Map<String, dynamic> payload = jsonDecode(data);
-      String event = payload[WEB_SOCKET_EVENT_KEY];
+      String event = payload[webScoketEventKey];
 
       /// client join the room
-      if (event == WEB_SOCKET_JOIN_ROOM_EVENT_NAME) {
-        String? roomId = payload[WEB_SOCKET_ROOM_KEY];
+      if (event == webSocketJoinRoomEventName) {
+        String? roomId = payload[webSocketRoomKey];
         if (roomId != null) {
           _session.joinRoom(sessionId, roomId);
           client.joinRoom(roomId);
@@ -42,8 +42,8 @@ class WebSocketHandler implements WebSocketEvent {
       }
 
       /// client left the room
-      if (event == WEB_SOCKET_LEFT_ROOM_EVENT_NAME) {
-        String? roomId = payload[WEB_SOCKET_ROOM_KEY];
+      if (event == webSocketLeftRoomEventName) {
+        String? roomId = payload[webSocketRoomKey];
         if (roomId != null) {
           _session.leftRoom(sessionId, roomId);
           client.leftRoom(roomId);
@@ -57,7 +57,7 @@ class WebSocketHandler implements WebSocketEvent {
       ///   response
       ///  });
       /// ```
-      dynamic message = payload[WEB_SOCKET_MESSAGE_KEY];
+      dynamic message = payload[webSocketMessageKey];
 
       Function? controller = _events[event];
 

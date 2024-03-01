@@ -127,12 +127,12 @@ class Rules {
 
   /// check field character is given max length
   static bool maxLength(Map<String, dynamic> data, dynamic value, String max) {
-    return value.toString().length < num.parse(max.toString());
+    return value.toString().length <= num.parse(max.toString());
   }
 
   /// check field character is given min length
   static bool minLength(Map<String, dynamic> data, dynamic value, String min) {
-    return value.toString().length > num.parse(min.toString());
+    return value.toString().length >= num.parse(min.toString());
   }
 
   /// check field character is between given length

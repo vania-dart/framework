@@ -11,7 +11,7 @@ class Auth {
 
   String _userGuard = 'default';
 
-  //Auth([String guard = 'default']) : _userGuard = guard;
+  bool _isAuthorized = false;
 
   final Map<String, dynamic> _user = {};
 
@@ -24,6 +24,8 @@ class Auth {
     _user[_userGuard] = user;
     return this;
   }
+
+  bool get isAuthorized => _isAuthorized;
 
   Map<String, dynamic>? user() => _user[_userGuard];
 
@@ -44,20 +46,24 @@ class Auth {
         .refreshToken(token.replaceFirst('Bearer ', ''), _userGuard, expiresIn);
   }
 
-  Future<bool> check(String token) async {
-    Model? authenticatable =
-        Config().get('auth')['guards'][_userGuard]['provider'];
-
-    if (authenticatable == null) {
-      throw InvalidArgumentException('Authenticatable class not found');
-    }
-
+  Future<bool> check(String token, {Map<String, dynamic>? user}) async {
     Map<String, dynamic> payload = HasApiTokens()
         .verify(token.replaceFirst('Bearer ', ''), _userGuard, 'access_token');
-    Map<String, dynamic>? user =
-        await authenticatable.query().where('id', '=', payload['id']).first();
+
+    if (user == null) {
+      Model? authenticatable =
+          Config().get('auth')['guards'][_userGuard]['provider'];
+
+      if (authenticatable == null) {
+        throw InvalidArgumentException('Authenticatable class not found');
+      }
+      user =
+          await authenticatable.query().where('id', '=', payload['id']).first();
+    }
+
     if (user != null) {
       _user[_userGuard] = user;
+      _isAuthorized = true;
       return true;
     } else {
       throw Unauthenticated(message: 'Invalid token');
