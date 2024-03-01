@@ -4,7 +4,7 @@ const String webSocketLeftRoomEventName = 'leftRoom';
 
 const String webScoketEventKey = 'event';
 
-const String webSocketMessageKey = 'message';
+const String webSocketMessageKey = 'data';
 
 const String webSocketSenderKey = 'sender';
 

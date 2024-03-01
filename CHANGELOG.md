@@ -1,7 +1,14 @@
+## 0.1.0
+
+- Initial beta release
+- Fixed a bug related to WebSocket data events
+- Corrected authentication check functionality
+- Added `isAuthorized` feature
+- Exported `query_builder` from Eloquent package for enhanced functionality
+
 ## 0.0.4
 
 - Fixed bug: Authentication refresh token
-
 
 ## 0.0.3+1
 
