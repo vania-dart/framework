@@ -47,7 +47,6 @@ class Auth {
   }
 
   Future<bool> check(String token, {Map<String, dynamic>? user}) async {
-    
     Map<String, dynamic> payload = HasApiTokens()
         .verify(token.replaceFirst('Bearer ', ''), _userGuard, 'access_token');
 

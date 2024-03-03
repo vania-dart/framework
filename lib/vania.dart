@@ -41,3 +41,4 @@ export 'package:eloquent/src/query/query_builder.dart';
 
 export 'src/authentication/authentication.dart';
 export 'src/authentication/authenticate.dart';
+export 'src/cryptographic/hash.dart';
