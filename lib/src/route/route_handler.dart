@@ -14,8 +14,8 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
     req.headers.value(HttpHeaders.hostHeader),
   );
   if (route == null) {
-    if (req.method == HttpRequestMethod.options.name) {
-      req.response.statusCode = HttpStatus.ok;
+    if (req.method.toLowerCase() ==
+        HttpRequestMethod.options.name.toLowerCase()) {
       req.response.close();
       return null;
     } else {

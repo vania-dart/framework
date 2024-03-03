@@ -205,6 +205,7 @@ class Migration {
 
   void id() {
     bigIncrements('id');
+    primary('id');
   }
 
   void bigIncrements(
@@ -231,7 +232,6 @@ class Migration {
       virtuality: virtuality,
       increment: true,
     );
-    primary(name);
   }
 
   void integer(

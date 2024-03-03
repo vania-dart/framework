@@ -190,7 +190,7 @@ class Request {
       return _query.values;
     }
 
-    if (_query[key]) {
+    if (_query[key] != null) {
       return _query[key];
     }
 

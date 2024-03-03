@@ -1,4 +1,8 @@
-## 0.1.1
+## 0.1.1+1
+
+- Fixed bug: http method options and cros error
+
+- ## 0.1.1
 
 - Added Hash class
 
