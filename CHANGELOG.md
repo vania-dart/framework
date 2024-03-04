@@ -1,6 +1,10 @@
+## 0.1.1+2
+
+- Fixed bug: Cors file and class name
+
 ## 0.1.1+1
 
-- Fixed bug: http method options and cros error
+- Fixed bug: http method options and cors error
 
 - ## 0.1.1
 

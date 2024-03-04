@@ -28,7 +28,7 @@ class BaseHttpServer {
     httpServer = server;
 
     if (Config().get("debug")) {
-      print("Server started on $host:$port");
+      print("Server started on http://$host:$port");
     }
     return httpServer!;
   }

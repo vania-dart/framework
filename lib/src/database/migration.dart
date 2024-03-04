@@ -189,7 +189,7 @@ class Migration {
     String columnName,
     String referencesTable,
     String referencesColumn, {
-    bool constrained = false,
+    bool constrained = true,
     String onUpdate = 'NO ACTION',
     String onDelete = 'NO ACTION',
   }) {
