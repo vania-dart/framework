@@ -16,29 +16,30 @@ class Application extends Container {
   BaseHttpServer get server => BaseHttpServer();
 
   Future<void> initialize({required Map<String, dynamic> config}) async {
+    if (config['key'] == '' || config['key'] == null) {
+      throw Exception('Key not found');
+    }
+
+    Config().setApplicationConfig = config;
+
+    List<ServiceProvider> provider = config['providers'];
+
+    for (ServiceProvider provider in provider) {
+      provider.register();
+      provider.boot();
+    }
+
     try {
-      if (config['key'] == '' || config['key'] == null) {
-        throw Exception('Key not found');
-      }
-
-      Config().setApplicationConfig = config;
-
-      List<ServiceProvider> provider = config['providers'];
-
-      for (ServiceProvider provider in provider) {
-        provider.register();
-        provider.boot();
-      }
-
       DatabaseConfig? db = Config().get('database');
       if (db != null) {
         await db.driver?.init(Config().get('database'));
       }
-
-      server.startServer(host: config['host'], port: config['port']);
     } on InvalidArgumentException catch (_) {
       print('Error establishing a database connection');
+      rethrow;
     }
+
+    server.startServer(host: config['host'], port: config['port']);
   }
 
   Future<void> close() async {

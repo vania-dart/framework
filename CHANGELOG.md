@@ -1,3 +1,8 @@
+## 0.1.1+3
+
+- Singleton base route prefix   to static
+- Completed Readme file
+
 ## 0.1.1+2
 
 - Fixed bug: Cors file and class name
