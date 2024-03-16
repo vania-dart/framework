@@ -39,10 +39,18 @@ class Application extends Container {
       rethrow;
     }
 
-    server.startServer(host: config['host'], port: config['port']);
+    if (config['isolate']) {
+      server.spawnIsolates(config['isolateCount']);
+    } else {
+      server.startServer(host: config['host'], port: config['port']);
+    }
   }
 
   Future<void> close() async {
-    server.httpServer?.close();
+    if (Config().get("isolate")) {
+      server.killAllIsolates();
+    } else {
+      server.httpServer?.close();
+    }
   }
 }
