@@ -1,5 +1,4 @@
 import 'package:vania/src/container.dart';
-import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/server/base_http_server.dart';
 import 'package:vania/vania.dart';
 
@@ -13,35 +12,27 @@ class Application extends Container {
 
   Application._internal();
 
-  BaseHttpServer get server => BaseHttpServer();
+  late BaseHttpServer server;
 
   Future<void> initialize({required Map<String, dynamic> config}) async {
-    try {
-      if (config['key'] == '' || config['key'] == null) {
-        throw Exception('Key not found');
-      }
+    if (config['key'] == '' || config['key'] == null) {
+      throw Exception('Key not found');
+    }
 
-      Config().setApplicationConfig = config;
+    server = BaseHttpServer(config: config);
 
-      List<ServiceProvider> provider = config['providers'];
-
-      for (ServiceProvider provider in provider) {
-        provider.register();
-        provider.boot();
-      }
-
-      DatabaseConfig? db = Config().get('database');
-      if (db != null) {
-        await db.driver?.init(Config().get('database'));
-      }
-
-      server.startServer(host: config['host'], port: config['port']);
-    } on InvalidArgumentException catch (_) {
-      print('Error establishing a database connection');
+    if (config['isolate']) {
+      server.spawnIsolates(config['isolateCount'] ?? 1);
+    } else {
+      server.startServer();
     }
   }
 
   Future<void> close() async {
-    server.httpServer?.close();
+    if (Config().get("isolate")) {
+      server.killAll();
+    } else {
+      server.httpServer?.close();
+    }
   }
 }

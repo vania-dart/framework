@@ -15,7 +15,7 @@ Future httpRequestHandler(HttpRequest req) async {
   } else {
     try {
       /// Check if cors is enabled
-      HttpCros(req);
+      HttpCors(req);
 
       Request request =
           await Request(request: req, route: await httpRouteHandler(req))

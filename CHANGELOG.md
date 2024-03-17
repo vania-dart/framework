@@ -1,3 +1,28 @@
+## 0.1.2
+
+- Implemented multi-isolate server
+
+## 0.1.1+4
+
+- Fixed bug: Validation issue on non-required fields
+
+## 0.1.1+3
+
+- Singleton base route prefix   to static
+- Completed Readme file
+
+## 0.1.1+2
+
+- Fixed bug: Cors file and class name
+
+## 0.1.1+1
+
+- Fixed bug: http method options and cors error
+
+- ## 0.1.1
+
+- Added Hash class
+
 ## 0.1.0
 
 - Initial beta release

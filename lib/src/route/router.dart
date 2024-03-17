@@ -10,11 +10,11 @@ class Router {
 
   String? _prefix;
 
-  void basePrefix(String prefix) {
+  static basePrefix(String prefix) {
     if (prefix.endsWith("/")) {
       prefix = prefix.substring(0, prefix.length - 1);
     }
-    _prefix = prefix;
+    Router()._prefix = prefix;
   }
 
   final List<RouteData> _routes = [];
