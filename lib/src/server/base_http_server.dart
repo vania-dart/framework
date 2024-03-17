@@ -15,7 +15,6 @@ class BaseHttpServer {
   HttpServer? httpServer;
 
   Future<void> _initConfig() async {
-
     Config().setApplicationConfig = config;
 
     List<ServiceProvider> provider = config['providers'];
@@ -34,7 +33,6 @@ class BaseHttpServer {
       print('Error establishing a database connection');
       rethrow;
     }
-
   }
 
   void startIsolatedServer(SendPort sendPort) async {
