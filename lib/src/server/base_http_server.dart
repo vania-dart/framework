@@ -1,55 +1,82 @@
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:vania/src/config/config.dart';
+import 'package:eloquent/eloquent.dart';
 import 'package:vania/src/http/request/request_handler.dart';
+import 'package:vania/vania.dart';
 
 class BaseHttpServer {
-  static final BaseHttpServer _singleton = BaseHttpServer._internal();
-  factory BaseHttpServer() => _singleton;
-  BaseHttpServer._internal();
+  final Map<String, dynamic> config;
 
-  List<Isolate> isolates = [];
+  BaseHttpServer({required this.config});
+
+  final Map<int, Isolate> _isolates = <int, Isolate>{};
 
   HttpServer? httpServer;
 
+  Future<void> _initConfig() async {
+
+    Config().setApplicationConfig = config;
+
+    List<ServiceProvider> provider = config['providers'];
+
+    for (ServiceProvider provider in provider) {
+      provider.register();
+      provider.boot();
+    }
+
+    try {
+      DatabaseConfig? db = Config().get('database');
+      if (db != null) {
+        await db.driver?.init(Config().get('database'));
+      }
+    } on InvalidArgumentException catch (_) {
+      print('Error establishing a database connection');
+      rethrow;
+    }
+
+  }
+
   void startIsolatedServer(SendPort sendPort) async {
-    print( Config().get('host') );
+    await _initConfig();
     var server = await HttpServer.bind(
       Config().get('host') ?? '0.0.0.0',
       Config().get('port') ?? 8080,
       shared: true,
     );
-    print("Server started on https://127.0.0.1:8000");
-
-    await for (HttpRequest request in server) {
-      httpRequestHandler(request);
-    }
+    server.listen(
+      (HttpRequest req) {
+        httpRequestHandler(req);
+      },
+      onError: (dynamic error) => print(error),
+    );
   }
 
   Future<void> spawnIsolates(int count) async {
     for (int i = 0; i < count; i++) {
-      print('Started Isload $i');
       Isolate isolate =
           await Isolate.spawn(startIsolatedServer, ReceivePort().sendPort);
-      isolates.add(isolate);
+      _isolates[i] = isolate;
+    }
+    if (config['debug']) {
+      print("Server started on http://127.0.0.1:${config['port']}");
     }
   }
 
-  void killAllIsolates() {
-    for (var isolate in isolates) {
-      isolate.kill(priority: Isolate.immediate);
-    }
-    isolates.clear();
+  void killAll() {
+    _isolates.forEach((int id, Isolate isolate) {
+      isolate.kill();
+    });
+    _isolates.clear();
   }
 
-  Future<HttpServer> startServer(
-      {String? host, int? port, Function? onError}) async {
-    host ?? '0.0.0.0';
-    port ?? 8080;
+  Future<HttpServer> startServer({
+    Function? onError,
+  }) async {
+    await _initConfig();
     HttpServer server = await HttpServer.bind(
-      host,
-      port!,
+      config['host'] ?? '0.0.0.0',
+      config['port'] ?? 8080,
       shared: true,
     );
     server.listen(
@@ -61,7 +88,7 @@ class BaseHttpServer {
     httpServer = server;
 
     if (Config().get("debug")) {
-      print("Server started on http://$host:$port");
+      print("Server started on http://${config['host']}:${config['port']}");
     }
     return httpServer!;
   }
