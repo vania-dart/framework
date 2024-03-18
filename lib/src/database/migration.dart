@@ -189,7 +189,7 @@ class Migration {
     String columnName,
     String referencesTable,
     String referencesColumn, {
-    bool constrained = false,
+    bool constrained = true,
     String onUpdate = 'NO ACTION',
     String onDelete = 'NO ACTION',
   }) {
@@ -205,6 +205,7 @@ class Migration {
 
   void id() {
     bigIncrements('id');
+    primary('id');
   }
 
   void bigIncrements(
@@ -231,7 +232,6 @@ class Migration {
       virtuality: virtuality,
       increment: true,
     );
-    primary(name);
   }
 
   void integer(

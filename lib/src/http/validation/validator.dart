@@ -56,7 +56,6 @@ class Validator {
           'function': function,
         };
       } else if (_matchingRules[key] != null) {
-        print(value);
         _matchingRules[key]?['message'] = value;
       }
     });
@@ -91,6 +90,10 @@ class Validator {
   }
 
   void _validateItem(ValidationItem item) {
+    if (item.value == null && !item.rule.contains('required')) {
+      return;
+    }
+
     List<String> rulesForEachName = item.rule.split('|');
     for (String rule in rulesForEachName) {
       String? error =

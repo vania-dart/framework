@@ -13,9 +13,7 @@ class BaseHttpException {
       this.responseType = ResponseType.json});
 
   Response call() => Response(
-      responseType == ResponseType.html
-          ? message
-          : {'message': message, 'error_code': errorCode},
+      responseType == ResponseType.html ? message : {'message': message},
       responseType,
       code);
 }
