@@ -58,7 +58,7 @@ class Router {
     return this;
   }
 
-  Router prefix([String? prifix]) {
+  Router prefix([String? prefix]) {
     if (prifix != null) {
       String basePath = _routes.last.path;
       _routes.last.path =
