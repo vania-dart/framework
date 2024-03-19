@@ -21,7 +21,7 @@ class Application extends Container {
 
     server = BaseHttpServer(config: config);
 
-    if (config['isolate']) {
+    if (config['isolate'] != null && config['isolate']) {
       server.spawnIsolates(config['isolateCount'] ?? 1);
     } else {
       server.startServer();

@@ -7,7 +7,7 @@ abstract class StorageDriver {
   );
 
   Future<Uint8List?> get(String fileName);
-  
+
   String fullPath(String file);
 
   Future<bool> exists(String fileName);

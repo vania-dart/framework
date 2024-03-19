@@ -44,7 +44,7 @@ class LocalStorage implements StorageDriver {
     await file.writeAsBytes(bytes);
     return file.path.replaceFirst(storagePath, '');
   }
-  
+
   @override
-  String fullPath(String file)  => "$storagePath/$file";
+  String fullPath(String file) => "$storagePath/$file";
 }
