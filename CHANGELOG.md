@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Implemented mail
+
 ## 0.1.2
 
 - Implemented multi-isolate server
