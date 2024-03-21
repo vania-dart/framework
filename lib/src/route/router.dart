@@ -62,7 +62,7 @@ class Router {
     if (prefix != null) {
       String basePath = _routes.last.path;
       _routes.last.path =
-          prifix.endsWith("/") ? "$prefix$basePath" : "$prefix/$basePath";
+          prefix.endsWith("/") ? "$prefix$basePath" : "$prefix/$basePath";
     }
     return this;
   }

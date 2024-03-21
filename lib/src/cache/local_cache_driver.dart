@@ -21,6 +21,7 @@ class LocalCacheDriver implements CacheDriver {
     Map<String, dynamic>? data = await _getData(key);
     int expiration = data?['expiration'].toString().toInt() ?? 0;
     if (!DateTime.now()
+        .toUtc()
         .isBefore(DateTime.fromMillisecondsSinceEpoch(expiration))) {
       return Future.value(null);
     }
@@ -40,8 +41,8 @@ class LocalCacheDriver implements CacheDriver {
     Duration? duration,
   }) async {
     duration ?? Duration(hours: 1);
-    int expiration =
-        DateTime.now().millisecondsSinceEpoch + (duration?.inMilliseconds ?? 0);
+    int expiration = DateTime.now().toUtc().millisecondsSinceEpoch +
+        (duration?.inMilliseconds ?? 0);
     Map<String, dynamic> data = {'data': value, 'expiration': expiration};
     _writeData(key, json.encode(data));
   }
@@ -53,7 +54,7 @@ class LocalCacheDriver implements CacheDriver {
   ) async {
     Duration duration = Duration(days: 999999);
     int expiration =
-        DateTime.now().millisecondsSinceEpoch + duration.inMilliseconds;
+        DateTime.now().toUtc().millisecondsSinceEpoch + duration.inMilliseconds;
     Map<String, dynamic> data = {'data': value, 'expiration': expiration};
     _writeData(key, json.encode(data));
   }
