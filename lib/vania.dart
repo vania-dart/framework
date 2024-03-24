@@ -37,6 +37,8 @@ export 'src/database/mysql_driver.dart';
 export 'src/database/postgresql_driver.dart';
 export 'src/database/migration.dart';
 export 'src/enum/column_index.dart';
+export 'src/extensions/pagination_extension.dart';
+export 'src/extensions/simple_paginate_extension.dart';
 export 'package:eloquent/src/query/query_builder.dart';
 
 export 'src/authentication/authentication.dart';
