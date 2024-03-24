@@ -50,7 +50,7 @@ class RequestFile {
     return Storage().put(path, filename, await bytes);
   }
 
-  /// this function will upload the file in your project custome folder
+  /// this function will upload the file in your project custom folder
   ///
   /// ```
   /// RequestFile image = req.input('image');
