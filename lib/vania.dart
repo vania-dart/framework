@@ -20,6 +20,7 @@ export 'src/websocket/websocket_event.dart';
 
 export 'src/route/router.dart';
 export 'src/route/route.dart';
+export 'src/route/middleware/throttle.dart';
 
 export 'src/cache/cache_driver.dart';
 export 'src/cache/cache.dart';
