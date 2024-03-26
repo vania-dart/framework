@@ -1,3 +1,9 @@
+## 0.1.4
+
+- Implemented Throttle middleware
+- Added move for upload file in custom folder
+- Added paginate and simplePagination in Eloquent
+
 ## 0.1.3
 
 - Implemented mail

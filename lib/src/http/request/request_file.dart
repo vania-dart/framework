@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 import 'package:mime/mime.dart';
+import 'package:vania/src/utils/functions.dart';
 import 'package:vania/vania.dart';
 
 class RequestFile {
@@ -46,6 +48,23 @@ class RequestFile {
   Future<String> store({required String path, required String filename}) async {
     path = path.endsWith("/") ? path : "$path/";
     return Storage().put(path, filename, await bytes);
+  }
+
+  /// this function will upload the file in your project custom folder
+  ///
+  /// ```
+  /// RequestFile image = req.input('image');
+  /// String filename = await image.move('/public/images','myImage.jpg');
+  /// ```
+  Future<String> move({required String path, required String filename}) async {
+    path = sanitizeRoutePath('$path/$filename');
+    File file = File(path);
+    Directory directory = Directory(file.parent.path);
+    if (!directory.existsSync()) {
+      directory.createSync(recursive: true);
+    }
+    await file.writeAsBytes(await bytes);
+    return file.path;
   }
 
   num _getFileSize(Uint8List bytesList) =>
