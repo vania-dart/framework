@@ -59,6 +59,7 @@ class DatabaseConfig {
   final String database;
   final bool? sslmode;
   final DatabaseDriver? driver;
+  final List<String>? schema;
 
   const DatabaseConfig({
     required this.driver,
@@ -68,5 +69,6 @@ class DatabaseConfig {
     this.password,
     this.database = 'db',
     this.sslmode = true,
+    this.schema,
   });
 }
