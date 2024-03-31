@@ -7,6 +7,7 @@ class Application extends Container {
 
   factory Application() {
     _singleton ??= Application._internal();
+    Env().load();
     return _singleton!;
   }
 
@@ -15,21 +16,21 @@ class Application extends Container {
   late BaseHttpServer server;
 
   Future<void> initialize({required Map<String, dynamic> config}) async {
-    if (config['key'] == '' || config['key'] == null) {
+    if (env('APP_KEY') == '' || env('APP_KEY') == null) {
       throw Exception('Key not found');
     }
 
     server = BaseHttpServer(config: config);
 
-    if (config['isolate'] != null && config['isolate']) {
-      server.spawnIsolates(config['isolateCount'] ?? 1);
+    if (env('ISOLATE') != null && env<bool>('ISOLATE')) {
+      server.spawnIsolates(env<int>('ISOLATE_NUMBER'));
     } else {
       server.startServer();
     }
   }
 
   Future<void> close() async {
-    if (Config().get("isolate")) {
+    if (env<bool>('ISOLATE')) {
       server.killAll();
     } else {
       server.httpServer?.close();

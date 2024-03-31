@@ -26,17 +26,20 @@ class Env {
   /// Evn.get<String>('APP_KEY');
   /// ```
   static T get<T>(String key, [dynamic defaultValue]) {
-    String value = Env().env[key].toString();
-    String val = value.isEmpty || value.toLowerCase() == 'null'
-        ? defaultValue.toString()
-        : value;
+    dynamic value = Env().env[key];
+    value ??= defaultValue;
     if (T.toString() == 'int') {
-      return int.parse(val) as T;
+      return int.parse(value.toString()) as T;
     }
     if (T.toString() == 'num') {
-      return num.parse(val) as T;
+      return num.parse(value.toString()) as T;
     }
-    return val as T;
+
+    if (T.toString() == 'bool') {
+      return bool.parse(value.toString()) as T;
+    }
+
+    return value;
   }
 
   /// load env from .env of project directory
@@ -46,7 +49,6 @@ class Env {
     File envFile = file ?? File('${Directory.current.path}/.env');
     if (!envFile.existsSync()) return data;
     String contents = envFile.readAsStringSync();
-
     // splitting with new line for each variables
     List<String> list = contents.split('\n');
 

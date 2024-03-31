@@ -10,7 +10,8 @@ import 'package:vania/vania.dart';
 
 Future httpRequestHandler(HttpRequest req) async {
   /// Check the incoming request is web socket or not
-  if (Config().get("websocket") && WebSocketTransformer.isUpgradeRequest(req)) {
+  if (env<bool>('APP_WEBSOCKET') &&
+      WebSocketTransformer.isUpgradeRequest(req)) {
     WebSocketHandler().handler(req);
   } else {
     try {

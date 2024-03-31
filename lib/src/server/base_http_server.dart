@@ -5,6 +5,17 @@ import 'package:eloquent/eloquent.dart';
 import 'package:vania/src/http/request/request_handler.dart';
 import 'package:vania/vania.dart';
 
+class IsolateHandler {
+  final String host;
+  final int port;
+  final bool shared;
+  const IsolateHandler({
+    required this.host,
+    required this.port,
+    required this.shared,
+  });
+}
+
 class BaseHttpServer {
   final Map<String, dynamic> config;
 
@@ -24,8 +35,6 @@ class BaseHttpServer {
       provider.boot();
     }
 
-    Env().load();
-
     try {
       DatabaseConfig? db = Config().get('database');
       if (db != null) {
@@ -37,12 +46,12 @@ class BaseHttpServer {
     }
   }
 
-  void startIsolatedServer(SendPort sendPort) async {
+  void startIsolatedServer(IsolateHandler handler) async {
     await _initConfig();
     var server = await HttpServer.bind(
-      Config().get('host') ?? '0.0.0.0',
-      Config().get('port') ?? 8080,
-      shared: true,
+      handler.host,
+      handler.port,
+      shared: handler.shared,
     );
     server.listen(
       (HttpRequest req) {
@@ -54,12 +63,17 @@ class BaseHttpServer {
 
   Future<void> spawnIsolates(int count) async {
     for (int i = 0; i < count; i++) {
-      Isolate isolate =
-          await Isolate.spawn(startIsolatedServer, ReceivePort().sendPort);
+      Isolate isolate = await Isolate.spawn(
+          startIsolatedServer,
+          IsolateHandler(
+            host: env<String>('APP_HOST'),
+            port: env<int>('APP_PORT'),
+            shared: env<bool>('APP_SHARED'),
+          ));
       _isolates[i] = isolate;
     }
-    if (config['debug']) {
-      print("Server started on http://127.0.0.1:${config['port']}");
+    if (env<bool>('APP_DEBUG')) {
+      print("Server started on http://${env('APP_HOST')}:${env('APP_PORT')}");
     }
   }
 
@@ -75,9 +89,9 @@ class BaseHttpServer {
   }) async {
     await _initConfig();
     HttpServer server = await HttpServer.bind(
-      config['host'] ?? '0.0.0.0',
-      config['port'] ?? 8080,
-      shared: true,
+      env<String>('APP_HOST'),
+      env<int>('APP_PORT'),
+      shared: env<bool>('APP_SHARED'),
     );
     server.listen(
       (HttpRequest req) {
@@ -87,8 +101,8 @@ class BaseHttpServer {
     );
     httpServer = server;
 
-    if (Config().get("debug")) {
-      print("Server started on http://${config['host']}:${config['port']}");
+    if (env<bool>('APP_DEBUG')) {
+      print("Server started on http://${env('APP_HOST')}:${env('APP_PORT')}");
     }
     return httpServer!;
   }
