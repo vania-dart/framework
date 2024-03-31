@@ -32,7 +32,7 @@ class BaseHttpServer {
         await db.driver?.init(Config().get('database'));
       }
     } on InvalidArgumentException catch (e) {
-      Logger.log(e.toString(), type: Logger.ERROR);
+      Logger.log(e.cause.toString(), type: Logger.ERROR);
       rethrow;
     }
   }

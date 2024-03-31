@@ -17,7 +17,7 @@ class MigrationConnection {
       dbConnection = database!.connection;
     } on InvalidArgumentException catch (e) {
       print('Error establishing a database connection');
-      Logger.log(e.toString(), type: Logger.ERROR);
+      Logger.log(e.cause.toString(), type: Logger.ERROR);
     } catch (e) {
       Logger.log(e.toString(), type: Logger.ERROR);
       print(e);

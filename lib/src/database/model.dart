@@ -19,7 +19,7 @@ class Model {
     try {
       return _connection().table(_table!);
     } on InvalidArgumentException catch (e) {
-      Logger.log(e.toString(), type: Logger.ERROR);
+      Logger.log(e.cause.toString(), type: Logger.ERROR);
       rethrow;
     }
   }
