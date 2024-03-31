@@ -54,3 +54,4 @@ export 'package:mailer/src/entities/attachment.dart';
 
 export 'src/utils/helper.dart';
 export 'src/env_handler/env.dart';
+export 'src/logger/logger.dart';

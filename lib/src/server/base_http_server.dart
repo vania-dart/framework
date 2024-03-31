@@ -31,8 +31,8 @@ class BaseHttpServer {
       if (db != null) {
         await db.driver?.init(Config().get('database'));
       }
-    } on InvalidArgumentException catch (_) {
-      print('Error establishing a database connection');
+    } on InvalidArgumentException catch (e) {
+       Logger.log(e.toString(), type: Logger.ERROR);
       rethrow;
     }
   }

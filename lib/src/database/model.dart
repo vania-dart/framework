@@ -18,7 +18,8 @@ class Model {
   QueryBuilder query() {
     try {
       return _connection().table(_table!);
-    } on InvalidArgumentException catch (_) {
+    } on InvalidArgumentException catch (e) {
+      Logger.log(e.toString(), type: Logger.ERROR);
       rethrow;
     }
   }
