@@ -24,6 +24,8 @@ class BaseHttpServer {
       provider.boot();
     }
 
+    Env().load();
+
     try {
       DatabaseConfig? db = Config().get('database');
       if (db != null) {
