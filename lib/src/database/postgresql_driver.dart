@@ -24,7 +24,7 @@ class PostgreSQLDriver implements DatabaseDriver {
         'password': config?.password,
         'charset': 'utf8',
         'prefix': '',
-        'schema': ['public'],
+        'schema': config?.schema,
       });
       manager.setAsGlobal();
       _connection = await manager.connection();

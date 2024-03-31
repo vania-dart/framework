@@ -60,7 +60,6 @@ class LocalCacheDriver implements CacheDriver {
   }
 
   Future<void> _writeData(String key, String data) async {
-    print(data);
     File? file = await _cacheFile(key, true);
     file?.writeAsStringSync(data);
   }
