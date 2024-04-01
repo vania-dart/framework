@@ -3,7 +3,7 @@ import 'package:vania/vania.dart';
 
 extension Pagination on QueryBuilder {
   Future<Map> paginate([int perPage = 15, int page = 1]) async {
-    final String basePath = Config().get('url');
+    final String basePath = env('APP_URL');
     final total = await count();
     final lastPage = (total / perPage).ceil();
     final data = await limit(perPage).offset((page - 1) * perPage).get();

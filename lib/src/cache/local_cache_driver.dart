@@ -6,7 +6,7 @@ import 'package:vania/src/extensions/string_extension.dart';
 import 'package:vania/vania.dart';
 
 class LocalCacheDriver implements CacheDriver {
-  final String _secretKey = Config().get("key");
+  final String _secretKey = env('APP_KEY');
 
   final String cachePath = 'storage/framework/cache/data';
 

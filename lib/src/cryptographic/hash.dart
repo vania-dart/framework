@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'package:vania/src/config/config.dart';
+import 'package:vania/vania.dart';
 
 class Hash {
   static final Hash _singleton = Hash._internal();
@@ -39,7 +39,7 @@ class Hash {
 
   String _hashPbkdf2(String password, String salt) {
     var bytes = utf8.encode(salt + password);
-    var hmac = Hmac(sha512, utf8.encode(_hashKey ?? Config().get('key')));
+    var hmac = Hmac(sha512, utf8.encode(_hashKey ?? env('APP_KEY')));
     return base64.encode(hmac.convert(bytes).bytes);
   }
 

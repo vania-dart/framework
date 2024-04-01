@@ -1,3 +1,7 @@
+## 0.1.5+1
+
+- Fixed env issues
+
 ## 0.1.5
 
 - Added Logger
