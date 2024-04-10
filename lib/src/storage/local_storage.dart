@@ -33,7 +33,7 @@ class LocalStorage implements StorageDriver {
   @override
   Future<String> put(
     String filePath,
-    List<int> bytes,
+    dynamic content,
   ) async {
     String path = sanitizeRoutePath('$storagePath/$filePath');
     File file = File(path);
@@ -41,7 +41,15 @@ class LocalStorage implements StorageDriver {
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
     }
-    await file.writeAsBytes(bytes);
+
+    if (content is List<int>) {
+      file.writeAsBytesSync(content);
+    }
+
+    if (content is String) {
+      file.writeAsStringSync(content);
+    }
+
     return file.path.replaceFirst(storagePath, '');
   }
 
