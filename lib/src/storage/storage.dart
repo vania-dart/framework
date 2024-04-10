@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -15,6 +16,10 @@ class DownloadFile {
 }
 
 class Storage {
+  static final Storage _singleton = Storage._internal();
+  factory Storage() => _singleton;
+  Storage._internal();
+
   String? _disk;
 
   Map<String, StorageDriver> storageDriver = <String, StorageDriver>{
@@ -33,30 +38,74 @@ class Storage {
         LocalStorage();
   }
 
-  Future delete(String filepath) {
-    return _driver.delete(filepath);
+  static delete(String filepath) {
+    return _singleton._driver.delete(filepath);
   }
 
-  Future<bool> exists(String filename) {
+  static Future<bool> exists(String filename) {
     File file = File(filename);
-    return file.exists();
+    return Future.value(file.existsSync());
   }
 
-  Future<Uint8List?> get(String filename) async {
+  static Future<Uint8List?> getAsBytes(String filename) async {
     File file = File((filename));
     if (file.existsSync()) {
-      return await file.readAsBytes();
+      return file.readAsBytesSync();
     }
     return null;
   }
 
-  Future<String> put(String folder, String fileName, List<int> bytes) {
-    folder = folder.endsWith("/") ? folder : "$folder/";
-    String path = '$folder$fileName';
-    return _driver.put(path, bytes);
+  static Future<String?> get(String filename) async {
+    File file = File((filename));
+    if (file.existsSync()) {
+      return file.readAsStringSync();
+    }
+    return null;
   }
 
-  Future<DownloadFile?> downloadFile(String filename) async {
+  static Future<Map<String, dynamic>?> map(String filename) async {
+    File file = File((filename));
+    if (file.existsSync()) {
+      return jsonDecode(file.readAsStringSync());
+    }
+    return null;
+  }
+
+  static Future<String> put(String folder, String filename, dynamic content) {
+    if (content == null) {
+      throw Exception("Content can't bew null");
+    }
+
+    if (!(content is List<int> || content is String)) {
+      throw Exception('Content must be a list of int or a string.');
+    }
+
+    folder = folder.endsWith("/") ? folder : "$folder/";
+    String path = '$folder$filename';
+    return _singleton._driver.put(path, content);
+  }
+
+  static Future<String?> mimeType(String filename) async {
+    File file = File((filename));
+    if (file.existsSync()) {
+      final dataBytes = file.readAsBytesSync();
+      String? mimeType =
+          lookupMimeType(file.uri.pathSegments.last, headerBytes: dataBytes);
+      return Future.value(mimeType);
+    }
+    return null;
+  }
+
+  static Future<num?> size(String filename) async {
+    File file = File((filename));
+    if (file.existsSync()) {
+      final dataBytes = file.readAsBytesSync();
+      return dataBytes.length;
+    }
+    return null;
+  }
+
+  static Future<DownloadFile?> downloadFile(String filename) async {
     File file = File((filename));
     if (file.existsSync()) {
       final dataBytes = await file.readAsBytes();

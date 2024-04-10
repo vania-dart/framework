@@ -3,7 +3,7 @@ import 'dart:typed_data';
 abstract class StorageDriver {
   Future<String> put(
     String fileName,
-    List<int> bytes,
+    dynamic content,
   );
 
   Future<Uint8List?> get(String fileName);

@@ -1,4 +1,10 @@
-## 0.1.5+1
+## 0.1.6
+
+- Fixed Websocket bugs
+- Storage Converted Instance Methods to Static Methods
+- Cache Converted Instance Methods to Static Methods
+
+- ## 0.1.5+1
 
 - Fixed env issues
 
