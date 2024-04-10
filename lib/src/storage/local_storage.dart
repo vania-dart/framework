@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:mime/mime.dart';
 import 'package:vania/src/storage/storage_driver.dart';
 import 'package:vania/src/utils/functions.dart';
 
@@ -14,10 +16,28 @@ class LocalStorage implements StorageDriver {
   }
 
   @override
-  Future<Uint8List?> get(String filename) async {
+  Future<String?> get(String filename) async {
     File file = File(sanitizeRoutePath('$storagePath/$filename'));
     if (file.existsSync()) {
-      return await file.readAsBytes();
+      return file.readAsStringSync();
+    }
+    return null;
+  }
+
+  @override
+  Future<Uint8List?> getAsBytes(String filename) async {
+    File file = File(sanitizeRoutePath('$storagePath/$filename'));
+    if (file.existsSync()) {
+      return file.readAsBytesSync();
+    }
+    return null;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> json(String filename) async {
+    File file = File(sanitizeRoutePath('$storagePath/$filename'));
+    if (file.existsSync()) {
+      return jsonDecode(file.readAsStringSync());
     }
     return null;
   }
@@ -55,4 +75,26 @@ class LocalStorage implements StorageDriver {
 
   @override
   String fullPath(String file) => "$storagePath/$file";
+
+  @override
+  Future<String?> mimeType(String filename) async {
+    File file = File(sanitizeRoutePath('$storagePath/$filename'));
+    if (file.existsSync()) {
+      final dataBytes = file.readAsBytesSync();
+      String? mimeType =
+          lookupMimeType(file.uri.pathSegments.last, headerBytes: dataBytes);
+      return Future.value(mimeType);
+    }
+    return null;
+  }
+
+  @override
+  Future<num?> size(String filename) async {
+    File file = File(sanitizeRoutePath('$storagePath/$filename'));
+    if (file.existsSync()) {
+      final dataBytes = file.readAsBytesSync();
+      return dataBytes.length;
+    }
+    return null;
+  }
 }

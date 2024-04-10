@@ -53,7 +53,8 @@ class LocalCacheDriver implements CacheDriver {
     dynamic value, {
     Duration duration = const Duration(hours: 1),
   }) async {
-    int expiration = DateTime.now().toUtc().millisecondsSinceEpoch + duration.inMilliseconds;
+    int expiration =
+        DateTime.now().toUtc().millisecondsSinceEpoch + duration.inMilliseconds;
     Map<String, dynamic> data = {'data': value, 'expiration': expiration};
     _writeData(key, json.encode(data));
   }

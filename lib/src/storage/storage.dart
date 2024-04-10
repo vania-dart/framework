@@ -39,7 +39,7 @@ class Storage {
   }
 
   static delete(String filepath) {
-    return _singleton._driver.delete(filepath);
+    return Storage()._driver.delete(filepath);
   }
 
   static Future<bool> exists(String filename) {
@@ -48,30 +48,19 @@ class Storage {
   }
 
   static Future<Uint8List?> getAsBytes(String filename) async {
-    File file = File((filename));
-    if (file.existsSync()) {
-      return file.readAsBytesSync();
-    }
-    return null;
+    return await Storage()._driver.getAsBytes(filename);
   }
 
   static Future<String?> get(String filename) async {
-    File file = File((filename));
-    if (file.existsSync()) {
-      return file.readAsStringSync();
-    }
-    return null;
+    return await Storage()._driver.get(filename);
   }
 
-  static Future<Map<String, dynamic>?> map(String filename) async {
-    File file = File((filename));
-    if (file.existsSync()) {
-      return jsonDecode(file.readAsStringSync());
-    }
-    return null;
+  static Future<Map<String, dynamic>?> json(String filename) async {
+    return await Storage()._driver.json(filename);
   }
 
-  static Future<String> put(String folder, String filename, dynamic content) {
+  static Future<String> put(
+      String directory, String filename, dynamic content) {
     if (content == null) {
       throw Exception("Content can't bew null");
     }
@@ -80,29 +69,17 @@ class Storage {
       throw Exception('Content must be a list of int or a string.');
     }
 
-    folder = folder.endsWith("/") ? folder : "$folder/";
-    String path = '$folder$filename';
-    return _singleton._driver.put(path, content);
+    directory = directory.endsWith("/") ? directory : "$directory/";
+    String path = '$directory$filename';
+    return Storage()._driver.put(path, content);
   }
 
   static Future<String?> mimeType(String filename) async {
-    File file = File((filename));
-    if (file.existsSync()) {
-      final dataBytes = file.readAsBytesSync();
-      String? mimeType =
-          lookupMimeType(file.uri.pathSegments.last, headerBytes: dataBytes);
-      return Future.value(mimeType);
-    }
-    return null;
+    return await Storage()._driver.mimeType(filename);
   }
 
   static Future<num?> size(String filename) async {
-    File file = File((filename));
-    if (file.existsSync()) {
-      final dataBytes = file.readAsBytesSync();
-      return dataBytes.length;
-    }
-    return null;
+    return Storage()._driver.size(filename);
   }
 
   static Future<DownloadFile?> downloadFile(String filename) async {
