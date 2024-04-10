@@ -17,32 +17,43 @@ class LocalCacheDriver implements CacheDriver {
   }
 
   @override
-  Future<String?> get(String key) async {
+  Future<dynamic> get(String key, [dynamic defaultValue]) async {
     Map<String, dynamic>? data = await _getData(key);
-    int expiration = data?['expiration'].toString().toInt() ?? 0;
-    if (!DateTime.now()
-        .toUtc()
-        .isBefore(DateTime.fromMillisecondsSinceEpoch(expiration))) {
-      return Future.value(null);
+
+    if (data?['expiration'] != null) {
+      int expiration = data?['expiration'].toString().toInt() ?? 0;
+      if (!DateTime.now()
+          .toUtc()
+          .isBefore(DateTime.fromMillisecondsSinceEpoch(expiration))) {
+        return Future.value(null);
+      }
     }
+
+    if (data?['data'] == null && defaultValue != null) {
+      return Future.value(defaultValue);
+    }
+
     return Future.value(data?['data']);
   }
 
   @override
   Future<bool> has(String key) async {
-    File? file = await _cacheFile(key);
-    return Future.value(file?.exists());
+    dynamic data = get(key);
+
+    if (data == null) {
+      return Future.value(false);
+    }
+
+    return Future.value(true);
   }
 
   @override
   Future<void> put(
     String key,
-    String value, {
-    Duration? duration,
+    dynamic value, {
+    Duration duration = const Duration(hours: 1),
   }) async {
-    duration ?? Duration(hours: 1);
-    int expiration = DateTime.now().toUtc().millisecondsSinceEpoch +
-        (duration?.inMilliseconds ?? 0);
+    int expiration = DateTime.now().toUtc().millisecondsSinceEpoch + duration.inMilliseconds;
     Map<String, dynamic> data = {'data': value, 'expiration': expiration};
     _writeData(key, json.encode(data));
   }
@@ -50,12 +61,12 @@ class LocalCacheDriver implements CacheDriver {
   @override
   Future<void> forever(
     String key,
-    String value,
+    dynamic value,
   ) async {
-    Duration duration = Duration(days: 999999);
-    int expiration =
-        DateTime.now().toUtc().millisecondsSinceEpoch + duration.inMilliseconds;
-    Map<String, dynamic> data = {'data': value, 'expiration': expiration};
+    if (value == null) {
+      throw Exception("Value can't be null");
+    }
+    Map<String, dynamic> data = {'data': value};
     _writeData(key, json.encode(data));
   }
 
