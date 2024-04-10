@@ -57,7 +57,7 @@ class WebSocketClientImpl implements WebSocketClient {
 
   /// emit to specific seesion id
   /// ```
-  /// event.to('event',payload)
+  /// event.to(clientId,'event',payload)
   /// ```
   @override
   void to(String clientId, String event, dynamic payload) {
@@ -88,12 +88,12 @@ class WebSocketClientImpl implements WebSocketClient {
   }
 
   void joinRoom(String roomId) {
-    emit('joinRoom', 'Join Room');
+    //emit('joinRoom', 'Join Room');
     toRoom("joinRoom", roomId, "$clientId join room");
   }
 
   void leftRoom(String roomId) {
-    emit('leftRoom', 'Left Room');
+    //emit('leftRoom', 'Left Room');
     toRoom("leftRoom", roomId, "$clientId left room");
   }
 }
