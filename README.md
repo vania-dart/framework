@@ -29,6 +29,10 @@ Check out the documentation here: [Vania Dart Documentation](https://vdart.dev)
 
 Ensure that you have the [Dart SDK](https://dart.dev) installed on your machine.
 
+YouTube Video [Quick Start](https://www.youtube.com/watch?v=k8ol0F4bDKs)
+
+[![Quick Start](http://img.youtube.com/vi/k8ol0F4bDKs/0.jpg)](https://www.youtube.com/watch?v=k8ol0F4bDKs "Quick Start")
+
 ## Installing 🧑‍💻
 
 ```shell

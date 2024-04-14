@@ -2,15 +2,19 @@ import 'dart:typed_data';
 
 abstract class StorageDriver {
   Future<String> put(
-    String fileName,
-    List<int> bytes,
+    String filename,
+    dynamic content,
   );
 
-  Future<Uint8List?> get(String fileName);
+  Future<String?> get(String filename);
+  Future<Uint8List?> getAsBytes(String filename);
+  Future<Map<String, dynamic>?> json(String filename);
+  Future<String?> mimeType(String filename);
+  Future<num?> size(String filename);
 
   String fullPath(String file);
 
-  Future<bool> exists(String fileName);
+  Future<bool> exists(String filename);
 
-  Future<dynamic> delete(String fileName);
+  Future<dynamic> delete(String filename);
 }

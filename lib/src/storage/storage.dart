@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -15,6 +16,10 @@ class DownloadFile {
 }
 
 class Storage {
+  static final Storage _singleton = Storage._internal();
+  factory Storage() => _singleton;
+  Storage._internal();
+
   String? _disk;
 
   Map<String, StorageDriver> storageDriver = <String, StorageDriver>{
@@ -33,30 +38,51 @@ class Storage {
         LocalStorage();
   }
 
-  Future delete(String filepath) {
-    return _driver.delete(filepath);
+  static delete(String filepath) {
+    return Storage()._driver.delete(filepath);
   }
 
-  Future<bool> exists(String filename) {
+  static Future<bool> exists(String filename) {
     File file = File(filename);
-    return file.exists();
+    return Future.value(file.existsSync());
   }
 
-  Future<Uint8List?> get(String filename) async {
-    File file = File((filename));
-    if (file.existsSync()) {
-      return await file.readAsBytes();
+  static Future<Uint8List?> getAsBytes(String filename) async {
+    return await Storage()._driver.getAsBytes(filename);
+  }
+
+  static Future<String?> get(String filename) async {
+    return await Storage()._driver.get(filename);
+  }
+
+  static Future<Map<String, dynamic>?> json(String filename) async {
+    return await Storage()._driver.json(filename);
+  }
+
+  static Future<String> put(
+      String directory, String filename, dynamic content) {
+    if (content == null) {
+      throw Exception("Content can't bew null");
     }
-    return null;
+
+    if (!(content is List<int> || content is String)) {
+      throw Exception('Content must be a list of int or a string.');
+    }
+
+    directory = directory.endsWith("/") ? directory : "$directory/";
+    String path = '$directory$filename';
+    return Storage()._driver.put(path, content);
   }
 
-  Future<String> put(String folder, String fileName, List<int> bytes) {
-    folder = folder.endsWith("/") ? folder : "$folder/";
-    String path = '$folder$fileName';
-    return _driver.put(path, bytes);
+  static Future<String?> mimeType(String filename) async {
+    return await Storage()._driver.mimeType(filename);
   }
 
-  Future<DownloadFile?> downloadFile(String filename) async {
+  static Future<num?> size(String filename) async {
+    return Storage()._driver.size(filename);
+  }
+
+  static Future<DownloadFile?> downloadFile(String filename) async {
     File file = File((filename));
     if (file.existsSync()) {
       final dataBytes = await file.readAsBytes();

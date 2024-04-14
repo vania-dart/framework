@@ -1,6 +1,6 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:vania/src/config/config.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
+import 'package:vania/vania.dart';
 
 class HasApiTokens {
   static final HasApiTokens _singleton = HasApiTokens._internal();
@@ -23,7 +23,7 @@ class HasApiTokens {
     Map<String, dynamic> payload = {};
     Duration expirationTime = expiresIn ?? const Duration(hours: 1);
 
-    String accessToken = jwt.sign(SecretKey('${Config().get('key')}$guard'),
+    String accessToken = jwt.sign(SecretKey('${env('APP_KEY')}$guard'),
         expiresIn: expirationTime);
 
     payload['access_token'] = accessToken;
@@ -32,7 +32,7 @@ class HasApiTokens {
       final jwtRefresh =
           JWT({'id': _userPayload?['id'], 'type': 'refresh_token'});
       String refreshToken = jwtRefresh.sign(
-          SecretKey('${Config().get('key')}$guard'),
+          SecretKey('${env('APP_KEY')}$guard'),
           expiresIn: const Duration(days: 30));
       payload['refresh_token'] = refreshToken;
     }
@@ -55,7 +55,7 @@ class HasApiTokens {
 
   Map<String, dynamic> verify(String token, String guard, String expectedType) {
     try {
-      final jwt = JWT.verify(token, SecretKey('${Config().get('key')}$guard'));
+      final jwt = JWT.verify(token, SecretKey('${env('APP_KEY')}$guard'));
 
       if (jwt.payload['type'] != expectedType) {
         throw Unauthenticated(message: 'Invalid token');
