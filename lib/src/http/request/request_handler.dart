@@ -28,7 +28,7 @@ Future httpRequestHandler(HttpRequest req) async {
 
       /// check if pre middleware exist and call it
       if (route.preMiddleware.isNotEmpty) {
-       await middlewareHandler(route.preMiddleware,request);
+        await middlewareHandler(route.preMiddleware, request);
       }
 
       /// Controller and method handler
