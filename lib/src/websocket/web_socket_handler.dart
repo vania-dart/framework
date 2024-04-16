@@ -13,9 +13,16 @@ class WebSocketHandler implements WebSocketEvent {
   factory WebSocketHandler() => _singleton;
   WebSocketHandler._internal();
 
+  late String _webSocketPath;
+  WebSocketHandler webSocketPath(String path)  {
+    _webSocketPath = path.replaceFirst('/', '');
+    return this;
+  }
+
   final Map<String, dynamic> _events = {};
 
   Future handler(HttpRequest req) async {
+    String _path = req.uri.path.replaceFirst('/', '');
     WebSocket websocket = await WebSocketTransformer.upgrade(req);
 
     String sessionId = 'ws:${UuidV4().generate()}';
@@ -29,7 +36,8 @@ class WebSocketHandler implements WebSocketEvent {
 
     websocket.listen((data) {
       Map<String, dynamic> payload = jsonDecode(data);
-      String event = payload[webScoketEventKey];
+      print('${_path}_${payload[webScoketEventKey]}');
+      String event = '${_path}_${payload[webScoketEventKey]}';
 
       /// client join the room
       if (event == webSocketJoinRoomEventName) {
@@ -80,6 +88,7 @@ class WebSocketHandler implements WebSocketEvent {
   /// ```
   @override
   void on(String event, Function function) {
-    _events[event] = function;
+    print('${_webSocketPath}_$event');
+    _events['${_webSocketPath}_$event'] = function;
   }
 }

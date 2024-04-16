@@ -68,8 +68,7 @@ class Router {
   }
 
   static void websocket(String path, Function(WebSocketEvent) eventCallBack) {
-    WebSocketEvent event = WebSocketHandler();
-    eventCallBack(event);
+    eventCallBack(WebSocketHandler().websocketRoute(path));
   }
 
   static void group(List<GroupRouter> routes,
