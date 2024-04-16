@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:vania/src/config/http_cors.dart';
 import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/http/controller/controller_handler.dart';
+import 'package:vania/src/http/middleware/middleware_handler.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/route_handler.dart';
 import 'package:vania/src/websocket/web_socket_handler.dart';
@@ -27,11 +28,7 @@ Future httpRequestHandler(HttpRequest req) async {
 
       /// check if pre middleware exist and call it
       if (route.preMiddleware.isNotEmpty) {
-        List<Middleware> middlewares = route.preMiddleware;
-        for (int i = 0; i < middlewares.length - 1; i++) {
-          middlewares[i].setNext(middlewares[i + 1]);
-        }
-        await middlewares.first.handle(request);
+       await middlewareHandler(route.preMiddleware,request);
       }
 
       /// Controller and method handler
