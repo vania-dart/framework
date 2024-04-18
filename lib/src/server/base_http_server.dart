@@ -9,10 +9,18 @@ class IsolateHandler {
   final String host;
   final int port;
   final bool shared;
+  final bool secure;
+  final String? certficate;
+  final String? privateKey;
+  final String? privateKeyPassword;
   const IsolateHandler({
     required this.host,
     required this.port,
     required this.shared,
+    this.secure = false,
+    this.certficate,
+    this.privateKey,
+    this.privateKeyPassword,
   });
 }
 
@@ -48,12 +56,30 @@ class BaseHttpServer {
 
   void startIsolatedServer(IsolateHandler handler) async {
     await _initConfig();
-    var server = await HttpServer.bind(
-      handler.host,
-      handler.port,
-      shared: handler.shared,
-    );
-    server.listen(
+
+    if (handler.secure) {
+      var context = SecurityContext()
+        ..useCertificateChain(handler.certficate ?? '')
+        ..usePrivateKey(
+          handler.privateKey ?? '',
+          password: handler.privateKeyPassword,
+        );
+
+      httpServer = await HttpServer.bindSecure(
+        handler.host,
+        handler.port,
+        context,
+        shared: handler.shared,
+      );
+    } else {
+      httpServer = await HttpServer.bind(
+        handler.host,
+        handler.port,
+        shared: handler.shared,
+      );
+    }
+
+    httpServer?.listen(
       (HttpRequest req) {
         httpRequestHandler(req);
       },
@@ -69,11 +95,19 @@ class BaseHttpServer {
             host: env<String>('APP_HOST'),
             port: env<int>('APP_PORT'),
             shared: env<bool>('APP_SHARED'),
+            secure: env<bool>('APP_SECURE'),
+            certficate: env<String>('APP_CERTIFICATE'),
+            privateKey: env<String>('APP_PRIVATE_KEY'),
+            privateKeyPassword: env<String>('APP_PRIVATE_KEY_PASSWORD'),
           ));
       _isolates[i] = isolate;
     }
     if (env<bool>('APP_DEBUG')) {
-      print("Server started on http://${env('APP_HOST')}:${env('APP_PORT')}");
+      if (env<bool>('APP_SECURE')) {
+        print("Server started on https://127.0.0.1:${env('APP_PORT')}");
+      } else {
+        print("Server started on http://127.0.0.1:${env('APP_PORT')}");
+      }
     }
   }
 
@@ -88,21 +122,42 @@ class BaseHttpServer {
     Function? onError,
   }) async {
     await _initConfig();
-    HttpServer server = await HttpServer.bind(
-      env<String>('APP_HOST'),
-      env<int>('APP_PORT'),
-      shared: env<bool>('APP_SHARED'),
-    );
-    server.listen(
+    if (env<bool>('APP_SECURE')) {
+      var certificateChain = env<String>('APP_CERTIFICATE');
+      var serverKey = env<String>('APP_PRIVATE_KEY');
+      var password = env<String>('APP_PRIVATE_KEY_PASSWORD');
+
+      var context = SecurityContext()
+        ..useCertificateChain(certificateChain)
+        ..usePrivateKey(serverKey, password: password);
+
+      httpServer = await HttpServer.bindSecure(
+        env<String>('APP_HOST'),
+        env<int>('APP_PORT'),
+        context,
+        shared: env<bool>('APP_SHARED'),
+      );
+    } else {
+      httpServer = await HttpServer.bind(
+        env<String>('APP_HOST'),
+        env<int>('APP_PORT'),
+        shared: env<bool>('APP_SHARED'),
+      );
+    }
+
+    httpServer?.listen(
       (HttpRequest req) {
         httpRequestHandler(req);
       },
       onError: onError ?? (dynamic error) => print(error),
     );
-    httpServer = server;
 
     if (env<bool>('APP_DEBUG')) {
-      print("Server started on http://${env('APP_HOST')}:${env('APP_PORT')}");
+      if (env<bool>('APP_SECURE')) {
+        print("Server started on https://127.0.0.1:${env('APP_PORT')}");
+      } else {
+        print("Server started on http://127.0.0.1:${env('APP_PORT')}");
+      }
     }
     return httpServer!;
   }
