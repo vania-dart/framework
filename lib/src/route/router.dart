@@ -9,6 +9,8 @@ class Router {
   Router._internal();
 
   String? _prefix;
+  String? _groupPrefix;
+  List<Middleware>? _groupMiddleware;
 
   static basePrefix(String prefix) {
     if (prefix.endsWith("/")) {
@@ -22,27 +24,45 @@ class Router {
   List<RouteData> get routes => _routes;
 
   static Router get(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.get, path, action);
+    return Router()
+        ._addRoute(HttpRequestMethod.get, path, action)
+        .middleware(Router()._groupMiddleware)
+        .prefix(Router()._groupPrefix);
   }
 
   static Router post(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.post, path, action);
+    return Router()
+        ._addRoute(HttpRequestMethod.post, path, action)
+        .middleware(Router()._groupMiddleware)
+        .prefix(Router()._groupPrefix);
   }
 
   static Router put(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.put, path, action);
+    return Router()
+        ._addRoute(HttpRequestMethod.put, path, action)
+        .middleware(Router()._groupMiddleware)
+        .prefix(Router()._groupPrefix);
   }
 
   static Router patch(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.patch, path, action);
+    return Router()
+        ._addRoute(HttpRequestMethod.patch, path, action)
+        .middleware(Router()._groupMiddleware)
+        .prefix(Router()._groupPrefix);
   }
 
   static Router delete(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.delete, path, action);
+    return Router()
+        ._addRoute(HttpRequestMethod.delete, path, action)
+        .middleware(Router()._groupMiddleware)
+        .prefix(Router()._groupPrefix);
   }
 
   static Router options(String path, dynamic action) {
-    return Router()._addRoute(HttpRequestMethod.options, path, action);
+    return Router()
+        ._addRoute(HttpRequestMethod.options, path, action)
+        .middleware(Router()._groupMiddleware)
+        .prefix(Router()._prefix);
   }
 
   Router _addRoute(HttpRequestMethod method, String path, dynamic action) {
@@ -53,6 +73,9 @@ class Router {
 
   Router middleware([List<Middleware>? middleware]) {
     if (middleware != null) {
+      if (_routes.last.preMiddleware.isNotEmpty) {
+        middleware.addAll(_routes.last.preMiddleware);
+      }
       _routes.last.preMiddleware = middleware;
     }
     return this;
@@ -64,6 +87,7 @@ class Router {
       _routes.last.path =
           prefix.endsWith("/") ? "$prefix$basePath" : "$prefix/$basePath";
     }
+
     return this;
   }
 
@@ -71,34 +95,10 @@ class Router {
     eventCallBack(WebSocketHandler().websocketRoute(path));
   }
 
-  static void group(List<GroupRouter> routes,
+  static void group(Function callBack,
       {String? prefix, List<Middleware>? middleware}) {
-    for (GroupRouter route in routes) {
-      List<Middleware> mid = route.middleware ?? [];
-      mid.addAll(middleware ?? []);
-      Router()
-          ._addRoute(route.method, route.path, route.action)
-          .prefix(prefix)
-          .middleware(mid);
-    }
+    Router()._groupPrefix = prefix;
+    Router()._groupMiddleware = middleware;
+    callBack();
   }
-}
-
-class GroupRouter {
-  final String path;
-  final dynamic action;
-  final HttpRequestMethod method;
-  final List<Middleware>? middleware;
-  const GroupRouter.get(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.get;
-  const GroupRouter.post(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.post;
-  const GroupRouter.put(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.put;
-  const GroupRouter.delete(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.delete;
-  const GroupRouter.patch(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.patch;
-  const GroupRouter.options(this.path, this.action, {this.middleware})
-      : method = HttpRequestMethod.options;
 }
