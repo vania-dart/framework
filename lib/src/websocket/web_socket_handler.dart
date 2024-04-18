@@ -37,7 +37,6 @@ class WebSocketHandler implements WebSocketEvent {
 
     websocket.listen((data) {
       Map<String, dynamic> payload = jsonDecode(data);
-      print('${routePath}_${payload[webScoketEventKey]}');
       String event = '${routePath}_${payload[webScoketEventKey]}';
 
       /// client join the room
@@ -89,7 +88,6 @@ class WebSocketHandler implements WebSocketEvent {
   /// ```
   @override
   void on(String event, Function function) {
-    print('${_websocketRoute}_$event');
     _events['${_websocketRoute}_$event'] = function;
   }
 }

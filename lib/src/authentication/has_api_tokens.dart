@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
@@ -14,12 +16,19 @@ class HasApiTokens {
     return this;
   }
 
+  /// Create new token
   Map<String, dynamic> createToken([
     String guard = '',
     Duration? expiresIn,
     bool withRefreshToken = false,
   ]) {
-    final jwt = JWT({'id': _userPayload?['id'], 'type': 'access_token'});
+    final jwt = JWT(
+      {
+        'id': _userPayload?['id'],
+        'user': jsonEncode(_userPayload),
+        'type': 'access_token',
+      },
+    );
     Map<String, dynamic> payload = {};
     Duration expirationTime = expiresIn ?? const Duration(hours: 1);
 
@@ -43,6 +52,7 @@ class HasApiTokens {
     return payload;
   }
 
+  /// Create new refresh token
   Map<String, dynamic> refreshToken(
     String token, [
     String guard = '',
@@ -53,6 +63,7 @@ class HasApiTokens {
     return createToken(guard, expiresIn, true);
   }
 
+// Verify token
   Map<String, dynamic> verify(String token, String guard, String expectedType) {
     try {
       final jwt = JWT.verify(token, SecretKey('${env('APP_KEY')}$guard'));
