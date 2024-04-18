@@ -1,3 +1,7 @@
+## 0.1.7+1
+
+- Fixed env issue
+
 ## 0.1.7
 
 - Added deleteTokens and deleteCurrentToken Auth class
