@@ -1,3 +1,17 @@
+## 0.1.7+1
+
+- Fixed env issue
+
+## 0.1.7
+
+- Added deleteTokens and deleteCurrentToken Auth class
+- Refactored group routing to use a callback function instead of a list
+- Changed websocket data to payload
+- Created Middleware Handler
+- Fixed Webscoket Route bug
+- Updated Dependencies
+- Added secure bind
+
 ## 0.1.6+1
 
 - Fixed Storage issues

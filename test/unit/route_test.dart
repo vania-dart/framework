@@ -51,14 +51,14 @@ void main() {
     });
 
     test('group route test', () {
-      Router.group([
-        GroupRouter.get('/get', () {}),
-        GroupRouter.post('/post', () {}),
-        GroupRouter.delete('/delete', () {}),
-        GroupRouter.put('/put', () {}),
-        GroupRouter.patch('/patch', () {}),
-        GroupRouter.options('/options', () {}),
-      ]);
+      Router.group(() {
+        Router.get('/get', () {});
+        Router.post('/post', () {});
+        Router.delete('/delete', () {});
+        Router.put('/put', () {});
+        Router.patch('/patch', () {});
+        Router.options('/options', () {});
+      });
       List<RouteData> data = Router().routes;
 
       expect(data[0].path, '/get');

@@ -27,6 +27,7 @@ class Env {
   /// ```
   static T get<T>(String key, [dynamic defaultValue]) {
     dynamic value = Env().env[key];
+    value ??= Platform.environment[key];
     value ??= defaultValue;
     if (T.toString() == 'int') {
       return int.parse(value.toString()) as T;
