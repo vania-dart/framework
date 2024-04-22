@@ -1,6 +1,7 @@
 ## 0.1.7+3
 
 - Refactored HttpException to HttpResponseException
+- Added abort method to the helper file
 
 ## 0.1.7+2
 
