@@ -78,7 +78,7 @@ class ControllerHandler {
       Response data =
           await Function.apply(function, positionalArguments, namedArguments);
       data.makeResponse(request.response);
-    } on BaseHttpException catch (e) {
+    } on BaseHttpResponseException catch (e) {
       e.call().makeResponse(request.response);
     } on InvalidArgumentException catch (_) {
       rethrow;
