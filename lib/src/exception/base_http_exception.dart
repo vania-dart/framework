@@ -1,12 +1,12 @@
 import 'package:vania/src/http/response/response.dart';
 
-class BaseHttpException {
+class BaseHttpResponseException {
   final String errorCode;
   final dynamic message;
   final ResponseType responseType;
   final int code;
 
-  const BaseHttpException(
+  const BaseHttpResponseException(
       {required this.message,
       required this.code,
       required this.errorCode,

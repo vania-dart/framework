@@ -33,7 +33,7 @@ Future httpRequestHandler(HttpRequest req) async {
 
       /// Controller and method handler
       ControllerHandler(route: route, request: request).call();
-    } on BaseHttpException catch (e) {
+    } on BaseHttpResponseException catch (e) {
       e.call().makeResponse(req.response);
     } on InvalidArgumentException catch (e) {
       print(e.message);

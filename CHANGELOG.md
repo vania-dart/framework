@@ -1,3 +1,7 @@
+## 0.1.7+3
+
+- Refactored HttpException to HttpResponseException
+
 ## 0.1.7+2
 
 - Fixed route group bug
