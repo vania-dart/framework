@@ -100,5 +100,7 @@ class Router {
     Router()._groupPrefix = prefix;
     Router()._groupMiddleware = middleware;
     callBack();
+    Router()._groupPrefix = null;
+    Router()._groupMiddleware = null;
   }
 }

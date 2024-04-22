@@ -1,3 +1,7 @@
+## 0.1.7+2
+
+- Fixed route group bug
+
 ## 0.1.7+1
 
 - Fixed env issue
