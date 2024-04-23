@@ -8,6 +8,6 @@ String publicPath(String file) => '${Directory.current.path}/public/$file';
 
 T env<T>(String key, [dynamic defaultValue]) => Env.get<T>(key, defaultValue);
 
-abort(int code,String message){
+abort(int code, String message) {
   throw HttpResponseException(message: message, code: code);
 }
