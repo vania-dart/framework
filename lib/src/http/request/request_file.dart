@@ -79,7 +79,10 @@ class RequestFile {
       directory.createSync(recursive: true);
     }
     await file.writeAsBytes(await bytes);
-    return '$path/$filename'.replaceAll('public', '');
+    if (path.startsWith('/public')) {
+      return '$path/$filename'.replaceFirst('/public', '');
+    }
+    return '$path/$filename'.replaceFirst('public', '');
   }
 
   num _getFileSize(Uint8List bytesList) =>
