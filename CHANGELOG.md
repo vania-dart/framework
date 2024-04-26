@@ -1,3 +1,8 @@
+## 0.1.7+4
+
+- Fixed pgsql bug
+- Added alter column to the migration
+
 ## 0.1.7+3
 
 - Refactored HttpException to HttpResponseException

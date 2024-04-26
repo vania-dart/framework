@@ -37,10 +37,10 @@ Future httpRequestHandler(HttpRequest req) async {
       e.call().makeResponse(req.response);
     } on InvalidArgumentException catch (e) {
       print(e.message);
-      Logger.log(e.message,type: Logger.ERROR);
+      Logger.log(e.message, type: Logger.ERROR);
     } catch (e) {
       print(e.toString());
-      Logger.log(e.toString(),type: Logger.ERROR);
+      Logger.log(e.toString(), type: Logger.ERROR);
     }
   }
 }
