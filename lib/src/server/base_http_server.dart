@@ -36,17 +36,17 @@ class BaseHttpServer {
   Future<void> _initConfig() async {
     Config().setApplicationConfig = config;
 
-    List<ServiceProvider> provider = config['providers'];
+    List<ServiceProvider> providers = config['providers'];
 
-    for (ServiceProvider provider in provider) {
+    for (ServiceProvider provider in providers) {
       provider.register();
       provider.boot();
     }
 
     try {
-      DatabaseConfig? db = Config().get('database');
+      DatabaseConfig? db = config['database'];
       if (db != null) {
-        await db.driver?.init(Config().get('database'));
+        await db.driver?.init(config['database']);
       }
     } on InvalidArgumentException catch (e) {
       Logger.log(e.cause.toString(), type: Logger.ERROR);

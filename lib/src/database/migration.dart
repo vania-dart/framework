@@ -121,20 +121,34 @@ class Migration {
     String index = _indexes.isNotEmpty ? ',ADD ${_indexes.join(',')}' : '';
     String foreig =
         _foreignKey.isNotEmpty ? ',ADD ${_foreignKey.join(',')}' : '';
-    String alterQuery = _queries.first;
-    if (beforeColumn.isNotEmpty) {
-      alterQuery = ' $alterQuery BEFORE `$beforeColumn`';
-    } else if (afterColumn.isNotEmpty) {
-      alterQuery = ' $alterQuery AFTER `$afterColumn`';
+
+    String alterQuery = '';
+    if (_queries.isNotEmpty) {
+      alterQuery = 'ADD COLUMN ${_queries.first}';
+      if (beforeColumn.isNotEmpty) {
+        alterQuery = ' $alterQuery BEFORE `$beforeColumn`';
+      } else if (afterColumn.isNotEmpty) {
+        alterQuery = ' $alterQuery AFTER `$afterColumn`';
+      }
     }
+
+    if (_queries.isEmpty && index.isNotEmpty) {
+      index = index.replaceFirst(',', '');
+    }
+
+    if (_queries.isEmpty && index.isEmpty) {
+      foreig = foreig.replaceFirst(',', '');
+    }
+
     try {
-      String query =
-          'ALTER TABLE `$table` ADD COLUMN $alterQuery$index$foreig;';
+      String query = 'ALTER TABLE `$table` $alterQuery$index$foreig;';
       await MigrationConnection().dbConnection?.execute(query);
       print('ALTER column to $_tableName table... \x1B[32mDONE\x1B[0m');
     } catch (e) {
-      print('Error adding column: $e');
-      rethrow; // Rethrow to handle the exception outside this method if needed.
+      if (!e.toString().contains("write; duplicate key in table")) {
+        print('Error adding column: $e');
+        exit(0);
+      }
     }
   }
 

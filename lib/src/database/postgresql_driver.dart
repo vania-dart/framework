@@ -25,6 +25,8 @@ class PostgreSQLDriver implements DatabaseDriver {
         'charset': 'utf8',
         'prefix': '',
         'schema': config?.schema,
+        'pool': config?.pool,
+        'poolsize': config?.poolsize,
       });
       manager.setAsGlobal();
       _connection = await manager.connection();

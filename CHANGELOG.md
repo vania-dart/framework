@@ -1,3 +1,7 @@
+## 0.1.7+5
+
+- Added pool and poolsize to DatabaseConfig
+
 ## 0.1.7+4
 
 - Fixed pgsql bug
