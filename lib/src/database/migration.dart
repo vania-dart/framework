@@ -6,10 +6,14 @@ import 'package:vania/vania.dart';
 
 class MigrationConnection {
   static final MigrationConnection _singleton = MigrationConnection._internal();
+
   factory MigrationConnection() => _singleton;
+
   MigrationConnection._internal();
+
   Connection? dbConnection;
   DatabaseDriver? database;
+
   Future<void> setup(DatabaseConfig databaseConfig) async {
     database = databaseConfig.driver;
     try {
@@ -47,31 +51,34 @@ class Migration {
     }
   }
 
+  @mustBeOverridden
+  @mustCallSuper
+  Future<void> down() async {
+    if (MigrationConnection().dbConnection == null) {
+      print('Database is not defined');
+      throw 'Database is not defined';
+    }
+  }
+
   Future<void> createTable(String name, Function callback) async {
     try {
+      Stopwatch stopwatch = Stopwatch()..start();
       final query = StringBuffer();
       _tableName = name;
       callback();
       String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
       String foreig = _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
-      String primary = _primaryField.isNotEmpty
-          ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
-          : '';
-      query.write(
-          '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${_queries.join(',')}$primary$index$foreig)''');
+      String primary = _primaryField.isNotEmpty ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm' : '';
+      query.write('''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
       if (MigrationConnection().database?.driver == 'pgsql') {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(_mysqlToPosgresqlMapper(query.toString()));
+        await MigrationConnection().dbConnection?.execute(_mysqlToPosgresqlMapper(query.toString()));
       } else {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
+        await MigrationConnection().dbConnection?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
       }
 
-      print(
-          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+      stopwatch.stop();
+      print(' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       print(e);
       exit(0);
@@ -80,29 +87,23 @@ class Migration {
 
   Future<void> createTableNotExists(String name, Function callback) async {
     try {
+      Stopwatch stopwatch = Stopwatch()..start();
       final query = StringBuffer();
       _tableName = name;
       callback();
       String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
       String foreig = _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
-      String primary = _primaryField.isNotEmpty
-          ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
-          : '';
-      query.write(
-          '''CREATE TABLE IF NOT EXISTS `$name` (${_queries.join(',')}$primary$index$foreig)''');
+      String primary = _primaryField.isNotEmpty ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm' : '';
+      query.write('''CREATE TABLE IF NOT EXISTS `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
       if (MigrationConnection().database?.driver == 'pgsql') {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(_mysqlToPosgresqlMapper(query.toString()));
+        await MigrationConnection().dbConnection?.execute(_mysqlToPosgresqlMapper(query.toString()));
       } else {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
+        await MigrationConnection().dbConnection?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
       }
 
-      print(
-          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+      stopwatch.stop();
+      print(' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       print(e);
       exit(0);
@@ -119,8 +120,7 @@ class Migration {
     callback();
 
     String index = _indexes.isNotEmpty ? ',ADD ${_indexes.join(',')}' : '';
-    String foreig =
-        _foreignKey.isNotEmpty ? ',ADD ${_foreignKey.join(',')}' : '';
+    String foreig = _foreignKey.isNotEmpty ? ',ADD ${_foreignKey.join(',')}' : '';
 
     String alterQuery = '';
     if (_queries.isNotEmpty) {
@@ -153,19 +153,22 @@ class Migration {
   }
 
   Future<void> dropIfExists(String name) async {
-    String query = 'DROP TABLE IF EXISTS "$name";';
+    try {
+      String query = 'DROP TABLE IF EXISTS `$name`;';
 
-    await MigrationConnection().dbConnection?.execute(query.toString());
-    print(
-        ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+      await MigrationConnection().dbConnection?.execute(query.toString());
+      print(' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+    } catch (e) {
+      print(e);
+      exit(0);
+    }
   }
 
   Future<void> drop(String name) async {
-    String query = 'DROP TABLE "$name";';
+    String query = 'DROP TABLE `$name`;';
 
     await MigrationConnection().dbConnection?.execute(query.toString());
-    print(
-        ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+    print(' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
   void addColumn(
@@ -241,8 +244,7 @@ class Migration {
       if (type == ColumnIndex.indexKey) {
         _indexes.add('INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
       } else {
-        _indexes.add(
-            '${type.name} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
+        _indexes.add('${type.name} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
       }
     }
   }
@@ -260,8 +262,7 @@ class Migration {
       constraint = 'CONSTRAINT FK_${_tableName}_$referencesTable';
     }
 
-    final fk =
-        '$constraint FOREIGN KEY (`$columnName`) REFERENCES `$referencesTable` (`$referencesColumn`) ON UPDATE $onUpdate ON DELETE $onDelete';
+    final fk = '$constraint FOREIGN KEY (`$columnName`) REFERENCES `$referencesTable` (`$referencesColumn`) ON UPDATE $onUpdate ON DELETE $onDelete';
     _foreignKey.add(fk);
   }
 
@@ -949,6 +950,11 @@ class Migration {
     );
   }
 
+  void timeStamps() {
+    timeStamp("created_at", nullable: true);
+    timeStamp("updated_at", nullable: true);
+  }
+
   void timeStamp(
     String name, {
     bool nullable = false,
@@ -1200,27 +1206,18 @@ class Migration {
 
       String query = str
           .replaceAll(RegExp(r"BIGINT\((\d+)\)"), "BIGINT")
-          .replaceAll(
-              RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " INTEGER")
-          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
-              " INTEGER")
-          .replaceAll(
-              RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "INTEGER")
-          .replaceAll(
-              RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLINT")
-          .replaceAll(
-              RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+          .replaceAll(RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " INTEGER")
+          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false), " INTEGER")
+          .replaceAll(RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "INTEGER")
+          .replaceAll(RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+          .replaceAll(RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLINT")
           .replaceAll(RegExp(r"BINARY\((\d+)\)", caseSensitive: false), "BYTEA")
           .replaceAll(RegExp(r"BIT\((\d+)\)", caseSensitive: false), "BOOLEAN")
-          .replaceAllMapped(
-              RegExp(r"VARCHAR\((\d+)\)"), (match) => "VARCHAR(${match[1]})")
-          .replaceAllMapped(RegExp(r"VARCHARACTER\((\d+)\)"),
-              (match) => "CHARACTER(${match[1]})")
+          .replaceAllMapped(RegExp(r"VARCHAR\((\d+)\)"), (match) => "VARCHAR(${match[1]})")
+          .replaceAllMapped(RegExp(r"VARCHARACTER\((\d+)\)"), (match) => "CHARACTER(${match[1]})")
           .replaceAllMapped(RegExp(r"FLOAT\((\d+)\)"), (match) => "REAL")
-          .replaceAll(
-              RegExp(r"DATETIME\((\d+)\)", caseSensitive: false), "TIMESTAMP")
-          .replaceAll(RegExp(r"DOUBLE\((\d+)\)", caseSensitive: false),
-              "DOUBLE PRECISION")
+          .replaceAll(RegExp(r"DATETIME\((\d+)\)", caseSensitive: false), "TIMESTAMP")
+          .replaceAll(RegExp(r"DOUBLE\((\d+)\)", caseSensitive: false), "DOUBLE PRECISION")
           .replaceAll(RegExp(r"TINYBLOB", caseSensitive: false), "BYTEA")
           .replaceAll(RegExp(r"VARBYTEA", caseSensitive: false), "BYTEA")
           .replaceAll(RegExp(r"BLOB", caseSensitive: false), "BYTEA")
@@ -1230,25 +1227,15 @@ class Migration {
           .replaceAll(RegExp(r"LONGBYTEA", caseSensitive: false), "BYTEA")
           .replaceAll(RegExp(r"TINYTEXT", caseSensitive: false), "TEXT")
           .replaceAll(RegExp(r"MEDIUMTEXT", caseSensitive: false), "TEXT")
-          .replaceAll(
-              RegExp(r"LONGTEXT\((\d+)\)", caseSensitive: false), "TEXT")
+          .replaceAll(RegExp(r"LONGTEXT\((\d+)\)", caseSensitive: false), "TEXT")
           .replaceAll(RegExp(r"LINESTRING", caseSensitive: false), "LINE")
           .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
           .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
-          .replaceAll(
-              RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-          .replaceAll(
-              RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-          .replaceAll(
-              RegExp(r"ENUM\((?:'[^']*'(?:\s*,\s*'[^']*')*)\)",
-                  caseSensitive: false),
-              "VARCHAR")
+          .replaceAll(RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+          .replaceAll(RegExp(r"ENUM\((?:'[^']*'(?:\s*,\s*'[^']*')*)\)", caseSensitive: false), "VARCHAR")
           .replaceAll(RegExp(r"COLLATE '[\w\d_-]+'", caseSensitive: false), "")
-          .replaceAll(
-              RegExp(
-                  r"DEFAULT\s+('(?:[^'\\]|\\.)*'|NULL|CURRENT_TIMESTAMP(?:\s+ON\s+UPDATE\s+CURRENT_TIMESTAMP)?|\d+)",
-                  caseSensitive: false),
-              "");
+          .replaceAll(RegExp(r"DEFAULT\s+('(?:[^'\\]|\\.)*'|NULL|CURRENT_TIMESTAMP(?:\s+ON\s+UPDATE\s+CURRENT_TIMESTAMP)?|\d+)", caseSensitive: false), "");
       query.replaceAll('`', '"');
 
       queryList.add(query);
@@ -1261,29 +1248,20 @@ class Migration {
     if (str.contains("AUTO_INCREMENT")) {
       str = str
           .replaceAll("AUTO_INCREMENT", "PRIMARY KEY")
-          .replaceAll(
-              RegExp(r"BIGINT\((\d+)\)", caseSensitive: false), "BIGSERIAL")
-          .replaceAll(
-              RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " SERIAL")
-          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
-              " SERIAL")
-          .replaceAll(
-              RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "SERIAL")
-          .replaceAll(
-              RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL")
-          .replaceAll(
-              RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL");
+          .replaceAll(RegExp(r"BIGINT\((\d+)\)", caseSensitive: false), "BIGSERIAL")
+          .replaceAll(RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " SERIAL")
+          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false), " SERIAL")
+          .replaceAll(RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "SERIAL")
+          .replaceAll(RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL")
+          .replaceAll(RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL");
     }
 
     if (RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE").hasMatch(str)) {
-      str = str.replaceAll(
-          RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE", caseSensitive: false),
-          "");
+      str = str.replaceAll(RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE", caseSensitive: false), "");
     }
 
     if (RegExp(r"PRIMARY KEY \(`.*?`\)").hasMatch(str)) {
-      str = str.replaceAll(
-          RegExp(r"PRIMARY KEY \(`.*?`\)", caseSensitive: false), "");
+      str = str.replaceAll(RegExp(r"PRIMARY KEY \(`.*?`\)", caseSensitive: false), "");
     }
 
     return str;
