@@ -6,10 +6,14 @@ import 'package:vania/vania.dart';
 
 class MigrationConnection {
   static final MigrationConnection _singleton = MigrationConnection._internal();
+
   factory MigrationConnection() => _singleton;
+
   MigrationConnection._internal();
+
   Connection? dbConnection;
   DatabaseDriver? database;
+
   Future<void> setup(DatabaseConfig databaseConfig) async {
     database = databaseConfig.driver;
     try {
@@ -47,8 +51,18 @@ class Migration {
     }
   }
 
+  @mustBeOverridden
+  @mustCallSuper
+  Future<void> down() async {
+    if (MigrationConnection().dbConnection == null) {
+      print('Database is not defined');
+      throw 'Database is not defined';
+    }
+  }
+
   Future<void> createTable(String name, Function callback) async {
     try {
+      Stopwatch stopwatch = Stopwatch()..start();
       final query = StringBuffer();
       _tableName = name;
       callback();
@@ -70,8 +84,9 @@ class Migration {
             ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
       }
 
+      stopwatch.stop();
       print(
-          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+          ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       print(e);
       exit(0);
@@ -80,6 +95,7 @@ class Migration {
 
   Future<void> createTableNotExists(String name, Function callback) async {
     try {
+      Stopwatch stopwatch = Stopwatch()..start();
       final query = StringBuffer();
       _tableName = name;
       callback();
@@ -101,8 +117,9 @@ class Migration {
             ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
       }
 
+      stopwatch.stop();
       print(
-          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+          ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       print(e);
       exit(0);
@@ -153,15 +170,20 @@ class Migration {
   }
 
   Future<void> dropIfExists(String name) async {
-    String query = 'DROP TABLE IF EXISTS "$name";';
+    try {
+      String query = 'DROP TABLE IF EXISTS `$name`;';
 
-    await MigrationConnection().dbConnection?.execute(query.toString());
-    print(
-        ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+      await MigrationConnection().dbConnection?.execute(query.toString());
+      print(
+          ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+    } catch (e) {
+      print(e);
+      exit(0);
+    }
   }
 
   Future<void> drop(String name) async {
-    String query = 'DROP TABLE "$name";';
+    String query = 'DROP TABLE `$name`;';
 
     await MigrationConnection().dbConnection?.execute(query.toString());
     print(
@@ -947,6 +969,11 @@ class Migration {
       expression: expression,
       virtuality: virtuality,
     );
+  }
+
+  void timeStamps() {
+    timeStamp("created_at", nullable: true);
+    timeStamp("updated_at", nullable: true);
   }
 
   void timeStamp(
