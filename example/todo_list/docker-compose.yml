@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  vania:
+    build: .
+    image: vania/app:latest
+    container_name: vania
+    restart: always
+    volumes:
+      - app:/app
+    ports:
+      - "8000:8000"
+
+volumes:
+  app:

@@ -1,0 +1,18 @@
+name: todo_list
+description: Sample Vania backend web application framework
+version: 1.0.0
+
+environment:
+  sdk: ^3.2.3
+
+# Add regular dependencies here.
+dependencies:
+  vania: ^0.1.7+5
+
+
+dev_dependencies:
+  lints: ^2.1.0
+  test: ^1.24.0
+
+dependency_overrides:
+  pointycastle: 3.7.3
