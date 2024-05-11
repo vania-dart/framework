@@ -171,11 +171,14 @@ class Migration {
 
   Future<void> dropIfExists(String name) async {
     try {
+      Stopwatch stopwatch = Stopwatch()..start();
       String query = 'DROP TABLE IF EXISTS `$name`;';
 
       await MigrationConnection().dbConnection?.execute(query.toString());
+
+      stopwatch.stop();
       print(
-          ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+          ' Dropping $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       print(e);
       exit(0);
@@ -183,11 +186,18 @@ class Migration {
   }
 
   Future<void> drop(String name) async {
-    String query = 'DROP TABLE `$name`;';
+    try {
+      Stopwatch stopwatch = Stopwatch()..start();
+      String query = 'DROP TABLE `$name`;';
 
-    await MigrationConnection().dbConnection?.execute(query.toString());
-    print(
-        ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+      await MigrationConnection().dbConnection?.execute(query.toString());
+      stopwatch.stop();
+      print(
+          ' Dropping $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
+    } catch (e) {
+      print(e);
+      exit(0);
+    }
   }
 
   void addColumn(
