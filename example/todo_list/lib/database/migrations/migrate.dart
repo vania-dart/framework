@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:todo_list/database/task.dart';
+import 'package:todo_list/database/migrations/task.dart';
+import 'package:todo_list/database/migrations/taskList.dart';
 import 'package:vania/vania.dart';
 import '../../config/database.dart';
 import 'create_user_table.dart';
@@ -15,6 +16,7 @@ class Migrate {
   registry() async {
     await MigrationConnection().setup(databaseConfig);
     await CreateUserTable().up();
+    await TaskList().up();
     await Task().up();
   }
 }
