@@ -5,7 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:vania/src/extensions/string_extension.dart';
 import 'package:vania/vania.dart';
 
-class LocalCacheDriver implements CacheDriver {
+class FileCacheDriver implements CacheDriver {
   final String _secretKey = env('APP_KEY');
 
   final String cachePath = 'storage/framework/cache/data';
