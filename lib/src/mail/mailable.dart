@@ -87,13 +87,8 @@ class Mailable implements Mail {
     if (attachments() != null) {
       message.attachments.addAll(attachments()!);
     }
-
-    print(_setupSmtpServer().username);
-    print(_setupSmtpServer().toString());
-
     try {
-     var mm = await mailer.send(message, _setupSmtpServer());
-     print(mm);
+      await mailer.send(message, _setupSmtpServer());
     } catch (e) {
       print('Failed to send email: $e');
       rethrow;
