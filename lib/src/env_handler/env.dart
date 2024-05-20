@@ -47,7 +47,7 @@ class Env {
   Map<String, String> _loadEnvFile({File? file}) {
     Map<String, String> data = <String, String>{};
 
-    File envFile = file ?? File('${Directory.current.path}/.env');
+    File envFile = file ?? File('.env');
     if (!envFile.existsSync()) return data;
     String contents = envFile.readAsStringSync();
     // splitting with new line for each variables

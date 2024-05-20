@@ -85,7 +85,7 @@ class FileCacheDriver implements CacheDriver {
   Future<File?> _cacheFile(String key, [bool create = false]) async {
     Digest hash = _makeHash(key);
     String path =
-        '${Directory.current.path}/$cachePath/${twoDigest(hash.bytes[0].toString())}/${twoDigest(hash.bytes[1].toString())}';
+        '$cachePath/${twoDigest(hash.bytes[0].toString())}/${twoDigest(hash.bytes[1].toString())}';
 
     Directory directory = Directory(path);
     File file = File('${directory.path}/${hash.toString()}');
