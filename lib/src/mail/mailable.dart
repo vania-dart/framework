@@ -56,7 +56,7 @@ class Mailable implements Mail {
           username: env<String>('MAIL_USERNAME', ''),
           password: env<String>('MAIL_PASSWORD', ''),
           port: env<int>('MAIL_PORT', 465),
-          ssl: env<String>('MAIL_ENCRYPTION', 'ssl') == 'ssl',
+          ssl: env<bool>('MAIL_ENCRYPTION', true),
           ignoreBadCertificate: env<bool>('MAIL_IGNORe_BAD_CERTIFICATE', true),
         );
     }
