@@ -18,7 +18,7 @@ class Mailable implements Mail {
       case 'gmailSaslXoauth2':
         return gmailSaslXoauth2(
           env<String>('MAIL_USERNAME', ''),
-          Config().get('mail')['accessToken'],
+          env<String>('MAIL_ACCESS_TOKEN', ''),
         );
       case 'gmailRelaySaslXoauth2':
         return gmail(
@@ -57,12 +57,12 @@ class Mailable implements Mail {
           password: env<String>('MAIL_PASSWORD', ''),
           port: env<int>('MAIL_PORT', 465),
           ssl: env<bool>('MAIL_ENCRYPTION', true),
-          ignoreBadCertificate: env<bool>('MAIL_IGNORe_BAD_CERTIFICATE', true),
+          ignoreBadCertificate: env<bool>('MAIL_IGNORE_BAD_CERTIFICATE', true),
         );
     }
   }
 
-  Future<void> send() async {
+  Future<mailer.SendReport> send() async {
     final message = mailer.Message();
 
     message.from = envelope().from ??
@@ -88,7 +88,9 @@ class Mailable implements Mail {
       message.attachments.addAll(attachments()!);
     }
     try {
-      await mailer.send(message, _setupSmtpServer());
+      mailer.SendReport sendReport =
+          await mailer.send(message, _setupSmtpServer());
+      return sendReport;
     } catch (e) {
       print('Failed to send email: $e');
       rethrow;
