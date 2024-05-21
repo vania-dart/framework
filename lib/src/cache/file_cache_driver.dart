@@ -5,7 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:vania/src/extensions/string_extension.dart';
 import 'package:vania/vania.dart';
 
-class LocalCacheDriver implements CacheDriver {
+class FileCacheDriver implements CacheDriver {
   final String _secretKey = env('APP_KEY');
 
   final String cachePath = 'storage/framework/cache/data';
@@ -85,7 +85,7 @@ class LocalCacheDriver implements CacheDriver {
   Future<File?> _cacheFile(String key, [bool create = false]) async {
     Digest hash = _makeHash(key);
     String path =
-        '${Directory.current.path}/$cachePath/${twoDigest(hash.bytes[0].toString())}/${twoDigest(hash.bytes[1].toString())}';
+        '$cachePath/${twoDigest(hash.bytes[0].toString())}/${twoDigest(hash.bytes[1].toString())}';
 
     Directory directory = Directory(path);
     File file = File('${directory.path}/${hash.toString()}');

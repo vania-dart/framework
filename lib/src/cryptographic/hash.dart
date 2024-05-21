@@ -14,14 +14,14 @@ class Hash {
     _hashKey = hashKey;
   }
 
-  String passwordHash(String password) {
+  String make(String password) {
     String salt = _generateSalt();
     String hash = _hashPbkdf2(password, salt);
     String hashedPassword = salt + hash;
     return hashedPassword;
   }
 
-  bool passwordVerify(String providedPassword, String storedHash) {
+  bool verify(String providedPassword, String storedHash) {
     int saltLength = 4;
     String salt = storedHash.substring(0, saltLength);
     String hash = _hashPbkdf2(providedPassword, salt);
