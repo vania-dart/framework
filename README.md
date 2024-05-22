@@ -32,6 +32,8 @@ Ensure that you have the [Dart SDK](https://dart.dev) installed on your machine.
 
 YouTube Video [Quick Start](https://www.youtube.com/watch?v=k8ol0F4bDKs)
 
+YouTube Video [Dart & flutter Fullstack with Vania](https://youtu.be/1tfqpusIXwQ)
+
 [![Quick Start](https://img.youtube.com/vi/k8ol0F4bDKs/0.jpg)](https://www.youtube.com/watch?v=k8ol0F4bDKs "Quick Start")
 
 ## Installing 🧑‍💻

@@ -1,3 +1,10 @@
+## 0.1.8
+
+- fix public and storage file path
+- refactor Mailable Config to env
+- refactor Migration class, created migration timestamp added by [S.M. SHAHi](https://github.com/shahi5472)
+- refactor Local cache class name to File cache
+
 ## 0.1.7+5
 
 - Added pool and poolsize to DatabaseConfig
