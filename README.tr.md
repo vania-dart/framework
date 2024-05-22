@@ -1,9 +1,9 @@
 
-# Giriş
+# Introduction
 
 Vania, Dart kullanarak yüksek performanslı web uygulamaları oluşturmak için tasarlanmış sağlam bir backend çerçevesidir. Basit yaklaşımı ve güçlü özellikleriyle Vania, hem yeni başlayanlar hem de deneyimli geliştiriciler için geliştirme sürecini kolaylaştırır.
 
-## Özellikler
+## Features
 
 ✅ ***Ölçeklenebilirlik***: Yüksek trafikle başa çıkmak için tasarlanan Vania, uygulamanızın büyümesiyle birlikte zahmetsizce kendini ölçekler.
 
