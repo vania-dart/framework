@@ -1,4 +1,4 @@
-import 'package:vania/src/cache/local_cache_driver.dart';
+import 'package:vania/src/cache/file_cache_driver.dart';
 import 'package:vania/vania.dart';
 
 class Cache {
@@ -9,7 +9,7 @@ class Cache {
   String? _store;
 
   Map<String, CacheDriver> cacheDrivers = <String, CacheDriver>{
-    'file': LocalCacheDriver(),
+    'file': FileCacheDriver(),
     ...Config().get("cache")?.drivers
   };
 
@@ -25,7 +25,7 @@ class Cache {
   CacheDriver get _driver {
     return cacheDrivers[_store] ??
         cacheDrivers[Config().get("cache")?.defaultDriver] ??
-        LocalCacheDriver();
+        FileCacheDriver();
   }
 
   /// set key => value to cache

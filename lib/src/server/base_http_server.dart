@@ -36,17 +36,17 @@ class BaseHttpServer {
   Future<void> _initConfig() async {
     Config().setApplicationConfig = config;
 
-    List<ServiceProvider> provider = config['providers'];
+    List<ServiceProvider> providers = config['providers'];
 
-    for (ServiceProvider provider in provider) {
+    for (ServiceProvider provider in providers) {
       provider.register();
       provider.boot();
     }
 
     try {
-      DatabaseConfig? db = Config().get('database');
+      DatabaseConfig? db = config['database'];
       if (db != null) {
-        await db.driver?.init(Config().get('database'));
+        await db.driver?.init(config['database']);
       }
     } on InvalidArgumentException catch (e) {
       Logger.log(e.cause.toString(), type: Logger.ERROR);
@@ -92,10 +92,10 @@ class BaseHttpServer {
       Isolate isolate = await Isolate.spawn(
           startIsolatedServer,
           IsolateHandler(
-            host: env<String>('APP_HOST'),
-            port: env<int>('APP_PORT'),
-            shared: env<bool>('APP_SHARED'),
-            secure: env<bool>('APP_SECURE'),
+            host: env<String>('APP_HOST', '127.0.0.1'),
+            port: env<int>('APP_PORT', 8000),
+            shared: env<bool>('APP_SHARED', false),
+            secure: env<bool>('APP_SECURE', false),
             certficate: env<String>('APP_CERTIFICATE'),
             privateKey: env<String>('APP_PRIVATE_KEY'),
             privateKeyPassword: env<String>('APP_PRIVATE_KEY_PASSWORD'),
@@ -103,10 +103,10 @@ class BaseHttpServer {
       _isolates[i] = isolate;
     }
     if (env<bool>('APP_DEBUG')) {
-      if (env<bool>('APP_SECURE')) {
-        print("Server started on https://127.0.0.1:${env('APP_PORT')}");
+      if (env<bool>('APP_SECURE', false)) {
+        print("Server started on https://127.0.0.1:${env('APP_PORT', 8000)}");
       } else {
-        print("Server started on http://127.0.0.1:${env('APP_PORT')}");
+        print("Server started on http://127.0.0.1:${env('APP_PORT', 8000)}");
       }
     }
   }
@@ -122,7 +122,7 @@ class BaseHttpServer {
     Function? onError,
   }) async {
     await _initConfig();
-    if (env<bool>('APP_SECURE')) {
+    if (env<bool>('APP_SECURE', false)) {
       var certificateChain = env<String>('APP_CERTIFICATE');
       var serverKey = env<String>('APP_PRIVATE_KEY');
       var password = env<String>('APP_PRIVATE_KEY_PASSWORD');
@@ -132,16 +132,16 @@ class BaseHttpServer {
         ..usePrivateKey(serverKey, password: password);
 
       httpServer = await HttpServer.bindSecure(
-        env<String>('APP_HOST'),
-        env<int>('APP_PORT'),
+        env<String>('APP_HOST', '127.0.0.1'),
+        env<int>('APP_PORT', 8000),
         context,
-        shared: env<bool>('APP_SHARED'),
+        shared: env<bool>('APP_SHARED', false),
       );
     } else {
       httpServer = await HttpServer.bind(
-        env<String>('APP_HOST'),
-        env<int>('APP_PORT'),
-        shared: env<bool>('APP_SHARED'),
+        env<String>('APP_HOST', '127.0.0.1'),
+        env<int>('APP_PORT', 8000),
+        shared: env<bool>('APP_SHARED', false),
       );
     }
 

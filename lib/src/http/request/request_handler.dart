@@ -11,7 +11,7 @@ import 'package:vania/vania.dart';
 
 Future httpRequestHandler(HttpRequest req) async {
   /// Check the incoming request is web socket or not
-  if (env<bool>('APP_WEBSOCKET') &&
+  if (env<bool>('APP_WEBSOCKET', false) &&
       WebSocketTransformer.isUpgradeRequest(req)) {
     WebSocketHandler().handler(req);
   } else {
@@ -33,12 +33,14 @@ Future httpRequestHandler(HttpRequest req) async {
 
       /// Controller and method handler
       ControllerHandler(route: route, request: request).call();
-    } on BaseHttpException catch (e) {
+    } on BaseHttpResponseException catch (e) {
       e.call().makeResponse(req.response);
     } on InvalidArgumentException catch (e) {
       print(e.message);
+      Logger.log(e.message, type: Logger.ERROR);
     } catch (e) {
       print(e.toString());
+      Logger.log(e.toString(), type: Logger.ERROR);
     }
   }
 }

@@ -1,3 +1,21 @@
+## 0.1.7+5
+
+- Added pool and poolsize to DatabaseConfig
+
+## 0.1.7+4
+
+- Fixed pgsql bug
+- Added alter column to the migration
+
+## 0.1.7+3
+
+- Refactored HttpException to HttpResponseException
+- Added abort method to the helper file
+
+## 0.1.7+2
+
+- Fixed route group bug
+
 ## 0.1.7+1
 
 - Fixed env issue

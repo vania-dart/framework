@@ -22,15 +22,15 @@ class Application extends Container {
 
     server = BaseHttpServer(config: config);
 
-    if (env('ISOLATE') != null && env<bool>('ISOLATE')) {
-      server.spawnIsolates(env<int>('ISOLATE_NUMBER'));
+    if (env<bool>('ISOLATE', false)) {
+      server.spawnIsolates(env<int>('ISOLATE_NUMBER', 1));
     } else {
       server.startServer();
     }
   }
 
   Future<void> close() async {
-    if (env<bool>('ISOLATE')) {
+    if (env<bool>('ISOLATE', false)) {
       server.killAll();
     } else {
       server.httpServer?.close();

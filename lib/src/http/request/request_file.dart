@@ -72,14 +72,17 @@ class RequestFile {
   /// String filename = await image.move('/public/images','myImage.jpg');
   /// ```
   Future<String> move({required String path, required String filename}) async {
-    path = sanitizeRoutePath('${Directory.current.path}/$path/$filename');
+    path = sanitizeRoutePath('$path/$filename');
     File file = File(path);
     Directory directory = Directory(file.parent.path);
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
     }
     await file.writeAsBytes(await bytes);
-    return file.path;
+    if (path.startsWith('/public')) {
+      return '$path/$filename'.replaceFirst('/public', '');
+    }
+    return '$path/$filename'.replaceFirst('public', '');
   }
 
   num _getFileSize(Uint8List bytesList) =>

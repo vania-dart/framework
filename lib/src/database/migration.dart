@@ -6,10 +6,14 @@ import 'package:vania/vania.dart';
 
 class MigrationConnection {
   static final MigrationConnection _singleton = MigrationConnection._internal();
+
   factory MigrationConnection() => _singleton;
+
   MigrationConnection._internal();
+
   Connection? dbConnection;
   DatabaseDriver? database;
+
   Future<void> setup(DatabaseConfig databaseConfig) async {
     database = databaseConfig.driver;
     try {
@@ -31,12 +35,12 @@ class MigrationConnection {
 }
 
 class Migration {
-  String tableName = '';
-  List<String> queries = [];
-  List<String> foreignKey = [];
-  String primaryField = '';
-  String primaryAlgorithm = '';
-  List<String> indexes = [];
+  String _tableName = '';
+  final List<String> _queries = [];
+  final List<String> _foreignKey = [];
+  String _primaryField = '';
+  String _primaryAlgorithm = '';
+  final List<String> _indexes = [];
 
   @mustBeOverridden
   @mustCallSuper
@@ -47,20 +51,30 @@ class Migration {
     }
   }
 
+  @mustBeOverridden
+  @mustCallSuper
+  Future<void> down() async {
+    if (MigrationConnection().dbConnection == null) {
+      print('Database is not defined');
+      throw 'Database is not defined';
+    }
+  }
+
   Future<void> createTable(String name, Function callback) async {
     try {
+      Stopwatch stopwatch = Stopwatch()..start();
       final query = StringBuffer();
-      tableName = name;
+      _tableName = name;
       callback();
-      String index = indexes.isNotEmpty ? ',${indexes.join(',')}' : '';
-      String foreig = foreignKey.isNotEmpty ? ',${foreignKey.join(',')}' : '';
-      String primary = primaryField.isNotEmpty
-          ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
+      String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
+      String foreig = _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
+      String primary = _primaryField.isNotEmpty
+          ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
           : '';
       query.write(
-          '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${queries.join(',')}$primary$index$foreig)''');
+          '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
-      if (MigrationConnection().database?.driver == 'Postgresql') {
+      if (MigrationConnection().database?.driver == 'pgsql') {
         await MigrationConnection()
             .dbConnection
             ?.execute(_mysqlToPosgresqlMapper(query.toString()));
@@ -70,8 +84,9 @@ class Migration {
             ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
       }
 
+      stopwatch.stop();
       print(
-          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+          ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       print(e);
       exit(0);
@@ -80,18 +95,19 @@ class Migration {
 
   Future<void> createTableNotExists(String name, Function callback) async {
     try {
+      Stopwatch stopwatch = Stopwatch()..start();
       final query = StringBuffer();
-      tableName = name;
+      _tableName = name;
       callback();
-      String index = indexes.isNotEmpty ? ',${indexes.join(',')}' : '';
-      String foreig = foreignKey.isNotEmpty ? ',${foreignKey.join(',')}' : '';
-      String primary = primaryField.isNotEmpty
-          ? ',PRIMARY KEY (`$primaryField`) USING $primaryAlgorithm'
+      String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
+      String foreig = _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
+      String primary = _primaryField.isNotEmpty
+          ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
           : '';
       query.write(
-          '''CREATE TABLE IF NOT EXISTS `$name` (${queries.join(',')}$primary$index$foreig)''');
+          '''CREATE TABLE IF NOT EXISTS `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
-      if (MigrationConnection().database?.driver == 'Postgresql') {
+      if (MigrationConnection().database?.driver == 'pgsql') {
         await MigrationConnection()
             .dbConnection
             ?.execute(_mysqlToPosgresqlMapper(query.toString()));
@@ -101,16 +117,73 @@ class Migration {
             ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
       }
 
+      stopwatch.stop();
       print(
-          ' Create $name table....................................\x1B[32mDONE\x1B[0m');
+          ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       print(e);
       exit(0);
     }
   }
 
-  Future<void> dropTable(String name) async {
-    String query = 'DROP TABLE IF EXISTS "$name";';
+  Future<void> alterColumn(
+    String table,
+    Function callback, {
+    String beforeColumn = '',
+    String afterColumn = '',
+  }) async {
+    _tableName = table;
+    callback();
+
+    String index = _indexes.isNotEmpty ? ',ADD ${_indexes.join(',')}' : '';
+    String foreig =
+        _foreignKey.isNotEmpty ? ',ADD ${_foreignKey.join(',')}' : '';
+
+    String alterQuery = '';
+    if (_queries.isNotEmpty) {
+      alterQuery = 'ADD COLUMN ${_queries.first}';
+      if (beforeColumn.isNotEmpty) {
+        alterQuery = ' $alterQuery BEFORE `$beforeColumn`';
+      } else if (afterColumn.isNotEmpty) {
+        alterQuery = ' $alterQuery AFTER `$afterColumn`';
+      }
+    }
+
+    if (_queries.isEmpty && index.isNotEmpty) {
+      index = index.replaceFirst(',', '');
+    }
+
+    if (_queries.isEmpty && index.isEmpty) {
+      foreig = foreig.replaceFirst(',', '');
+    }
+
+    try {
+      String query = 'ALTER TABLE `$table` $alterQuery$index$foreig;';
+      await MigrationConnection().dbConnection?.execute(query);
+      print('ALTER column to $_tableName table... \x1B[32mDONE\x1B[0m');
+    } catch (e) {
+      if (!e.toString().contains("write; duplicate key in table")) {
+        print('Error adding column: $e');
+        exit(0);
+      }
+    }
+  }
+
+  Future<void> dropIfExists(String name) async {
+    try {
+      String query = 'DROP TABLE IF EXISTS `$name`;';
+
+      await MigrationConnection().dbConnection?.execute(query.toString());
+      print(
+          ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+    } catch (e) {
+      print(e);
+      exit(0);
+    }
+  }
+
+  Future<void> drop(String name) async {
+    String query = 'DROP TABLE `$name`;';
 
     await MigrationConnection().dbConnection?.execute(query.toString());
     print(
@@ -148,7 +221,12 @@ class Migration {
     columnDefinition.write(nullable ? ' NULL' : ' NOT NULL');
 
     if (defaultValue != null) {
-      columnDefinition.write(" DEFAULT '$defaultValue'");
+      RegExp funcRegex = RegExp(r'^\w+\(.*\)$');
+      if (funcRegex.hasMatch(defaultValue)) {
+        columnDefinition.write(" DEFAULT $defaultValue");
+      } else {
+        columnDefinition.write(" DEFAULT '$defaultValue'");
+      }
     }
 
     if (comment != null) {
@@ -170,20 +248,24 @@ class Migration {
       columnDefinition.write(' AUTO_INCREMENT');
     }
 
-    queries.add(columnDefinition.toString());
+    _queries.add(columnDefinition.toString());
   }
 
   void primary(String columnName, [String algorithm = 'BTREE']) {
-    primaryField = columnName;
-    primaryAlgorithm = algorithm;
+    _primaryField = columnName;
+    _primaryAlgorithm = algorithm;
   }
 
   void index(ColumnIndex type, String name, List<String> columns) {
-    if (type == ColumnIndex.indexKey) {
-      indexes.add('INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
+    if (MigrationConnection().database?.driver == 'pgsql') {
+      _indexes.add('INDEX `$name` (${columns.join(',')})');
     } else {
-      indexes.add(
-          '${type.name} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
+      if (type == ColumnIndex.indexKey) {
+        _indexes.add('INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
+      } else {
+        _indexes.add(
+            '${type.name} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
+      }
     }
   }
 
@@ -197,12 +279,12 @@ class Migration {
   }) {
     String constraint = '';
     if (constrained) {
-      constraint = 'CONSTRAINT FK_${tableName}_$referencesTable';
+      constraint = 'CONSTRAINT FK_${_tableName}_$referencesTable';
     }
 
     final fk =
         '$constraint FOREIGN KEY (`$columnName`) REFERENCES `$referencesTable` (`$referencesColumn`) ON UPDATE $onUpdate ON DELETE $onDelete';
-    foreignKey.add(fk);
+    _foreignKey.add(fk);
   }
 
   void id() {
@@ -889,6 +971,11 @@ class Migration {
     );
   }
 
+  void timeStamps() {
+    timeStamp("created_at", nullable: true);
+    timeStamp("updated_at", nullable: true);
+  }
+
   void timeStamp(
     String name, {
     bool nullable = false,
@@ -1188,8 +1275,8 @@ class Migration {
               RegExp(
                   r"DEFAULT\s+('(?:[^'\\]|\\.)*'|NULL|CURRENT_TIMESTAMP(?:\s+ON\s+UPDATE\s+CURRENT_TIMESTAMP)?|\d+)",
                   caseSensitive: false),
-              "")
-          .replaceAll('`', '"');
+              "");
+      query.replaceAll('`', '"');
 
       queryList.add(query);
     }
@@ -1224,10 +1311,6 @@ class Migration {
     if (RegExp(r"PRIMARY KEY \(`.*?`\)").hasMatch(str)) {
       str = str.replaceAll(
           RegExp(r"PRIMARY KEY \(`.*?`\)", caseSensitive: false), "");
-    }
-
-    if (RegExp(r"UNSIGNED").hasMatch(str)) {
-      str = str.replaceAll(RegExp(r"UNSIGNED", caseSensitive: false), "");
     }
 
     return str;

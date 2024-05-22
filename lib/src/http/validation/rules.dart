@@ -276,16 +276,24 @@ class Rules {
   /// if added supported extension in validation, check with extension
   /// return true
   static bool isFile(Map<String, dynamic> data, dynamic value, String args) {
-    if (value is! RequestFile) {
+    if (value is! RequestFile && value is! List<RequestFile>) {
       return false;
     }
-    if (args.toString().isEmpty) {
+
+    if (args.isEmpty) {
       return true;
     }
-    List<String> extensions = args.toString().split(',');
-    if (extensions.contains(value.extension)) {
-      return true;
+
+    List<String> validExtensions = args.split(',');
+
+    bool hasValidExtension(RequestFile file) {
+      return validExtensions.contains(file.extension);
     }
-    return false;
+
+    if (value is List<RequestFile>) {
+      return value.every(hasValidExtension);
+    } else {
+      return hasValidExtension(value);
+    }
   }
 }

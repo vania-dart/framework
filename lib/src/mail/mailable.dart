@@ -9,51 +9,66 @@ class Mailable implements Mail {
   const Mailable();
 
   SmtpServer _setupSmtpServer() {
-    switch (Config().get('mail')['driver']) {
+    switch (env<String>('MAIL_MAILER', 'smtp')) {
       case 'gmail':
         return gmail(
-            Config().get('mail')['username'], Config().get('mail')['password']);
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('MAIL_PASSWORD', ''),
+        );
       case 'gmailSaslXoauth2':
-        return gmailSaslXoauth2(Config().get('mail')['username'],
-            Config().get('mail')['accessToken']);
+        return gmailSaslXoauth2(
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('MAIL_ACCESS_TOKEN', ''),
+        );
       case 'gmailRelaySaslXoauth2':
-        return gmail(Config().get('mail')['username'],
-            Config().get('mail')['accessToken']);
+        return gmail(
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('accessToken', ''),
+        );
       case 'hotmail':
         return hotmail(
-            Config().get('mail')['username'], Config().get('mail')['password']);
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('MAIL_PASSWORD', ''),
+        );
       case 'mailgun':
         return mailgun(
-            Config().get('mail')['username'], Config().get('mail')['password']);
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('MAIL_PASSWORD', ''),
+        );
       case 'qq':
         return qq(
-            Config().get('mail')['username'], Config().get('mail')['password']);
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('MAIL_PASSWORD', ''),
+        );
       case 'yahoo':
         return yahoo(
-            Config().get('mail')['username'], Config().get('mail')['password']);
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('MAIL_PASSWORD', ''),
+        );
       case 'yandex':
         return yandex(
-            Config().get('mail')['username'], Config().get('mail')['password']);
+          env<String>('MAIL_USERNAME', ''),
+          env<String>('MAIL_PASSWORD', ''),
+        );
       default:
         return SmtpServer(
-          Config().get('mail')['host'] ?? '',
-          username: Config().get('mail')['username'] ?? '',
-          password: Config().get('mail')['password'] ?? '',
-          port: Config().get('mail')['port'],
-          ssl: Config().get('mail')['encryption'] == 'ssl',
-          ignoreBadCertificate:
-              Config().get('mail')['ignoreBadCertificate'] ?? true,
+          env<String>('MAIL_HOST', ''),
+          username: env<String>('MAIL_USERNAME', ''),
+          password: env<String>('MAIL_PASSWORD', ''),
+          port: env<int>('MAIL_PORT', 465),
+          ssl: env<bool>('MAIL_ENCRYPTION', true),
+          ignoreBadCertificate: env<bool>('MAIL_IGNORE_BAD_CERTIFICATE', true),
         );
     }
   }
 
-  Future<void> send() async {
+  Future<mailer.SendReport> send() async {
     final message = mailer.Message();
 
     message.from = envelope().from ??
         Address(
-          Config().get('mail')['from_address'],
-          Config().get('mail')['from_name'],
+          env<String>('MAIL_FROM_ADDRESS', ''),
+          env<String>('MAIL_FROM_NAME', ''),
         );
     message.recipients.addAll(envelope().to);
 
@@ -72,9 +87,10 @@ class Mailable implements Mail {
     if (attachments() != null) {
       message.attachments.addAll(attachments()!);
     }
-
     try {
-      await mailer.send(message, _setupSmtpServer());
+      mailer.SendReport sendReport =
+          await mailer.send(message, _setupSmtpServer());
+      return sendReport;
     } catch (e) {
       print('Failed to send email: $e');
       rethrow;

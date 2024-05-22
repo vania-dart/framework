@@ -1,5 +1,8 @@
-
 # Introduction
+
+[Vania Dart Documentation](https://vdart.dev)
+
+[Contributing to Vania](https://github.com/vania-dart/framework/blob/main/CONTRIBUTING.md)
 
 Vania is a robust backend framework designed for building high-performance web applications using Dart. With its straightforward approach and powerful features, Vania streamlines the development process for both beginners and experienced developers alike.
 
@@ -23,15 +26,13 @@ Vania is a robust backend framework designed for building high-performance web a
 
 Experience the simplicity and power of Vania for your next web application project
 
-Check out the documentation here: [Vania Dart Documentation](https://vdart.dev)
-
 # Quick Start 🚀
 
 Ensure that you have the [Dart SDK](https://dart.dev) installed on your machine.
 
 YouTube Video [Quick Start](https://www.youtube.com/watch?v=k8ol0F4bDKs)
 
-[![Quick Start](http://img.youtube.com/vi/k8ol0F4bDKs/0.jpg)](https://www.youtube.com/watch?v=k8ol0F4bDKs "Quick Start")
+[![Quick Start](https://img.youtube.com/vi/k8ol0F4bDKs/0.jpg)](https://www.youtube.com/watch?v=k8ol0F4bDKs "Quick Start")
 
 ## Installing 🧑‍💻
 

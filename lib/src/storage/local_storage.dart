@@ -7,7 +7,7 @@ import 'package:vania/src/storage/storage_driver.dart';
 import 'package:vania/src/utils/functions.dart';
 
 class LocalStorage implements StorageDriver {
-  String storagePath = "${Directory.current.path}/storage/app/public";
+  String storagePath = "storage/app/public";
 
   @override
   Future<bool> exists(String filename) {
