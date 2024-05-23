@@ -58,3 +58,6 @@ export 'src/env_handler/env.dart';
 export 'src/logger/logger.dart';
 
 export 'src/database/seeder/seeder.dart';
+
+
+export 'src/redis/redis.dart';

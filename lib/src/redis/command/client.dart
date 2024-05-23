@@ -63,6 +63,8 @@ class CommandsClient<K, V> implements Commands<K, V> {
     return res.isInteger && res.integerValue == 1;
   }
 
+// key-value operation(String) commands
+
   @override
   Future<bool> exists(K key) async {
     final keyString = keyCodec.encode<K>(key);
@@ -113,6 +115,15 @@ class CommandsClient<K, V> implements Commands<K, V> {
   }
 
   @override
+  Future<int?> ttl(K key) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(Resp(['ttl', keyString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
   Future<List<String>> keys(String pattern) async {
     _connection.sendCommand(Resp(['KEYS', pattern]));
     final res = await _connection.receive();
@@ -139,6 +150,266 @@ class CommandsClient<K, V> implements Commands<K, V> {
     }
     return s == 'OK';
   }
+
+  @override
+  Future<bool> setEx(K key, int ttl, V value) async {
+    final keyString = keyCodec.encode<K>(key);
+    final valueString = valueCodec.encode<V>(value);
+    _connection
+        .sendCommand(Resp(['SETEX', keyString, ttl.toString(), valueString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+
+    final s = res.stringValue;
+    if (s == null) {
+      return false;
+    }
+    return s == 'OK';
+  }
+
+  @override
+  Future<int?> append(K key, V value) async {
+    final keyString = keyCodec.encode<K>(key);
+    final valueString = valueCodec.encode<V>(value);
+    _connection.sendCommand(Resp(['APPEND', keyString, valueString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> bitCount(K key, {int? start, int? end}) async {
+    final keyString = keyCodec.encode<K>(key);
+    final command = ['BITCOUNT', keyString];
+    if (start != null && end != null) {
+      command.addAll([start.toString(), end.toString()]);
+    }
+    _connection.sendCommand(Resp(command));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> bitOp(String operation, K destKey, List<K> keys) async {
+    final destKeyString = keyCodec.encode<K>(destKey);
+    final keyStrings = keys.map((k) => keyCodec.encode<K>(k)).toList();
+    final command = ['BITOP', operation, destKeyString, ...keyStrings];
+    _connection.sendCommand(Resp(command));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> bitPos(K key, int bit, {int? start, int? end}) async {
+    final keyString = keyCodec.encode<K>(key);
+    final command = ['BITPOS', keyString, bit.toString()];
+    if (start != null && end != null) {
+      command.addAll([start.toString(), end.toString()]);
+    }
+    _connection.sendCommand(Resp(command));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> decr(K key) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(Resp(['DECR', keyString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> decrBy(K key, int decrement) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(Resp(['DECRBY', keyString, decrement.toString()]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> getBit(K key, int offset) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(Resp(['GETBIT', keyString, offset.toString()]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<V?> getRange(K key, int start, int end) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(
+        Resp(['GETRANGE', keyString, start.toString(), end.toString()]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    final str = res.stringValue;
+    if (str == null) {
+      return null;
+    }
+    return valueCodec.decode<V>(str);
+  }
+
+  @override
+  Future<V?> getSet(K key, V value) async {
+    final keyString = keyCodec.encode<K>(key);
+    final valueString = valueCodec.encode<V>(value);
+    _connection.sendCommand(Resp(['GETSET', keyString, valueString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    final str = res.stringValue;
+    if (str == null) {
+      return null;
+    }
+    return valueCodec.decode<V>(str);
+  }
+
+  @override
+  Future<int?> incr(K key) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(Resp(['INCR', keyString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> incrBy(K key, int increment) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(Resp(['INCRBY', keyString, increment.toString()]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<double?> incrByFloat(K key, double increment) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection
+        .sendCommand(Resp(['INCRBYFLOAT', keyString, increment.toString()]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.doubleValue;
+  }
+
+  @override
+  Future<List<V>> mGet(List<K> keys) async {
+    final keyStrings = keys.map((k) => keyCodec.encode<K>(k)).toList();
+    _connection.sendCommand(Resp(['MGET', ...keyStrings]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    final l = res.arrayValue;
+    if (l == null) {
+      return [];
+    }
+    return l.map((e) => valueCodec.decode<V>(e)).toList();
+  }
+
+  @override
+  Future<bool> mSet(Map<K, V> keyValues) async {
+    final command = ['MSET'];
+    keyValues.forEach((k, v) {
+      command.addAll([keyCodec.encode<K>(k), valueCodec.encode<V>(v)]);
+    });
+    _connection.sendCommand(Resp(command));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.stringValue == 'OK';
+  }
+
+  @override
+  Future<bool> mSetNX(Map<K, V> keyValues) async {
+    final command = ['MSETNX'];
+    keyValues.forEach((k, v) {
+      command.addAll([keyCodec.encode<K>(k), valueCodec.encode<V>(v)]);
+    });
+    _connection.sendCommand(Resp(command));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue == 1;
+  }
+
+  @override
+  Future<int?> setBit(K key, int offset, int value) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(
+        Resp(['SETBIT', keyString, offset.toString(), value.toString()]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<bool> pSetEx(K key, int ttl, V value) async {
+    final keyString = keyCodec.encode<K>(key);
+    final valueString = valueCodec.encode<V>(value);
+    _connection
+        .sendCommand(Resp(['PSETEX', keyString, ttl.toString(), valueString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    final s = res.stringValue;
+    if (s == null) {
+      return false;
+    }
+    return s == 'OK';
+  }
+
+  @override
+  Future<bool> setNx(K key, V value) async {
+    final keyString = keyCodec.encode<K>(key);
+    final valueString = valueCodec.encode<V>(value);
+    _connection.sendCommand(Resp(['SETNX', keyString, valueString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue == 1;
+  }
+
+  @override
+  Future<int?> setRange(K key, int offset, V value) async {
+    final keyString = keyCodec.encode<K>(key);
+    final valueString = valueCodec.encode<V>(value);
+    _connection.sendCommand(
+        Resp(['SETRANGE', keyString, offset.toString(), valueString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<int?> strlen(K key) async {
+    final keyString = keyCodec.encode<K>(key);
+    _connection.sendCommand(Resp(['STRLEN', keyString]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.integerValue;
+  }
+
+  @override
+  Future<bool> setOption(String option) async {
+    _connection.sendCommand(Resp(['CONFIG', 'SET', option]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    return res.stringValue == 'OK';
+  }
+
+  @override
+  Future<String?> getOption(String option) async {
+    _connection.sendCommand(Resp(['CONFIG', 'GET', option]));
+    final res = await _connection.receive();
+    res.throwIfError();
+    final l = res.arrayValue;
+    if (l == null || l.isEmpty) {
+      return null;
+    }
+    return l.last.stringValue;
+  }
+
+// List operation commands
 
   @override
   Future<List<V>> lrange(K key, int startIndex, int endIndex) async {
@@ -194,6 +465,8 @@ class CommandsClient<K, V> implements Commands<K, V> {
     return res.stringValue == 'OK';
   }
 
+  // Transaction Commands
+
   @override
   Future<void> exec() async {
     _connection.sendCommand(Resp(['EXEC']));
@@ -212,6 +485,7 @@ class CommandsClient<K, V> implements Commands<K, V> {
     await _connection.receive();
   }
 
+  // pubsub operation commands
   @override
   Stream<V> psubscribe(String pattern) {
     _connection.sendCommand(Resp(['PSUBSCRIBE', pattern]));
@@ -231,7 +505,6 @@ class CommandsClient<K, V> implements Commands<K, V> {
     final res = await _connection.receive();
     return res.integerValue;
   }
-
 
   Future<String?> auth({String? username, required String password}) async {
     if (username == null) {

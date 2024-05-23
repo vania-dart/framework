@@ -6,7 +6,6 @@ import 'dart:io';
 import 'package:vania/src/redis/exception.dart';
 import 'package:vania/src/redis/lowlevel/resp.dart';
 
-
 /// low level Redis Client
 class RedisProtocolClient {
   final Socket _socket;

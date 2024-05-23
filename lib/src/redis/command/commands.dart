@@ -12,14 +12,64 @@ abstract class KeysCommands<K, V> {
   /// KEYS command (get keys that match [pattern])
   Future<List<String>> keys(String pattern);
 
+  /// Returns the remaining time to live of a key  (get value)
+  Future<int?> ttl(K key);
+
   /// GET command (get value)
   Future<V?> get(K key);
 
   /// SET command (set value)
   Future<bool> set(K key, V value);
 
+  /// SET expire duration command (set value)
+  Future<bool> setEx(K key, int ttl, V value);
+
   /// GETDEL command (get value and delete value)
   Future<V?> getdel(K key);
+
+  Future<int?> append(K key, V value);
+
+  Future<int?> bitCount(K key, {int? start, int? end});
+
+  Future<int?> bitOp(String operation, K destKey, List<K> keys);
+
+  Future<int?> bitPos(K key, int bit, {int? start, int? end});
+
+  Future<int?> decr(K key);
+
+  Future<int?> decrBy(K key, int decrement);
+
+  Future<int?> getBit(K key, int offset);
+
+  Future<V?> getSet(K key, V value);
+
+  Future<int?> incr(K key);
+
+  Future<int?> incrBy(K key, int increment);
+
+  Future<double?> incrByFloat(K key, double increment);
+
+  Future<List<V>> mGet(List<K> keys);
+
+  Future<bool> mSet(Map<K, V> keyValues);
+
+  Future<bool> mSetNX(Map<K, V> keyValues);
+
+  Future<int?> setBit(K key, int offset, int value);
+
+  Future<bool> pSetEx(K key, int ttl, V value);
+
+  Future<bool> setNx(K key, V value);
+
+  Future<int?> setRange(K key, int offset, V value);
+
+  Future<V?> getRange(K key, int start, int end);
+
+  Future<int?> strlen(K key);
+
+  Future<bool> setOption(String option);
+
+  Future<String?> getOption(String option);
 }
 
 /// list operation commands
