@@ -39,12 +39,12 @@ Future<void> httpIsolate(
       );
     }
     sendPort.send(
-      'Server running on ${server.address.address}:${server.port} in isolate ${Isolate.current.debugName}',
+      'Server running on ${server.address.address}:${server.port} in ${Isolate.current.debugName}',
     );
     server.listen(httpRequestHandler);
   } catch (e, stackTrace) {
     sendPort.send(
-      'Error starting server in isolate ${Isolate.current.debugName}: $e\n$stackTrace',
+      'Error starting server in ${Isolate.current.debugName}: $e\n$stackTrace',
     );
   }
   
