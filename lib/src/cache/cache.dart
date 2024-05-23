@@ -6,26 +6,19 @@ class Cache {
   factory Cache() => _singleton;
   Cache._internal();
 
-  String? _store;
-
-  Map<String, CacheDriver> cacheDrivers = <String, CacheDriver>{
-    'file': FileCacheDriver(),
-    ...Config().get("cache")?.drivers
-  };
-
-  /// Set where to store the cache.
-  /// The name you set in the cache drivers configuration
-  /// Example `drivers => {'file' : LocalCacheDriver()}`,
-  /// then store name is `local`
-  Cache store(String store) {
-    _store = store;
-    return this;
-  }
-
   CacheDriver get _driver {
-    return cacheDrivers[_store] ??
-        cacheDrivers[Config().get("cache")?.defaultDriver] ??
-        FileCacheDriver();
+    switch (env<String>('CACHE_DRIVER', 'file')) {
+      case 'file':
+        return FileCacheDriver();
+      case 'redis':
+        return RedisCacheDriver();
+      /*case 'memcached':
+      case 'database':
+      case 'memcache':
+      break;*/
+      default:
+        return FileCacheDriver();
+    }
   }
 
   /// set key => value to cache

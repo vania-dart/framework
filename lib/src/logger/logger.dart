@@ -16,7 +16,7 @@ class Logger {
   static log(String content, {String type = INFO, String fileName = 'vania'}) {
     final now = DateTime.now();
 
-    final directory = Directory(storagePath('framework/logs'));
+    final directory = Directory(storagePath('logs'));
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
     }
