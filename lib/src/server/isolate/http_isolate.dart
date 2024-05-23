@@ -12,7 +12,6 @@ Future<void> httpIsolate(
   SendPort sendPort,
   Map config,
 ) async {
-
   try {
     await initializeConfig(config);
     Env().load();
@@ -47,5 +46,4 @@ Future<void> httpIsolate(
       'Error starting server in ${Isolate.current.debugName}: $e\n$stackTrace',
     );
   }
-  
 }

@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:vania/src/redis/exception.dart';
 import 'package:vania/src/redis/lowlevel/protocol_client.dart';
 import 'package:vania/src/redis/lowlevel/resp.dart';
+import 'package:vania/vania.dart';
 
 import 'codec.dart';
 import 'commands.dart';
@@ -537,7 +540,6 @@ class RedisClient {
     if (password != null) {
       await _auth(rpc, username: username, password: password);
     }
-
     rpc.sendCommand(Resp(['SELECT', '$db']));
     final res = await rpc.receive();
     res.throwIfError();
@@ -555,7 +557,18 @@ class RedisClient {
       connection.sendCommand(Resp(['AUTH', username, password]));
     }
     final res = await connection.receive();
-    res.throwIfError();
+    try {
+      res.throwIfError();
+    } on RedisException catch (e) {
+      print(e.hashCode);
+      Logger.log(
+        jsonEncode({
+          'error': 'RedisException',
+          'message': e.message,
+        }),
+        type: Logger.ERROR,
+      );
+    }
     return res.stringValue;
   }
 
