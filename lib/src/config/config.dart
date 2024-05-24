@@ -11,16 +11,6 @@ class Config {
   dynamic get(String key) => _config[key];
 }
 
-class CacheConfig {
-  final String defaultDriver;
-  final Map<String, CacheDriver> drivers;
-
-  const CacheConfig({
-    this.defaultDriver = 'file',
-    this.drivers = const <String, CacheDriver>{},
-  });
-}
-
 class FileStorageConfig {
   final String defaultDriver;
   final Map<String, StorageDriver> drivers;

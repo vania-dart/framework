@@ -6,8 +6,10 @@ class Application extends Container {
   static Application? _singleton;
 
   factory Application() {
-    _singleton ??= Application._internal();
-    Env().load();
+    if (_singleton == null) {
+      _singleton = Application._internal();
+      Env().load();
+    }
     return _singleton!;
   }
 
@@ -23,7 +25,7 @@ class Application extends Container {
     server = BaseHttpServer(config: config);
 
     if (env<bool>('ISOLATE', false)) {
-      server.spawnIsolates(env<int>('ISOLATE_NUMBER', 1));
+      await server.spawnIsolates(env<int>('ISOLATE_NUMBER', 1));
     } else {
       server.startServer();
     }
