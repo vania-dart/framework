@@ -7,7 +7,7 @@ class Redis {
 
   static final Completer<void> _completer = Completer<void>();
 
-  Future<void> get instance => _completer.future;
+  Future<void> get initialized => _completer.future;
 
   Redis._internal();
   static Redis? _singleton;

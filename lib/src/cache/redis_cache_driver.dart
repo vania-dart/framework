@@ -5,32 +5,32 @@ class RedisCacheDriver extends CacheDriver {
 
   @override
   Future<void> delete(String key) async {
-    await Redis().instance;
+    await Redis().initialized;
     await Redis().command.del('$prefix$key');
   }
 
   @override
   Future<void> forever(String key, value) async {
-    await Redis().instance;
+    await Redis().initialized;
     await Redis().command.set('$prefix$key', value);
   }
 
   @override
   Future get(String key, [defaultValue]) async {
-    await Redis().instance;
+    await Redis().initialized;
     return await Redis().command.get('$prefix$key') ?? defaultValue;
   }
 
   @override
   Future<bool> has(String key) async {
-    await Redis().instance;
+    await Redis().initialized;
     return await Redis().command.exists('$prefix$key');
   }
 
   @override
   Future<void> put(String key, value, {Duration? duration}) async {
     duration ??= Duration(hours: 24);
-    await Redis().instance;
+    await Redis().initialized;
     await Redis().command.setEx('$prefix$key', duration.inSeconds, value);
   }
 }

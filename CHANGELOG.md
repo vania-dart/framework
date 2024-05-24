@@ -1,3 +1,8 @@
+## 0.2.0
+
+- add Redis (base code from dedis dart package)
+- add Redis Cache Driver
+
 ## 0.1.9
 
 - fix Isolate bug
@@ -6,22 +11,22 @@
 
 - fix public and storage file path
 - refactor Mailable Config to env
-- refactor Migration class, created migration timestamp added by [S.M. SHAHi](https://github.com/shahi5472)
+- refactor Migration class, created migration timestamp add by [S.M. SHAHi](https://github.com/shahi5472)
 - refactor Local cache class name to File cache
 
 ## 0.1.7+5
 
-- Added pool and poolsize to DatabaseConfig
+- add pool and poolsize to DatabaseConfig
 
 ## 0.1.7+4
 
 - fix pgsql bug
-- Added alter column to the migration
+- add alter column to the migration
 
 ## 0.1.7+3
 
 - refactor HttpException to HttpResponseException
-- Added abort method to the helper file
+- add abort method to the helper file
 
 ## 0.1.7+2
 
@@ -33,13 +38,13 @@
 
 ## 0.1.7
 
-- Added deleteTokens and deleteCurrentToken Auth class
+- add deleteTokens and deleteCurrentToken Auth class
 - refactor group routing to use a callback function instead of a list
 - Changed websocket data to payload
 - Created Middleware Handler
 - fix Webscoket Route bug
 - Updated Dependencies
-- Added secure bind
+- add secure bind
 
 ## 0.1.6+1
 
@@ -57,14 +62,14 @@
 
 ## 0.1.5
 
-- Added Logger
-- Added env file
+- add Logger
+- add env file
 
 ## 0.1.4
 
 - Implemented Throttle middleware
-- Added move for upload file in custom folder
-- Added paginate and simplePagination in Eloquent
+- add move for upload file in custom folder
+- add paginate and simplePagination in Eloquent
 
 ## 0.1.3
 
@@ -93,14 +98,14 @@
 
 - ## 0.1.1
 
-- Added Hash class
+- add Hash class
 
 ## 0.1.0
 
 - Initial beta release
 - fix a bug related to WebSocket data events
 - Corrected authentication check functionality
-- Added `isAuthorized` feature
+- add `isAuthorized` feature
 - Exported `query_builder` from Eloquent package for enhanced functionality
 
 ## 0.0.4
@@ -110,7 +115,7 @@
 ## 0.0.3+1
 
 - fix bug: migration columns length
-- Added sslmode to the MySqldriver
+- add sslmode to the MySqldriver
 
 ## 0.0.3
 
@@ -118,11 +123,11 @@
 
 ## 0.0.2+1
 
-- Added bigIncrements and  softDeletes columns
+- add bigIncrements and  softDeletes columns
 
 ## 0.0.2
 
-- Added column index to vania file
+- add column index to vania file
 - Code formatted
 
 ## 0.0.1
