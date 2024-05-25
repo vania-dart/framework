@@ -1,3 +1,7 @@
+## 0.2.1
+
+- fix Postgresql bug
+
 ## 0.2.0
 
 - add Redis (base code from dedis dart package)
