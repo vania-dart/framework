@@ -74,15 +74,13 @@ class Migration {
       query.write(
           '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
-      if (MigrationConnection().database?.driver == 'pgsql') {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(_mysqlToPosgresqlMapper(query.toString()));
-      } else {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
+      String sqlQuery = query.toString();
+      if (MigrationConnection().database?.driver == 'Postgresql') {
+        sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
       }
+      await MigrationConnection()
+          .dbConnection
+          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'));
 
       stopwatch.stop();
       print(
@@ -107,15 +105,13 @@ class Migration {
       query.write(
           '''CREATE TABLE IF NOT EXISTS `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
-      if (MigrationConnection().database?.driver == 'pgsql') {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(_mysqlToPosgresqlMapper(query.toString()));
-      } else {
-        await MigrationConnection()
-            .dbConnection
-            ?.execute(query.toString().replaceAll(RegExp(r',\s?\)'), ')'));
+      String sqlQuery = query.toString();
+      if (MigrationConnection().database?.driver == 'Postgresql') {
+        sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
       }
+      await MigrationConnection()
+          .dbConnection
+          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'));
 
       stopwatch.stop();
       print(
@@ -159,6 +155,11 @@ class Migration {
 
     try {
       String query = 'ALTER TABLE `$table` $alterQuery$index$foreig;';
+
+      if (MigrationConnection().database?.driver == 'Postgresql') {
+        query = _mysqlToPosgresqlMapper(query.toString());
+      }
+
       await MigrationConnection().dbConnection?.execute(query);
       print('ALTER column to $_tableName table... \x1B[32mDONE\x1B[0m');
     } catch (e) {
@@ -172,8 +173,12 @@ class Migration {
   Future<void> dropIfExists(String name) async {
     try {
       String query = 'DROP TABLE IF EXISTS `$name`;';
+      if (MigrationConnection().database?.driver == 'Postgresql') {
+        query = _mysqlToPosgresqlMapper(query.toString());
+      }
 
       await MigrationConnection().dbConnection?.execute(query.toString());
+
       print(
           ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
     } catch (e) {
@@ -184,6 +189,10 @@ class Migration {
 
   Future<void> drop(String name) async {
     String query = 'DROP TABLE `$name`;';
+
+    if (MigrationConnection().database?.driver == 'Postgresql') {
+      query = _mysqlToPosgresqlMapper(query.toString());
+    }
 
     await MigrationConnection().dbConnection?.execute(query.toString());
     print(
@@ -197,7 +206,7 @@ class Migration {
     dynamic length,
     bool unsigned = false,
     bool zeroFill = false,
-    String? defaultValue,
+    dynamic defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -222,10 +231,14 @@ class Migration {
 
     if (defaultValue != null) {
       RegExp funcRegex = RegExp(r'^\w+\(.*\)$');
-      if (funcRegex.hasMatch(defaultValue)) {
+      if (funcRegex.hasMatch(defaultValue.toString())) {
         columnDefinition.write(" DEFAULT $defaultValue");
       } else {
-        columnDefinition.write(" DEFAULT '$defaultValue'");
+        if (defaultValue is int) {
+          columnDefinition.write(" DEFAULT $defaultValue");
+        } else {
+          columnDefinition.write(" DEFAULT '$defaultValue'");
+        }
       }
     }
 
@@ -296,7 +309,7 @@ class Migration {
     String name, {
     bool nullable = false,
     bool zeroFill = false,
-    String? defaultValue,
+    int? defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -324,7 +337,7 @@ class Migration {
     int length = 10,
     bool unsigned = false,
     bool zeroFill = false,
-    String? defaultValue,
+    int? defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -353,7 +366,7 @@ class Migration {
     int length = 1,
     bool unsigned = false,
     bool zeroFill = false,
-    String? defaultValue,
+    int? defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -382,7 +395,7 @@ class Migration {
     int length = 1,
     bool unsigned = false,
     bool zeroFill = false,
-    String? defaultValue,
+    int? defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -411,7 +424,7 @@ class Migration {
     int length = 10,
     bool unsigned = false,
     bool zeroFill = false,
-    String? defaultValue,
+    int? defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -440,7 +453,7 @@ class Migration {
     int length = 20,
     bool unsigned = false,
     bool zeroFill = false,
-    String? defaultValue,
+    int? defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -468,7 +481,7 @@ class Migration {
     bool nullable = false,
     bool unsigned = false,
     bool zeroFill = false,
-    String? defaultValue,
+    int? defaultValue,
     String? comment,
     String? collation,
     String? expression,
@@ -1220,99 +1233,73 @@ class Migration {
 
   /// Mapper for mysql to postgresql query
   String _mysqlToPosgresqlMapper(String queryStr) {
-    List strList = queryStr.split(',');
-    List<String> queryList = [];
-    for (String str in strList) {
-      str = _mysqlAiToSerial(str);
-
-      String query = str
-          .replaceAll(RegExp(r"BIGINT\((\d+)\)"), "BIGINT")
-          .replaceAll(
-              RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " INTEGER")
-          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
-              " INTEGER")
-          .replaceAll(
-              RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "INTEGER")
-          .replaceAll(
-              RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLINT")
-          .replaceAll(
-              RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLINT")
-          .replaceAll(RegExp(r"BINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"BIT\((\d+)\)", caseSensitive: false), "BOOLEAN")
-          .replaceAllMapped(
-              RegExp(r"VARCHAR\((\d+)\)"), (match) => "VARCHAR(${match[1]})")
-          .replaceAllMapped(RegExp(r"VARCHARACTER\((\d+)\)"),
-              (match) => "CHARACTER(${match[1]})")
-          .replaceAllMapped(RegExp(r"FLOAT\((\d+)\)"), (match) => "REAL")
-          .replaceAll(
-              RegExp(r"DATETIME\((\d+)\)", caseSensitive: false), "TIMESTAMP")
-          .replaceAll(RegExp(r"DOUBLE\((\d+)\)", caseSensitive: false),
-              "DOUBLE PRECISION")
-          .replaceAll(RegExp(r"TINYBLOB", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"VARBYTEA", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"BLOB", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"MEDIUMBLOB", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"LONGBLOB", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"MEDIUMBYTEA", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"LONGBYTEA", caseSensitive: false), "BYTEA")
-          .replaceAll(RegExp(r"TINYTEXT", caseSensitive: false), "TEXT")
-          .replaceAll(RegExp(r"MEDIUMTEXT", caseSensitive: false), "TEXT")
-          .replaceAll(
-              RegExp(r"LONGTEXT\((\d+)\)", caseSensitive: false), "TEXT")
-          .replaceAll(RegExp(r"LINESTRING", caseSensitive: false), "LINE")
-          .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
-          .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
-          .replaceAll(
-              RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-          .replaceAll(
-              RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-          .replaceAll(
-              RegExp(r"ENUM\((?:'[^']*'(?:\s*,\s*'[^']*')*)\)",
-                  caseSensitive: false),
-              "VARCHAR")
-          .replaceAll(RegExp(r"COLLATE '[\w\d_-]+'", caseSensitive: false), "")
-          .replaceAll(
-              RegExp(
-                  r"DEFAULT\s+('(?:[^'\\]|\\.)*'|NULL|CURRENT_TIMESTAMP(?:\s+ON\s+UPDATE\s+CURRENT_TIMESTAMP)?|\d+)",
-                  caseSensitive: false),
-              "");
-      query.replaceAll('`', '"');
-
-      queryList.add(query);
+    if (queryStr.contains("AUTO_INCREMENT")) {
+      queryStr = queryStr.replaceAll("AUTO_INCREMENT", "PRIMARY KEY");
     }
 
-    return queryList.join(',').replaceAll(RegExp(r',\s?\)'), ')');
-  }
-
-  String _mysqlAiToSerial(String str) {
-    if (str.contains("AUTO_INCREMENT")) {
-      str = str
-          .replaceAll("AUTO_INCREMENT", "PRIMARY KEY")
-          .replaceAll(
-              RegExp(r"BIGINT\((\d+)\)", caseSensitive: false), "BIGSERIAL")
-          .replaceAll(
-              RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " SERIAL")
-          .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
-              " SERIAL")
-          .replaceAll(
-              RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "SERIAL")
-          .replaceAll(
-              RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL")
-          .replaceAll(
-              RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLSERIAL");
-    }
-
-    if (RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE").hasMatch(str)) {
-      str = str.replaceAll(
+    if (RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE").hasMatch(queryStr)) {
+      queryStr = queryStr.replaceAll(
           RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE", caseSensitive: false),
           "");
     }
 
-    if (RegExp(r"PRIMARY KEY \(`.*?`\)").hasMatch(str)) {
-      str = str.replaceAll(
+    if (RegExp(r"PRIMARY KEY \(`.*?`\)").hasMatch(queryStr)) {
+      queryStr = queryStr.replaceAll(
           RegExp(r"PRIMARY KEY \(`.*?`\)", caseSensitive: false), "");
     }
 
-    return str;
+    String query = queryStr
+        .replaceAll(RegExp(r"BIGINT\((\d+)\)"), "BIGINT")
+        .replaceAll(
+            RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " INTEGER")
+        .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
+            " INTEGER")
+        .replaceAll(
+            RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "INTEGER")
+        .replaceAll(
+            RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+        .replaceAll(
+            RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+        .replaceAll(RegExp(r"BINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"BIT\((\d+)\)", caseSensitive: false), "BOOLEAN")
+        .replaceAllMapped(
+            RegExp(r"VARCHAR\((\d+)\)"), (match) => "VARCHAR(${match[1]})")
+        .replaceAllMapped(RegExp(r"VARCHARACTER\((\d+)\)"),
+            (match) => "CHARACTER(${match[1]})")
+        .replaceAllMapped(RegExp(r"FLOAT\((\d+)\)"), (match) => "REAL")
+        .replaceAll(
+            RegExp(r"DATETIME\((\d+)\)", caseSensitive: false), "TIMESTAMP")
+        .replaceAll(RegExp(r"DOUBLE\((\d+)\)", caseSensitive: false),
+            "DOUBLE PRECISION")
+        .replaceAll(RegExp(r"TINYBLOB", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"VARBYTEA", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"BLOB", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"MEDIUMBLOB", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"LONGBLOB", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"MEDIUMBYTEA", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"LONGBYTEA", caseSensitive: false), "BYTEA")
+        .replaceAll(RegExp(r"TINYTEXT", caseSensitive: false), "TEXT")
+        .replaceAll(RegExp(r"MEDIUMTEXT", caseSensitive: false), "TEXT")
+        .replaceAll(RegExp(r"LONGTEXT\((\d+)\)", caseSensitive: false), "TEXT")
+        .replaceAll(RegExp(r"LINESTRING", caseSensitive: false), "LINE")
+        .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
+        .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
+        .replaceAll(
+            RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+        .replaceAll(
+            RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+        .replaceAll(
+            RegExp(r"ENUM\((?:'[^']*'(?:\s*,\s*'[^']*')*)\)",
+                caseSensitive: false),
+            "VARCHAR")
+        .replaceAll(RegExp(r"COLLATE '[\w\d_-]+'", caseSensitive: false), "")
+        .replaceAll(
+            RegExp(r"DEFAULT\s+(CURRENT_TIMESTAMP\(\))", caseSensitive: false),
+            "")
+        .replaceAll('`', '"')
+        .replaceAll('UNSIGNED', '')
+        .replaceAll(',,', ',');
+
+    return query.replaceAll(RegExp(r',\s?\)'), ')');
   }
 }
