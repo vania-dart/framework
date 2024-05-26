@@ -12,26 +12,26 @@ class MysqlDriver implements DatabaseDriver {
   Connection get connection => _connection!;
 
   @override
-  Future<void> init([DatabaseConfig? config]) async {
+  Future<DatabaseDriver?> init() async {
     try {
       var manager = Manager();
       manager.addConnection({
         'driver': 'mysql',
-        'host': config?.host,
-        'port': config?.port,
-        'database': config?.database,
-        'username': config?.username,
-        'password': config?.password,
-        'sslmode': config?.sslmode == true ? 'require' : '',
-        'pool': config?.pool,
-        'poolsize': config?.poolsize,
+        'host': env<String>('DB_HOST', '127.0.0.1'),
+        'port': env<int>('DB_PORT', 3306),
+        'database': env<String>('DB_DATABASE', 'vania'),
+        'username': env<String>('DB_USERNAME', 'root'),
+        'password': env<String>('DB_PASSWORD', ''),
+        'sslmode': env<bool>('DB_SSL_MODE', true) == true ? 'require' : '',
+        'pool': env<bool>('DB_POOL', false),
+        'poolsize': env<int>('DB_POOL_SIZE', 0),
       });
       manager.setAsGlobal();
 
       _connection = await manager.connection();
-    } on InvalidArgumentException catch (e) {
-      print(e.cause);
-      rethrow;
+      return this;
+    } on InvalidArgumentException catch (_) {
+      return null;
     }
   }
 
@@ -41,5 +41,5 @@ class MysqlDriver implements DatabaseDriver {
   }
 
   @override
-  String get driver => 'Mysql';
+  String get driver => 'MySql';
 }
