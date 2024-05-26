@@ -3,12 +3,11 @@ import 'package:vania/vania.dart';
 
 class Model {
   String? _table;
-  Connection _connection() {
-    DatabaseDriver? driver = Config().get('database')?.driver;
-    if (driver == null) {
-      throw Exception('Database driver not found');
-    }
-    return driver.connection;
+  Future<void> _reconnect() async {
+    await connection?.reconnectIfMissingConnection();
+    /* if (Utils.is_null(connection!.getPdo()) || Utils.is_null(connection!.getReadPdo())) {
+      DatabaseClient().setup();
+    }*/
   }
 
   void table(String table) {
@@ -17,9 +16,14 @@ class Model {
 
   QueryBuilder query() {
     try {
-      return _connection().table(_table!);
+      _reconnect();
+      if (connection == null) {
+        abort(500, 'Database connection error');
+      }
+      return connection!.table(_table!);
     } on InvalidArgumentException catch (e) {
       Logger.log(e.cause.toString(), type: Logger.ERROR);
+      abort(500, e.cause.toString());
       rethrow;
     }
   }
