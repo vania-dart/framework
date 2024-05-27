@@ -1,3 +1,9 @@
+## 0.2.2
+
+- fix Websocket Join and Left room issue
+- refactor Migration and model
+- add DatabseClient class
+
 ## 0.2.1
 
 - fix Postgresql bug
