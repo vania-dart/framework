@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:uuid/v4.dart';
+import 'package:vania/src/http/middleware/middleware.dart';
+import 'package:vania/src/http/middleware/web_socket_middleware_handler.dart';
 import 'websocket_client.dart';
 import 'websocket_constants.dart';
 import 'websocket_event.dart';
@@ -13,9 +15,17 @@ class WebSocketHandler implements WebSocketEvent {
   factory WebSocketHandler() => _singleton;
   WebSocketHandler._internal();
 
+  final Map<String, List<WebSocketMiddleware>?> _middleware = {};
+
   late String _websocketRoute;
-  WebSocketHandler websocketRoute(String path) {
+  WebSocketHandler websocketRoute(
+    String path, {
+    List<WebSocketMiddleware>? middleware,
+  }) {
     _websocketRoute = path.replaceFirst('/', '');
+
+    _middleware[_websocketRoute] = middleware;
+
     return this;
   }
 
@@ -36,7 +46,28 @@ class WebSocketHandler implements WebSocketEvent {
       routePath: routePath,
     );
 
-    websocket.listen((data) {
+    websocket.listen((data) async {
+      try {
+        if (_middleware[_websocketRoute] != null) {
+          await webSocketMiddlewareHandler(
+            _middleware[_websocketRoute] as List<WebSocketMiddleware>,
+            req,
+          );
+        }
+      } on WebSocketException catch (e) {
+        websocket.add(jsonEncode({
+          'event': 'error',
+          'payload': {
+            'message': e.message,
+          },
+        }));
+        return;
+      }
+
+      websocket.add(jsonEncode({
+        'event': 'connect',
+      }));
+
       Map<String, dynamic> payload = jsonDecode(data);
       String event = '${routePath}_${payload[webScoketEventKey]}';
 
@@ -74,7 +105,7 @@ class WebSocketHandler implements WebSocketEvent {
       Function.apply(controller, <dynamic>[client, message]);
     }, onDone: () {
       _session.removeSession(sessionId);
-    }, onError: (error) {
+    }, onError: (_) {
       _session.removeSession(sessionId);
     });
   }

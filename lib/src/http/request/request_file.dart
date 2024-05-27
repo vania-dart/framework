@@ -80,9 +80,9 @@ class RequestFile {
     }
     await file.writeAsBytes(await bytes);
     if (path.startsWith('/public')) {
-      return '$path/$filename'.replaceFirst('/public', '');
+      return path.replaceFirst('/public', '');
     }
-    return '$path/$filename'.replaceFirst('public', '');
+    return path.replaceFirst('public', '');
   }
 
   num _getFileSize(Uint8List bytesList) =>

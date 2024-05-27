@@ -6,14 +6,16 @@ class BaseHttpResponseException {
   final ResponseType responseType;
   final int code;
 
-  const BaseHttpResponseException(
-      {required this.message,
-      required this.code,
-      required this.errorCode,
-      this.responseType = ResponseType.json});
+  const BaseHttpResponseException({
+    required this.message,
+    required this.code,
+    required this.errorCode,
+    this.responseType = ResponseType.json,
+  });
 
   Response call() => Response(
-      responseType == ResponseType.html ? message : {'message': message},
-      responseType,
-      code);
+        responseType == ResponseType.html ? message : {'message': message},
+        responseType,
+        code,
+      );
 }
