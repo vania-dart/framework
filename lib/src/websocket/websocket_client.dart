@@ -13,8 +13,13 @@ abstract class WebSocketClient {
 
 class WebSocketClientImpl implements WebSocketClient {
   final String id;
+  final String routePath;
   final WebsocketSession session;
-  const WebSocketClientImpl({required this.session, required this.id});
+  const WebSocketClientImpl({
+    required this.session,
+    required this.id,
+    required this.routePath,
+  });
 
   @override
   String get clientId => id;
@@ -41,16 +46,14 @@ class WebSocketClientImpl implements WebSocketClient {
   /// ```
   @override
   void toRoom(String event, String room, dynamic payload) {
-    List<String> members = session.getRoomMembers(room);
+    List<String> members = session.getRoomMembers('${routePath}_$room');
     for (String member in members) {
-      if (id != member) {
-        SessionInfo? info = session.getWebSocketInfo(member);
-        if (info != null) {
-          info.websocket.add(jsonEncode({
-            'event': event,
-            'payload': payload,
-          }));
-        }
+      SessionInfo? info = session.getWebSocketInfo(member);
+      if (info != null) {
+        info.websocket.add(jsonEncode({
+          'event': event,
+          'payload': payload,
+        }));
       }
     }
   }
@@ -88,12 +91,10 @@ class WebSocketClientImpl implements WebSocketClient {
   }
 
   void joinRoom(String roomId) {
-    //emit('joinRoom', 'Join Room');
-    toRoom("joinRoom", roomId, "$clientId join room");
+    toRoom("join-room", roomId, "join room");
   }
 
   void leftRoom(String roomId) {
-    //emit('leftRoom', 'Left Room');
-    toRoom("leftRoom", roomId, "$clientId left room");
+    toRoom("left-room", roomId, "left room");
   }
 }

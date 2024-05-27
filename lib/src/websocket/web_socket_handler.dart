@@ -33,6 +33,7 @@ class WebSocketHandler implements WebSocketEvent {
     final WebSocketClientImpl client = WebSocketClientImpl(
       session: _session,
       id: sessionId,
+      routePath: routePath,
     );
 
     websocket.listen((data) {
@@ -40,21 +41,19 @@ class WebSocketHandler implements WebSocketEvent {
       String event = '${routePath}_${payload[webScoketEventKey]}';
 
       /// client join the room
-      if (event == webSocketJoinRoomEventName) {
-        String? roomId = payload[webSocketRoomKey];
-        if (roomId != null) {
-          _session.joinRoom(sessionId, roomId);
-          client.joinRoom(roomId);
+      if (event == '${routePath}_$webSocketJoinRoomEventName') {
+        String? roomId = payload[webSocketRoomKey].toString();
+        if (roomId.isNotEmpty) {
+          _session.joinRoom(sessionId, '${routePath}_$roomId');
         }
         return;
       }
 
       /// client left the room
       if (event == webSocketLeftRoomEventName) {
-        String? roomId = payload[webSocketRoomKey];
-        if (roomId != null) {
-          _session.leftRoom(sessionId, roomId);
-          client.leftRoom(roomId);
+        String? roomId = payload[webSocketRoomKey].toString();
+        if (roomId.isNotEmpty) {
+          _session.leftRoom(sessionId, '${routePath}_$roomId');
         }
         return;
       }

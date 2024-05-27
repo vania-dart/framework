@@ -1,6 +1,6 @@
-const String webSocketJoinRoomEventName = 'joinRoom';
+const String webSocketJoinRoomEventName = 'join-room';
 
-const String webSocketLeftRoomEventName = 'leftRoom';
+const String webSocketLeftRoomEventName = 'left-room';
 
 const String webScoketEventKey = 'event';
 
