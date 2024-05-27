@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
+import 'package:vania/src/database/database_client.dart';
 import 'package:vania/vania.dart';
 
 class MigrationConnection {
@@ -14,14 +15,20 @@ class MigrationConnection {
   Connection? dbConnection;
   DatabaseDriver? database;
 
-  Future<void> setup(DatabaseConfig databaseConfig) async {
-    database = databaseConfig.driver;
+  Future<void> setup() async {
+    Env().load();
     try {
-      await database?.init(databaseConfig);
-      dbConnection = database!.connection;
+      await DatabaseClient().setup();
+      database = DatabaseClient().database;
+      if (database == null) {
+        print('A driver must be specified.');
+        exit(0);
+      }
+      dbConnection = database?.connection;
     } on InvalidArgumentException catch (e) {
-      print('Error establishing a database connection');
+      print('Database connection error');
       Logger.log(e.cause.toString(), type: Logger.ERROR);
+      exit(0);
     } catch (e) {
       Logger.log(e.toString(), type: Logger.ERROR);
       print(e);
@@ -46,8 +53,8 @@ class Migration {
   @mustCallSuper
   Future<void> up() async {
     if (MigrationConnection().dbConnection == null) {
-      print('Database is not defined');
-      throw 'Database is not defined';
+      print('A driver must be specified.');
+      throw 'A driver must be specified.';
     }
   }
 
@@ -55,8 +62,8 @@ class Migration {
   @mustCallSuper
   Future<void> down() async {
     if (MigrationConnection().dbConnection == null) {
-      print('Database is not defined');
-      throw 'Database is not defined';
+      print('A driver must be specified.');
+      throw 'A driver must be specified.';
     }
   }
 
@@ -78,6 +85,7 @@ class Migration {
       if (MigrationConnection().database?.driver == 'Postgresql') {
         sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
       }
+
       await MigrationConnection()
           .dbConnection
           ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'));

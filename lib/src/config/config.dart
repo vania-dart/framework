@@ -16,7 +16,7 @@ class FileStorageConfig {
   final Map<String, StorageDriver> drivers;
 
   const FileStorageConfig({
-    this.defaultDriver = 'local',
+    this.defaultDriver = 'file',
     this.drivers = const <String, StorageDriver>{},
   });
 }
@@ -38,31 +38,5 @@ class CORSConfig {
     this.exposeHeaders,
     this.credentials,
     this.maxAge,
-  });
-}
-
-class DatabaseConfig {
-  final String host;
-  final int port;
-  final String username;
-  final String password;
-  final String database;
-  final bool? sslmode;
-  final DatabaseDriver? driver;
-  final List<String>? schema;
-  final bool pool;
-  final int poolsize;
-
-  const DatabaseConfig({
-    required this.driver,
-    required this.host,
-    required this.port,
-    required this.username,
-    required this.password,
-    this.database = 'db',
-    this.sslmode = true,
-    this.schema,
-    this.pool = false,
-    this.poolsize = 4,
   });
 }
