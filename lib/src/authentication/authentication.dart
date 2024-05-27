@@ -34,7 +34,7 @@ class Auth {
 
   Map<String, dynamic>? user() => _user[_userGuard];
 
-  dynamic id() => _user[_userGuard]['id'];
+  dynamic id() => _user[_userGuard]['id'] ?? _user[_userGuard]['_id'];
 
   dynamic get(String filed) => _user[_userGuard][filed];
 

@@ -91,8 +91,15 @@ class Router {
     return this;
   }
 
-  static void websocket(String path, Function(WebSocketEvent) eventCallBack) {
-    eventCallBack(WebSocketHandler().websocketRoute(path));
+  static void websocket(
+    String path,
+    Function(WebSocketEvent) eventCallBack, {
+    List<WebSocketMiddleware>? middleware,
+  }) {
+    eventCallBack(WebSocketHandler().websocketRoute(
+      path,
+      middleware: middleware,
+    ));
   }
 
   static void group(Function callBack,
