@@ -1,3 +1,7 @@
+## 0.2.3
+
+- fix Database connection issue with Isolate
+
 ## 0.2.2
 
 - fix Websocket Join and Left room issue

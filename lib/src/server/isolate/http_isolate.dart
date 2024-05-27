@@ -13,8 +13,8 @@ Future<void> httpIsolate(
   Map config,
 ) async {
   try {
-    await initializeConfig(config);
     Env().load();
+    await initializeConfig(config);
     HttpServer server;
     if (handler.secure) {
       var context = SecurityContext()
