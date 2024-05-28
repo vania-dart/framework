@@ -9,7 +9,7 @@ import 'package:vania/src/utils/functions.dart';
 
 Future<RouteData?> httpRouteHandler(HttpRequest req) async {
   final route = _getMatchRoute(
-    req.uri.path,
+    req.uri.path.toLowerCase(),
     req.method,
     req.headers.value(HttpHeaders.hostHeader),
   );
@@ -21,7 +21,7 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
     } else {
       final isFile = await setStaticPath(req);
       if (isFile == null) {
-        if (req.headers.contentType.toString() == "application/json") {
+        if (req.headers.contentType.toString().contains("application/json")) {
           throw NotFoundException(message: {'message': 'Not found'});
         } else {
           throw NotFoundException();
@@ -45,8 +45,8 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
 
   RouteData? matchRoute;
   for (RouteData route in methodMatchedRoutes) {
-    route.path = sanitizeRoutePath(route.path);
-    inputRoute = sanitizeRoutePath(inputRoute);
+    route.path = sanitizeRoutePath(route.path.toLowerCase());
+    inputRoute = sanitizeRoutePath(inputRoute.toLowerCase());
     String routePath = route.path.trim();
 
     if (route.prefix != null) {
