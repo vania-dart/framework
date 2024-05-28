@@ -1,10 +1,16 @@
+## 0.2.4
+
+- fix Route bug
+- add WebSocket middleware
+- refactor Auth middleware
+
 ## 0.2.3
 
 - fix Database connection issue with Isolate
 
 ## 0.2.2
 
-- fix Websocket Join and Left room issue
+- fix Websocket Join and Left room issue([#63](https://github.com/vania-dart/framework/issues/63))
 - refactor Migration and model
 - add DatabseClient class
 
