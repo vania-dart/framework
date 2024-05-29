@@ -50,6 +50,13 @@ void main() {
       expect(data.method, 'options');
     });
 
+    test('domain route', () {
+      Router.get('/get-with-domain', () {}).domain('{username}.test.com');
+      RouteData data = Router().routes.first;
+      expect(data.domain, '{username}.test.com');
+      expect(data.method, 'get');
+    });
+
     test('group route test', () {
       Router.group(() {
         Router.get('/get', () {});

@@ -9,7 +9,7 @@ import 'package:vania/src/utils/functions.dart';
 
 Future<RouteData?> httpRouteHandler(HttpRequest req) async {
   final route = _getMatchRoute(
-    req.uri.path.toLowerCase(),
+    Uri.decodeComponent(req.uri.path.toLowerCase()),
     req.method,
     req.headers.value(HttpHeaders.hostHeader),
   );
@@ -32,12 +32,46 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
   return route;
 }
 
+/// Exctract the domain from the url
+String _exctractDomain(String domain, String path) {
+  String firstPart = domain.split('.').first.toLowerCase();
+  final RegExp domainRegex = RegExp(r'\{[^}]*\}');
+  bool containsPlaceholder = domainRegex.hasMatch(path);
+  String domainUri = domain;
+  if (containsPlaceholder) {
+    domainUri = path.replaceAll(domainRegex, firstPart).toLowerCase();
+  }
+  return domainUri;
+}
+
+/// Exctarct username from {username}
+/// Or any string between {}
+String? _extractDomainPlaceholder(String input) {
+  final RegExp regex = RegExp(r'\{([^}]*)\}');
+  final match = regex.firstMatch(input);
+  if (match != null) {
+    return match.group(1)!;
+  } else {
+    return null;
+  }
+}
+
 RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
+  String? domainParameter;
+  String? domainPlaceholder;
   List<RouteData> methodMatchedRoutes =
       Router().routes.where((RouteData route) {
     if (domain != null && route.domain != null) {
+      String subDomain = _exctractDomain(
+        domain,
+        route.domain!,
+      );
+
+      domainPlaceholder = _extractDomainPlaceholder(route.domain!);
+      domainParameter = subDomain.split('.').first.toLowerCase();
+
       return route.method.toLowerCase() == method.toLowerCase() &&
-          route.domain?.toLowerCase() == domain.toLowerCase();
+          subDomain == domain.toLowerCase();
     } else {
       return route.method.toLowerCase() == method.toLowerCase();
     }
@@ -55,7 +89,7 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
 
     /// When route is the same route exactly same route.
     /// route without params, eg. /api/example
-    if (routePath == inputRoute.trim()) {
+    if (routePath == inputRoute.trim() && route.domain == null) {
       matchRoute = route;
       break;
     }
@@ -63,10 +97,16 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
     /// when route have params
     /// eg. /api/admin/{adminId}
     Iterable<String> parameterNames = _getParameterNameFromRoute(route);
+
     Iterable<RegExpMatch> matches = _getPatternMatches(inputRoute, routePath);
     if (matches.isNotEmpty) {
       matchRoute = route;
       matchRoute.params = _getParameterAsMap(matches, parameterNames);
+      if (domainPlaceholder != null && domainParameter != null) {
+        matchRoute.params?.addAll({
+          domainPlaceholder!: domainParameter,
+        });
+      }
       break;
     }
   }
