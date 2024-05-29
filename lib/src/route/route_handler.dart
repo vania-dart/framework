@@ -44,7 +44,6 @@ String _exctractDomain(String domain, String path) {
   return domainUri;
 }
 
-
 /// Exctarct username from {username}
 /// Or any string between {}
 String? _extractDomainPlaceholder(String input) {
