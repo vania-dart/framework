@@ -21,7 +21,7 @@ void main() {
       expect(data.path, '/post');
       expect(data.method, 'post');
     });
-
+    
     test('delete route', () {
       Router.delete('/delete', () {});
       RouteData data = Router().routes.first;
@@ -48,6 +48,13 @@ void main() {
       RouteData data = Router().routes.first;
       expect(data.path, '/options');
       expect(data.method, 'options');
+    });
+    
+    test('domain route', () {
+      Router.get('/get-with-domain', () {}).domain('{username}.test.com');
+      RouteData data = Router().routes.first;
+      expect(data.domain, '{username}.test.com');
+      expect(data.method, 'get');
     });
 
     test('group route test', () {

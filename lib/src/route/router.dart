@@ -10,6 +10,7 @@ class Router {
 
   String? _prefix;
   String? _groupPrefix;
+  String? _groupDomain;
   List<Middleware>? _groupMiddleware;
 
   static basePrefix(String prefix) {
@@ -27,6 +28,7 @@ class Router {
     return Router()
         ._addRoute(HttpRequestMethod.get, path, action)
         .middleware(Router()._groupMiddleware)
+        .domain(Router()._groupDomain)
         .prefix(Router()._groupPrefix);
   }
 
@@ -34,6 +36,7 @@ class Router {
     return Router()
         ._addRoute(HttpRequestMethod.post, path, action)
         .middleware(Router()._groupMiddleware)
+        .domain(Router()._groupDomain)
         .prefix(Router()._groupPrefix);
   }
 
@@ -41,6 +44,7 @@ class Router {
     return Router()
         ._addRoute(HttpRequestMethod.put, path, action)
         .middleware(Router()._groupMiddleware)
+        .domain(Router()._groupDomain)
         .prefix(Router()._groupPrefix);
   }
 
@@ -48,6 +52,7 @@ class Router {
     return Router()
         ._addRoute(HttpRequestMethod.patch, path, action)
         .middleware(Router()._groupMiddleware)
+        .domain(Router()._groupDomain)
         .prefix(Router()._groupPrefix);
   }
 
@@ -55,6 +60,7 @@ class Router {
     return Router()
         ._addRoute(HttpRequestMethod.delete, path, action)
         .middleware(Router()._groupMiddleware)
+        .domain(Router()._groupDomain)
         .prefix(Router()._groupPrefix);
   }
 
@@ -62,6 +68,7 @@ class Router {
     return Router()
         ._addRoute(HttpRequestMethod.options, path, action)
         .middleware(Router()._groupMiddleware)
+        .domain(Router()._groupDomain)
         .prefix(Router()._prefix);
   }
 
@@ -91,6 +98,13 @@ class Router {
     return this;
   }
 
+  Router domain([String? domain]) {
+    if (domain != null) {
+      _routes.last.domain = domain;
+    }
+    return this;
+  }
+
   static void websocket(
     String path,
     Function(WebSocketEvent) eventCallBack, {
@@ -102,12 +116,18 @@ class Router {
     ));
   }
 
-  static void group(Function callBack,
-      {String? prefix, List<Middleware>? middleware}) {
+  static void group(
+    Function callBack, {
+    String? prefix,
+    List<Middleware>? middleware,
+    String? domain,
+  }) {
     Router()._groupPrefix = prefix;
     Router()._groupMiddleware = middleware;
+    Router()._groupDomain = domain;
     callBack();
     Router()._groupPrefix = null;
     Router()._groupMiddleware = null;
+    Router()._groupDomain = null;
   }
 }

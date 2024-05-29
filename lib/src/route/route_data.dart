@@ -6,7 +6,7 @@ class RouteData {
   final dynamic action;
   Map<String, dynamic>? params;
   List<Middleware> preMiddleware;
-  final String? domain;
+  String? domain;
   final bool? corsEnabled;
   final String? prefix;
 
