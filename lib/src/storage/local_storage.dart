@@ -10,9 +10,9 @@ class LocalStorage implements StorageDriver {
   String storagePath = "storage/app/public";
 
   @override
-  Future<bool> exists(String filename) {
+  Future<bool> exists(String filename) async {
     File file = File(sanitizeRoutePath('$storagePath/$filename'));
-    return file.exists();
+    return file.existsSync();
   }
 
   @override
@@ -43,10 +43,13 @@ class LocalStorage implements StorageDriver {
   }
 
   @override
-  Future<dynamic> delete(String filename) async {
+  Future<bool> delete(String filename) async {
     File file = File(sanitizeRoutePath('$storagePath/$filename'));
     if (file.existsSync()) {
-      return await file.delete();
+      file.deleteSync();
+      return true;
+    } else {
+      return false;
     }
   }
 

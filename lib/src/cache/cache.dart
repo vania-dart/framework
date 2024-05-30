@@ -6,20 +6,15 @@ class Cache {
   factory Cache() => _singleton;
   Cache._internal();
 
-  CacheDriver get _driver {
-    switch (env<String>('CACHE_DRIVER', 'file')) {
-      case 'file':
-        return FileCacheDriver();
-      case 'redis':
-        return RedisCacheDriver();
-      /*case 'memcached':
+  final CacheDriver _driver = switch (env<String>('CACHE_DRIVER', 'file')) {
+    'file' => FileCacheDriver(),
+    'redis' => RedisCacheDriver(),
+    /*case 'memcached':
       case 'database':
       case 'memcache':
       break;*/
-      default:
-        return FileCacheDriver();
-    }
-  }
+    _ => FileCacheDriver(),
+  };
 
   /// set key => value to cache
   /// default duration is 1 hour

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:vania/src/http/response/stream_file.dart';
 
 enum ResponseType { json, html, streamFile, download }
@@ -32,7 +33,10 @@ class Response {
         res.close();
         break;
       case ResponseType.streamFile:
-        StreamFile? stream = StreamFile(filename: data).call();
+        StreamFile? stream = StreamFile(
+          fileName: data['fileName'],
+          bytes: data['bytes'],
+        ).call();
         if (stream == null) {
           res.headers.contentType = ContentType.json;
           res.write(jsonEncode({"message": "File not found"}));
@@ -44,7 +48,10 @@ class Response {
         res.addStream(stream.stream!).then((_) => res.close());
         break;
       case ResponseType.download:
-        StreamFile? stream = StreamFile(filename: data).call();
+        StreamFile? stream = StreamFile(
+          fileName: data['fileName'],
+          bytes: data['bytes'],
+        ).call();
         if (stream == null) {
           res.headers.contentType = ContentType.json;
           res.write(jsonEncode({"message": "File not found"}));
@@ -70,7 +77,13 @@ class Response {
 
   static html(dynamic htmlData) => Response(htmlData, ResponseType.html);
 
-  static file(String file) => Response(file, ResponseType.streamFile);
+  static file(String fileName, Uint8List bytes) => Response({
+        "fileName": fileName,
+        "bytes": bytes,
+      }, ResponseType.streamFile);
 
-  static download(dynamic file) => Response(file, ResponseType.download);
+  static download(String fileName, Uint8List bytes) => Response({
+        "fileName": fileName,
+        "bytes": bytes,
+      }, ResponseType.download);
 }
