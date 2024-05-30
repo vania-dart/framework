@@ -16,5 +16,5 @@ abstract class StorageDriver {
 
   Future<bool> exists(String filename);
 
-  Future<dynamic> delete(String filename);
+  Future<bool> delete(String filename);
 }
