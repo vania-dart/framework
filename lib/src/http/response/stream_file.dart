@@ -1,10 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 import 'package:mime/mime.dart';
 
 class StreamFile {
-  final String filename;
-  StreamFile({required this.filename});
+  final String fileName;
+  final Uint8List bytes;
+  StreamFile({
+    required this.fileName,
+    required this.bytes,
+  });
 
   ContentType? _contentType;
   Stream<List<int>>? _stream;
@@ -17,25 +22,21 @@ class StreamFile {
   int get length => _length;
 
   String get contentDisposition =>
-      'attachment; filename="${path.basename(filename)}"';
+      'attachment; filename="${path.basename(fileName)}"';
 
   StreamFile? call() {
-    File file = File(filename);
+    String mimeType =
+        lookupMimeType(path.basename(fileName), headerBytes: bytes) ?? "";
 
-    if (!file.existsSync()) {
-      return null;
-    } else {
-      List<int>? bytes = file.readAsBytesSync();
-      String mimeType =
-          lookupMimeType(path.basename(filename), headerBytes: bytes) ?? "";
+    String primaryType = mimeType.split('/').first;
+    String subType = mimeType.split('/').last;
 
-      String primaryType = mimeType.split('/').first;
-      String subType = mimeType.split('/').last;
+    _contentType = ContentType(primaryType, subType);
 
-      _contentType = ContentType(primaryType, subType);
-      _stream = Stream<List<int>>.fromIterable([bytes]);
-      _length = bytes.length;
-    }
+    _stream = Stream<List<int>>.fromIterable([bytes]);
+
+    _length = bytes.length;
+
     return this;
   }
 }
