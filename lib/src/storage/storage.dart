@@ -4,7 +4,6 @@ import 'package:vania/src/storage/local_storage.dart';
 import 'package:vania/src/storage/s3_storage.dart';
 import 'package:vania/vania.dart';
 
-
 class Storage {
   static final Storage _singleton = Storage._internal();
   factory Storage() => _singleton;
@@ -36,8 +35,7 @@ class Storage {
     return await Storage()._driver.json(file);
   }
 
-  static Future<String> put(
-      String directory, String file, dynamic content) {
+  static Future<String> put(String directory, String file, dynamic content) {
     if (content == null) {
       throw Exception("Content can't bew null");
     }
