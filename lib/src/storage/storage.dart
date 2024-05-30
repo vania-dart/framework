@@ -1,65 +1,43 @@
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:mime/mime.dart';
 import 'package:vania/src/storage/local_storage.dart';
+import 'package:vania/src/storage/s3_storage.dart';
 import 'package:vania/vania.dart';
 
-class DownloadFile {
-  String? fileName;
-  ContentType? contentType;
-  String? contentDisposition;
-  Uint8List? data;
-  DownloadFile(
-      {this.fileName, this.contentType, this.contentDisposition, this.data});
-}
 
 class Storage {
   static final Storage _singleton = Storage._internal();
   factory Storage() => _singleton;
   Storage._internal();
 
-  String? _disk;
-
-  Map<String, StorageDriver> storageDriver = <String, StorageDriver>{
-    'local': LocalStorage(),
-    ...Config().get("storage")?.drivers
+  final StorageDriver _driver = switch (env<String>('STORAGE', 'local')) {
+    'local' => LocalStorage(),
+    's3' => S3Storage(),
+    _ => LocalStorage(),
   };
 
-  Storage disk(String disk) {
-    _disk = disk;
-    return this;
+  static Future<bool> delete(String file) async {
+    return await Storage()._driver.delete(file);
   }
 
-  StorageDriver get _driver {
-    return storageDriver[_disk] ??
-        storageDriver[Config().get("storage")?.defaultDriver] ??
-        LocalStorage();
+  static Future<bool> exists(String file) async {
+    return await Storage()._driver.exists(file);
   }
 
-  static delete(String filepath) {
-    return Storage()._driver.delete(filepath);
+  static Future<Uint8List?> getAsBytes(String file) async {
+    return await Storage()._driver.getAsBytes(file);
   }
 
-  static Future<bool> exists(String filename) {
-    File file = File(filename);
-    return Future.value(file.existsSync());
+  static Future<String?> get(String file) async {
+    return await Storage()._driver.get(file);
   }
 
-  static Future<Uint8List?> getAsBytes(String filename) async {
-    return await Storage()._driver.getAsBytes(filename);
-  }
-
-  static Future<String?> get(String filename) async {
-    return await Storage()._driver.get(filename);
-  }
-
-  static Future<Map<String, dynamic>?> json(String filename) async {
-    return await Storage()._driver.json(filename);
+  static Future<Map<String, dynamic>?> json(String file) async {
+    return await Storage()._driver.json(file);
   }
 
   static Future<String> put(
-      String directory, String filename, dynamic content) {
+      String directory, String file, dynamic content) {
     if (content == null) {
       throw Exception("Content can't bew null");
     }
@@ -69,36 +47,15 @@ class Storage {
     }
 
     directory = directory.endsWith("/") ? directory : "$directory/";
-    String path = '$directory$filename';
+    String path = '$directory$file';
     return Storage()._driver.put(path, content);
   }
 
-  static Future<String?> mimeType(String filename) async {
-    return await Storage()._driver.mimeType(filename);
+  static Future<String?> mimeType(String file) async {
+    return await Storage()._driver.mimeType(file);
   }
 
-  static Future<num?> size(String filename) async {
-    return Storage()._driver.size(filename);
-  }
-
-  static Future<DownloadFile?> downloadFile(String filename) async {
-    File file = File((filename));
-    if (file.existsSync()) {
-      final dataBytes = await file.readAsBytes();
-      String? mimeType =
-          lookupMimeType(file.uri.pathSegments.last, headerBytes: dataBytes);
-      String primaryType = mimeType!.split('/').first;
-      String subType = mimeType.split('/').last;
-      ContentType contentType = ContentType(primaryType, subType);
-
-      return DownloadFile(
-        fileName: file.uri.pathSegments.last,
-        contentType: contentType,
-        contentDisposition:
-            'attachment; filename="${file.uri.pathSegments.last}"',
-        data: dataBytes,
-      );
-    }
-    return null;
+  static Future<num?> size(String file) async {
+    return Storage()._driver.size(file);
   }
 }
