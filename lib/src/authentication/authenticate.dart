@@ -17,7 +17,7 @@ class Authenticate extends Middleware {
       } else {
         await Auth().guard(guard!).check(token ?? '');
       }
-      next?.handle(req);
+      return next?.handle(req);
     } on JWTExpiredException {
       throw Unauthenticated(message: 'Token expired');
     }
