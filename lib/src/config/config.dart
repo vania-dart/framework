@@ -1,5 +1,3 @@
-import 'package:vania/vania.dart';
-
 class Config {
   static final Config _singleton = Config._internal();
   factory Config() => _singleton;
@@ -9,16 +7,6 @@ class Config {
   set setApplicationConfig(Map<String, dynamic> conf) => _config = conf;
 
   dynamic get(String key) => _config[key];
-}
-
-class FileStorageConfig {
-  final String defaultDriver;
-  final Map<String, StorageDriver> drivers;
-
-  const FileStorageConfig({
-    this.defaultDriver = 'file',
-    this.drivers = const <String, StorageDriver>{},
-  });
 }
 
 class CORSConfig {
