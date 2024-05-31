@@ -13,6 +13,7 @@ class DatabaseClient {
         database = await MysqlDriver().init();
         database?.connection.reconnectIfMissingConnection();
         break;
+      case 'postgressql':
       case 'postgresql':
       case 'pgsql':
         database = await PostgreSQLDriver().init();
