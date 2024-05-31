@@ -10,10 +10,10 @@ class S3Client {
   factory S3Client() => _singleton;
   S3Client._internal();
 
-  final String _region = env<String>('S3_REGION', '');
-  final String _bucket = env<String>('S3_BUCKET', '');
-  final String _secretKey = env<String>('S3_SECRET_KEY', '');
-  final String _accessKey = env<String>('S3_ACCESS_KEY', '');
+  final String _region = env<String>('STORAGE_S3_REGION', '');
+  final String _bucket = env<String>('STORAGE_S3_BUCKET', '');
+  final String _secretKey = env<String>('STORAGE_S3_SECRET_KEY', '');
+  final String _accessKey = env<String>('STORAGE_S3_ACCESS_KEY', '');
 
   Uri buildUri(String key) {
     return Uri.https('$_bucket.s3.$_region.amazonaws.com', '/$key');

@@ -37,7 +37,7 @@ class Storage {
 
   static Future<String> put(String directory, String file, dynamic content) {
     if (content == null) {
-      throw Exception("Content can't bew null");
+      throw Exception("Content can't be null");
     }
 
     if (!(content is List<int> || content is String)) {

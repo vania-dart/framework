@@ -34,6 +34,6 @@ class Throttle extends Middleware {
         code: HttpStatus.tooManyRequests,
       );
     }
-    next?.handle(req);
+    return await next?.handle(req);
   }
 }
