@@ -1,3 +1,20 @@
+## 0.2.6
+
+- Refactor Local storage class
+- Refactor Cache class
+- Refactor Storage class
+- Refactor Response class
+- Add AWS S3 storage driver
+- Add Storage env config
+
+```env
+    STORAGE=s3
+    STORAGE_S3_BUCKET=''
+    STORAGE_S3_SECRET_KEY=''
+    STORAGE_S3_ACCESS_KEY=''
+    STORAGE_S3_REGION=''
+```
+
 ## 0.2.5
 
 - Fix Authentication middleware issue
