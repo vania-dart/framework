@@ -7,7 +7,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  vania: ^0.1.7+5
+  vania: ^0.2.6
 
 
 dev_dependencies:

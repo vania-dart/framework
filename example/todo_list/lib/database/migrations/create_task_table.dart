@@ -1,10 +1,10 @@
 import 'package:vania/vania.dart';
 
-class Task extends Migration {
+class CreateTaskTable extends Migration {
   @override
   Future<void> up() async {
     super.up();
-    await createTableNotExists('tasks', () {
+    await createTable('tasks', () {
       id();
       foreign('user_id', 'users', 'id', constrained: true);
       foreign('task_list_id', 'task_list', 'id', constrained: true, onDelete: 'CASCADE');
