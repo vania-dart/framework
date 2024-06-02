@@ -21,13 +21,18 @@ class AuthController extends Controller {
     final user = await User().query().where('email', email).first();
 
     if (user == null) {
-      return Response.json({'message': 'User not found'});
+      return Response.json({'message': 'Email or password is wrong'}, 401);
     }
 
     if (!Hash().verify(password, user['password'])) {
-      return Response.json({'message': 'Wrong password'});
+      return Response.json({'message': 'Email or password is wrong'}, 401);
     }
-
+    if (user['status'] == 'inactive') {
+      return Response.json({'message': 'User is inactive'}, 401);
+    } else if (user['status'] == 'suspend') {
+      return Response.json(
+          {'message': 'User is blocked, please call to admin!'}, 403);
+    }
     // If you have guard and multi access like user and admin you can pass the guard Auth().guard('admin')
     Map<String, dynamic> token = await Auth()
         .login(user)
@@ -77,28 +82,40 @@ class AuthController extends Controller {
     };
     await User().query().insert(newUser);
 
-    return otp(request);
+    return await otp(request);
   }
 
-  Future<Response> otp(Request request) {
+  Future<Response> otp(Request request) async {
     request.validate({
       'email': 'required|email',
     }, {
       'email.required': 'The email is required',
       'email.email': 'The email is not valid',
     });
-    Random rnd = Random();
-    int otp = rnd.nextInt(999999 - 111111);
-    Cache.put(request.input('email'), otp.toString(),
-        duration: Duration(minutes: 3));
-    // ???: you can add here your code for sending otp using email or sms
-    return Response.json({
-      'message': 'OTP sent successfully',
-      'data': {'code': otp}
-    });
+    Map<String, dynamic>? user = await User()
+        .query()
+        .where('email', '=', request.input('email'))
+        .first();
+    if (user != null) {
+      if (user['status'] == 'inactive') {
+        Random rnd = Random();
+        int otp = rnd.nextInt(999999 - 111111);
+        await Cache.put(request.input('email'), otp.toString(),
+            duration: Duration(minutes: 3));
+        // ???: you can add here your code for sending otp using email or sms
+        return Response.json({
+          'message': 'OTP sent successfully',
+          'data': {'code': otp}
+        });
+      } else {
+        return Response.json({'message': 'User already activated'}, 403);
+      }
+    } else {
+      return Response.json({'message': "Something went wrong!"}, 401);
+    }
   }
 
-  Future<Response> verifyOTO(Request request) async {
+  Future<Response> verifyOtp(Request request) async {
     request.validate({
       'email': 'required|email',
       'otp': 'required',
@@ -114,8 +131,8 @@ class AuthController extends Controller {
     if (user == null) {
       return Response.json({'message': 'User not found'});
     }
-    final String otp = request.input(request.input('otp'));
-    final String otpValue = Cache.get(request.input('email')) as String;
+    final String otp = request.input('otp');
+    final String otpValue = (await Cache.get(request.input('email'))) as String;
 
     if (otpValue == otp) {
       Cache.delete('otp');

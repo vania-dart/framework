@@ -12,6 +12,8 @@ class ApiFirstVersion extends Route {
       () {
         Router.post('login', authController.login);
         Router.post('sign-up', authController.signUp);
+        Router.post('verify-otp', authController.verifyOtp);
+        Router.post('request-otp', authController.otp);
         Router.post('refresh-token', authController.refreshToken);
       },
       prefix: 'auth',
