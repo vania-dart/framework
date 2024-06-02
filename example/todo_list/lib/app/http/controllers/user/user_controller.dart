@@ -11,7 +11,7 @@ class UserController extends Controller {
     return Response.json(details);
   }
 
-  /// Update curent user details
+  /// Update current user details
   Future<Response> update(Request request) async {
     request.validate({
       'first_name': 'required|max_length:20|min_length:2',
@@ -29,7 +29,7 @@ class UserController extends Controller {
       'avatar.file': 'The avatar must be an image file',
     });
 
-    /// Upload avtar if is sent
+    /// Upload avatar if is sent
     RequestFile? avatar = request.file('avatar');
     String avatarPath = '';
 

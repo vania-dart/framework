@@ -86,8 +86,8 @@ class AuthController extends Controller {
   }
 
   Future<Response> verifyOTO(Request request) async {
-    String otp = request.input('otp');
-    final otpValue = Cache.get('otp');
+    final String otp = request.input('otp');
+    final String otpValue = Cache.get('otp') as String;
 
     if (otpValue == otp) {
       Cache.delete('otp');
