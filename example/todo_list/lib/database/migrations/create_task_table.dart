@@ -7,7 +7,8 @@ class CreateTaskTable extends Migration {
     await createTable('tasks', () {
       id();
       foreign('user_id', 'users', 'id', constrained: true);
-      foreign('task_list_id', 'task_list', 'id', constrained: true, onDelete: 'CASCADE');
+      foreign('task_list_id', 'task_list', 'id',
+          constrained: true, onDelete: 'CASCADE');
       char('title', nullable: false, length: 100);
       dateTime('created_at', nullable: false);
       dateTime('updated_at');
@@ -18,5 +19,10 @@ class CreateTaskTable extends Migration {
       text('file_address');
       enumType('status', ['todo', 'done']);
     });
+  }
+
+  @override
+  Future<void> down() async {
+    await super.down();
   }
 }

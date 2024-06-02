@@ -16,4 +16,9 @@ class CreatePersonalAccessTokensTable extends Migration {
       index(ColumnIndex.unique, 'token', ['token']);
     });
   }
+
+  @override
+  Future<void> down() async {
+    await super.down();
+  }
 }

@@ -18,4 +18,9 @@ class CreateUserTable extends Migration {
       index(ColumnIndex.unique, 'email', ['email']);
     });
   }
+
+  @override
+  Future<void> down() async {
+    await super.down();
+  }
 }
