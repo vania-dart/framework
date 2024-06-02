@@ -14,7 +14,7 @@ class CreateUserTable extends Migration {
       timeStamp('created_at', nullable: true);
       timeStamp('updated_at', nullable: true);
       timeStamp('deleted_at', nullable: true);
-
+      enumType('status', ['active', 'inactive', 'suspend']);
       index(ColumnIndex.unique, 'email', ['email']);
     });
   }
