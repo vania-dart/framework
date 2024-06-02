@@ -1,4 +1,5 @@
 import 'package:todo_list/app/http/controllers/auth/auth_controller.dart';
+import 'package:todo_list/app/http/controllers/task/task_list_controller.dart';
 import 'package:todo_list/app/http/controllers/user/user_controller.dart';
 import 'package:todo_list/app/http/middleware/authenticate.dart';
 import 'package:vania/vania.dart';
@@ -24,6 +25,14 @@ class ApiFirstVersion extends Route {
         Router.patch('update', userController.update);
       },
       prefix: 'user',
+      middleware: [AuthenticateMiddleware()],
+    );
+    Router.group(
+      () {
+        Router.get('all', taskListController.getAll);
+        Router.post('create', taskListController.create);
+      },
+      prefix: 'task-list',
       middleware: [AuthenticateMiddleware()],
     );
   }

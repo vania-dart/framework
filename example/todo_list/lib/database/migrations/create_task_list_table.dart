@@ -6,11 +6,12 @@ class CreateTaskListTable extends Migration {
     super.up();
     await createTable('taskList', () {
       id();
+      bigInt('user_id', unsigned: true);
       foreign('user_id', 'users', 'id', constrained: true);
       char('title', nullable: false, length: 100);
       dateTime('created_at', nullable: false);
-      dateTime('updated_at');
-      softDeletes('deleted_at');
+      dateTime('updated_at', nullable: true);
+      softDeletes('deleted_at',);
       string('background_image', nullable: true);
       string('background_color', nullable: true);
     });

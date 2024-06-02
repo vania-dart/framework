@@ -6,8 +6,10 @@ class CreateTaskTable extends Migration {
     super.up();
     await createTable('tasks', () {
       id();
+      bigInt('user_id', unsigned: true);
+      bigInt('task_list_id', unsigned: true);
       foreign('user_id', 'users', 'id', constrained: true);
-      foreign('task_list_id', 'task_list', 'id',
+      foreign('task_list_id', 'taskList', 'id',
           constrained: true, onDelete: 'CASCADE');
       char('title', nullable: false, length: 100);
       dateTime('created_at', nullable: false);
