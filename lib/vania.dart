@@ -31,15 +31,18 @@ export 'src/service/service_provider.dart';
 
 export 'src/http/controller/controller.dart';
 
+export 'src/database/database_client.dart';
 export 'src/database/model.dart';
 export 'src/database/database_driver.dart';
 export 'src/database/mysql_driver.dart';
 export 'src/database/postgresql_driver.dart';
 export 'src/database/migration.dart';
+export 'src/database/seeder/seeder.dart';
 export 'src/enum/column_index.dart';
 export 'src/extensions/pagination_extension.dart';
 export 'src/extensions/simple_paginate_extension.dart';
 export 'package:eloquent/src/query/query_builder.dart';
+
 
 export 'src/authentication/authentication.dart';
 export 'src/authentication/authenticate.dart';
@@ -56,7 +59,6 @@ export 'src/utils/helper.dart';
 export 'src/env_handler/env.dart';
 export 'src/logger/logger.dart';
 
-export 'src/database/seeder/seeder.dart';
 
 export 'src/redis/vania_redis.dart';
 export 'src/cache/redis_cache_driver.dart';
