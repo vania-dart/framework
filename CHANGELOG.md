@@ -1,3 +1,14 @@
+## 0.2.7
+
+- Optimize PRS
+- Refactor Controller handler
+- Refactor Request handler
+- Refactor Request class
+- Add none to response type and await for res close
+- Refactor route handler
+- Export Database client
+- Add URL assets to helper
+
 ## 0.2.6
 
 - Refactor Local storage class
