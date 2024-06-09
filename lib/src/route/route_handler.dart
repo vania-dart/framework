@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/exception/not_found_exception.dart';
 import 'package:vania/src/route/route_data.dart';
@@ -7,7 +6,7 @@ import 'package:vania/src/route/router.dart';
 import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
 
-Future<RouteData?> httpRouteHandler(HttpRequest req) async {
+RouteData? httpRouteHandler(HttpRequest req) {
   final route = _getMatchRoute(
     Uri.decodeComponent(req.uri.path.toLowerCase()),
     req.method,
@@ -19,7 +18,7 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
       req.response.close();
       return null;
     } else {
-      final isFile = await setStaticPath(req);
+      final isFile = setStaticPath(req);
       if (isFile == null) {
         if (req.headers.contentType.toString().contains("application/json")) {
           throw NotFoundException(message: {'message': 'Not found'});
@@ -33,11 +32,11 @@ Future<RouteData?> httpRouteHandler(HttpRequest req) async {
 }
 
 /// Exctract the domain from the url
-String _exctractDomain(String domain, String path) {
+String _extractDomain(String domain, String path) {
   String firstPart = domain.split('.').first.toLowerCase();
   final RegExp domainRegex = RegExp(r'\{[^}]*\}');
   bool containsPlaceholder = domainRegex.hasMatch(path);
-  String domainUri = domain;
+  String domainUri = path;
   if (containsPlaceholder) {
     domainUri = path.replaceAll(domainRegex, firstPart).toLowerCase();
   }
@@ -59,26 +58,28 @@ String? _extractDomainPlaceholder(String input) {
 RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
   String? domainParameter;
   String? domainPlaceholder;
-  List<RouteData> methodMatchedRoutes =
-      Router().routes.where((RouteData route) {
-    if (domain != null && route.domain != null) {
-      String subDomain = _exctractDomain(
+  List<RouteData> routesList = Router().routes.where((route) {
+    return route.method.toLowerCase() == method.toLowerCase() &&
+        inputRoute.contains(
+          route.path.replaceAll(RegExp(r'/\{[^}]*\}'), '').split('/').last,
+        );
+  }).toList();  
+  RouteData? matchRoute;
+  for (RouteData route in routesList) {
+    if (route.domain != null && domain != null) {
+      String subDomain = _extractDomain(
         domain,
         route.domain!,
       );
 
+      if (subDomain.toLowerCase() != domain.toLowerCase()) {
+        matchRoute = null;
+        break;
+      }
       domainPlaceholder = _extractDomainPlaceholder(route.domain!);
       domainParameter = subDomain.split('.').first.toLowerCase();
-
-      return route.method.toLowerCase() == method.toLowerCase() &&
-          subDomain == domain.toLowerCase();
-    } else {
-      return route.method.toLowerCase() == method.toLowerCase();
     }
-  }).toList();
 
-  RouteData? matchRoute;
-  for (RouteData route in methodMatchedRoutes) {
     route.path = sanitizeRoutePath(route.path.toLowerCase());
     inputRoute = sanitizeRoutePath(inputRoute.toLowerCase());
     String routePath = route.path.trim();
@@ -99,12 +100,13 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
     Iterable<String> parameterNames = _getParameterNameFromRoute(route);
 
     Iterable<RegExpMatch> matches = _getPatternMatches(inputRoute, routePath);
+
     if (matches.isNotEmpty) {
       matchRoute = route;
       matchRoute.params = _getParameterAsMap(matches, parameterNames);
       if (domainPlaceholder != null && domainParameter != null) {
         matchRoute.params?.addAll({
-          domainPlaceholder!: domainParameter,
+          domainPlaceholder: domainParameter,
         });
       }
       break;
@@ -113,12 +115,6 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
   return matchRoute;
 }
 
-/*
-String sanitizeRoutePath(String path) {
-  path = path.replaceAll(RegExp(r'/+'), '/');
-  return "/${path.replaceAll(RegExp('^\\/+|\\/+\$'), '')}";
-}
-*/
 /// get parameter name from named route eg. /blog/{id}
 /// eg ('id')
 Iterable<String> _getParameterNameFromRoute(RouteData route) {
