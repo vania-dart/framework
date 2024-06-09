@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
-import 'package:vania/src/database/database_client.dart';
 import 'package:vania/vania.dart';
 
 class MigrationConnection {
