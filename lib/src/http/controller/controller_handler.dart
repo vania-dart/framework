@@ -7,21 +7,16 @@ import 'package:vania/vania.dart';
 class ControllerHandler {
   final RouteData route;
   final Request request;
-  const ControllerHandler({required this.route, required this.request});
+  ControllerHandler({required this.route, required this.request}) {
+    handler();
+  }
 
-  void call() async {
+  void handler() async {
     List<dynamic> positionalArguments = [];
-    Map<Symbol, dynamic> namedArguments = {};
     Function? function;
     if (route.action is Function) {
       function = route.action;
-    } else {
-      function = getDefaultControllerMethodName(route);
     }
-
-    Map<String, dynamic> params = {};
-
-    params.addAll(route.params ?? {});
 
     if (function == null) {
       request.response.statusCode = HttpStatus.internalServerError;
@@ -38,16 +33,11 @@ class ControllerHandler {
       return;
     }
 
-    String requestArgName = getRequestVar(function.toString());
+    Map<String, dynamic> params = {};
 
-    if (requestArgName.isNotEmpty) {
-      params[requestArgName] = request;
-    }
+    params.addAll(route.params ?? {});
 
     var argsList = extractFunctionArgs(function);
-
-    argsList.removeWhere(
-        (item) => item == "" || item == null || item.toString().isEmpty);
 
     var requestArgIndex = argsList.indexOf("Request");
 
@@ -56,69 +46,22 @@ class ControllerHandler {
     }
 
     if (argsList.isNotEmpty) {
-      var parmsList = params.values.toList();
-      int counter = 0;
-      do {
-        var value = parmsList[counter];
-        value = int.tryParse(value) ?? value;
-        positionalArguments.add(value);
-        params.removeWhere((_, val) => val == value.toString());
-        counter++;
-      } while (argsList.length > counter);
+      positionalArguments = params.values
+          .map((item) => int.tryParse(item.toString()) ?? item)
+          .toList();
     }
 
     if (requestArgIndex > -1) {
       positionalArguments.insert(requestArgIndex, request);
     }
 
-    namedArguments = params.map(
-        (key, value) => MapEntry(Symbol(key), int.tryParse(value) ?? value));
-
     try {
-      Response data =
-          await Function.apply(function, positionalArguments, namedArguments);
+      Response data = await Function.apply(function, positionalArguments, {});
       data.makeResponse(request.response);
     } on BaseHttpResponseException catch (e) {
       e.call().makeResponse(request.response);
     } on InvalidArgumentException catch (_) {
       rethrow;
-    }
-  }
-
-  Function? getDefaultControllerMethodName(RouteData route) {
-    try {
-      switch (route.method) {
-        case 'GET':
-          if (route.params?.keys.first != null) {
-            return route.action.show;
-          }
-          return route.action.index;
-        case 'POST':
-          return route.action.store;
-        case 'PUT':
-          return route.action.update;
-        case 'PATCH':
-          return route.action.patch;
-        case 'DELETE':
-          return route.action.destroy;
-        default:
-          return null;
-      }
-    } catch (_) {
-      return null;
-    }
-  }
-
-  String getRequestVar(String input) {
-    RegExp pattern = RegExp(r"Request\?\s*([a-zA-Z0-9_]+)");
-
-    Match? match = pattern.firstMatch(input);
-
-    if (match != null) {
-      String secondPart = match.group(1) ?? '';
-      return secondPart;
-    } else {
-      return '';
     }
   }
 
