@@ -63,7 +63,7 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
         inputRoute.contains(
           route.path.replaceAll(RegExp(r'/\{[^}]*\}'), '').split('/').last,
         );
-  }).toList();  
+  }).toList();
   RouteData? matchRoute;
   for (RouteData route in routesList) {
     if (route.domain != null && domain != null) {

@@ -43,7 +43,6 @@ export 'src/extensions/pagination_extension.dart';
 export 'src/extensions/simple_paginate_extension.dart';
 export 'package:eloquent/src/query/query_builder.dart';
 
-
 export 'src/authentication/authentication.dart';
 export 'src/authentication/authenticate.dart';
 export 'src/cryptographic/hash.dart';
@@ -58,7 +57,6 @@ export 'package:mailer/src/entities/attachment.dart';
 export 'src/utils/helper.dart';
 export 'src/env_handler/env.dart';
 export 'src/logger/logger.dart';
-
 
 export 'src/redis/vania_redis.dart';
 export 'src/cache/redis_cache_driver.dart';
