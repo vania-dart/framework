@@ -19,10 +19,9 @@ Future httpRequestHandler(HttpRequest req) async {
       /// Check if cors is enabled
       HttpCors(req);
 
-      Request request =
-          await Request(request: req, route: await httpRouteHandler(req))
-              .call();
-      RouteData? route = request.route;
+      RouteData? route = httpRouteHandler(req);
+
+      Request request = await Request(request: req, route: route).extractBody();
 
       if (route == null) return;
 
@@ -32,7 +31,7 @@ Future httpRequestHandler(HttpRequest req) async {
       }
 
       /// Controller and method handler
-      ControllerHandler(route: route, request: request).call();
+      ControllerHandler(route: route, request: request);
     } on BaseHttpResponseException catch (e) {
       e.call().makeResponse(req.response);
     } on InvalidArgumentException catch (e) {

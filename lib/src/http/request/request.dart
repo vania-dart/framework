@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:vania/src/exception/validation_exception.dart';
 import 'package:vania/src/http/request/request_body.dart';
 import 'package:vania/src/http/validation/validator.dart';
@@ -10,14 +9,6 @@ class Request {
   final HttpRequest request;
   final RouteData? route;
   Request({required this.request, this.route});
-
-  Future<Request> call() async {
-    try {
-      body = await RequestBody.extractBody(request: request);
-    } catch (_) {}
-
-    return this;
-  }
 
   String? get ip => request.connectionInfo?.remoteAddress.address;
 
@@ -45,6 +36,13 @@ class Request {
 
   bool isMethod(String method) {
     return route?.method.toLowerCase() == method.toLowerCase();
+  }
+
+  Future<Request> extractBody() async {
+    if (request.method.toLowerCase() == 'post') {
+      body = await RequestBody.extractBody(request: request);
+    }
+    return this;
   }
 
   Map<String, dynamic> all() {

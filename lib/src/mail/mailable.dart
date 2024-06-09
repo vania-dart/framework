@@ -23,7 +23,7 @@ class Mailable implements Mail {
       case 'gmailRelaySaslXoauth2':
         return gmail(
           env<String>('MAIL_USERNAME', ''),
-          env<String>('accessToken', ''),
+          env<String>('MAIL_ACCESS_TOKEN', ''),
         );
       case 'hotmail':
         return hotmail(

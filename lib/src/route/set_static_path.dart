@@ -4,7 +4,7 @@ import 'package:vania/src/utils/functions.dart';
 import 'package:vania/vania.dart';
 import 'package:path/path.dart' as path;
 
-Future<bool?> setStaticPath(HttpRequest req) {
+bool? setStaticPath(HttpRequest req) {
   String routePath = Uri.decodeComponent(req.uri.path);
   if (!routePath.endsWith("/")) {
     File file = File(sanitizeRoutePath("public/$routePath"));
@@ -14,11 +14,11 @@ Future<bool?> setStaticPath(HttpRequest req) {
         file.readAsBytesSync(),
       );
       response.makeResponse(req.response);
-      return Future.value(true);
+      return true;
     } else {
-      return Future.value(null);
+      return null;
     }
   } else {
-    return Future.value(null);
+    return null;
   }
 }
