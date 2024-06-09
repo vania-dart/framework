@@ -3,7 +3,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:vania/src/http/response/stream_file.dart';
 
-enum ResponseType { json, html, streamFile, download }
+enum ResponseType {
+  json,
+  none,
+  html,
+  streamFile,
+  download,
+}
 
 class Response {
   final ResponseType responseType;
@@ -11,7 +17,7 @@ class Response {
   final int httpStatusCode;
   const Response([
     this.data,
-    this.responseType = ResponseType.json,
+    this.responseType = ResponseType.none,
     this.httpStatusCode = HttpStatus.ok,
   ]);
 
@@ -25,12 +31,12 @@ class Response {
         } catch (_) {
           res.write(jsonEncode(data.toString()));
         }
-        res.close();
+        await res.close();
         break;
       case ResponseType.html:
         res.headers.contentType = ContentType.html;
         res.write(data);
-        res.close();
+        await res.close();
         break;
       case ResponseType.streamFile:
         StreamFile? stream = StreamFile(
@@ -40,7 +46,7 @@ class Response {
         if (stream == null) {
           res.headers.contentType = ContentType.json;
           res.write(jsonEncode({"message": "File not found"}));
-          res.close();
+          await res.close();
           break;
         }
         res.headers.contentType = stream.contentType;
@@ -55,7 +61,7 @@ class Response {
         if (stream == null) {
           res.headers.contentType = ContentType.json;
           res.write(jsonEncode({"message": "File not found"}));
-          res.close();
+          await res.close();
           break;
         }
         res.headers.contentType = stream.contentType;
@@ -65,7 +71,7 @@ class Response {
         break;
       default:
         res.write(data);
-        res.close();
+        await res.close();
     }
   }
 
@@ -75,15 +81,24 @@ class Response {
         statusCode,
       );
 
-  static html(dynamic htmlData) => Response(htmlData, ResponseType.html);
+  static html(dynamic htmlData) => Response(
+        htmlData,
+        ResponseType.html,
+      );
 
-  static file(String fileName, Uint8List bytes) => Response({
-        "fileName": fileName,
-        "bytes": bytes,
-      }, ResponseType.streamFile);
+  static file(String fileName, Uint8List bytes) => Response(
+        {
+          "fileName": fileName,
+          "bytes": bytes,
+        },
+        ResponseType.streamFile,
+      );
 
-  static download(String fileName, Uint8List bytes) => Response({
-        "fileName": fileName,
-        "bytes": bytes,
-      }, ResponseType.download);
+  static download(String fileName, Uint8List bytes) => Response(
+        {
+          "fileName": fileName,
+          "bytes": bytes,
+        },
+        ResponseType.download,
+      );
 }
