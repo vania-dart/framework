@@ -35,7 +35,7 @@ class Resp {
   /// serialize value implementation
   String _serializeValue(dynamic value, {bool isBulkString = true}) {
     if (value is String) {
-      if (!isBulkString && !value.contains(RegExp('\s'))) {
+      if (!isBulkString && !value.contains(RegExp('s'))) {
         return '+$value$_CRLF';
       }
       return '\$${value.length}$_CRLF$value$_CRLF';
