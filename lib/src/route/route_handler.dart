@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/exception/not_found_exception.dart';
 import 'package:vania/src/route/route_data.dart';
-import 'package:vania/src/route/router.dart';
 import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
+import 'package:vania/vania.dart';
 
 RouteData? httpRouteHandler(HttpRequest req) {
   final route = _getMatchRoute(
@@ -20,8 +20,11 @@ RouteData? httpRouteHandler(HttpRequest req) {
     } else {
       final isFile = setStaticPath(req);
       if (isFile == null) {
-        if (req.headers.contentType.toString().contains("application/json")) {
-          throw NotFoundException(message: {'message': 'Not found'});
+        if (req.headers.value('accept') == "application/json") {
+          throw NotFoundException(
+            message: {'message': 'Not found'},
+            responseType: ResponseType.json,
+          );
         } else {
           throw NotFoundException();
         }
@@ -99,7 +102,12 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
     /// eg. /api/admin/{adminId}
     Iterable<String> parameterNames = _getParameterNameFromRoute(route);
 
-    Iterable<RegExpMatch> matches = _getPatternMatches(inputRoute, routePath);
+    Iterable<RegExpMatch> matches = _getPatternMatches(
+      inputRoute,
+      routePath,
+      route.paramTypes,
+      route.regex,
+    );
 
     if (matches.isNotEmpty) {
       matchRoute = route;
@@ -115,7 +123,7 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
   return matchRoute;
 }
 
-/// get parameter name from named route eg. /blog/{id}
+/// Get parameter name from named route eg. /blog/{id}
 /// eg ('id')
 Iterable<String> _getParameterNameFromRoute(RouteData route) {
   return route.path
@@ -124,17 +132,29 @@ Iterable<String> _getParameterNameFromRoute(RouteData route) {
       .map((String part) => part.substring(1, part.length - 1));
 }
 
-/// get pattern matched routes from the list
+/// Get  pattern matched routes from the list
 Iterable<RegExpMatch> _getPatternMatches(
   String input,
   String route,
+  Map<String, Type>? paramTypes,
+  Map<String, String>? regex,
 ) {
-  RegExp pattern = RegExp(
-      '^${route.replaceAllMapped(RegExp(r'{[^/]+}'), (Match match) => '([^/]+)').replaceAll('/', '\\/')}\$');
+  String patternString = route;
+  paramTypes?.forEach((key, value) {
+    if (value == int) {
+      patternString = patternString.replaceAll('{$key}', r'(\d+)');
+    } else if (value == String) {
+      patternString = patternString.replaceAll('{$key}', r'([^/]+)');
+    }
+  });
+  regex?.forEach((key, value) {
+    patternString = patternString.replaceAll('{$key}', '($value)');
+  });
+  RegExp pattern = RegExp('^${patternString.replaceAll('/', '\\/')}\$');
   return pattern.allMatches(input);
 }
 
-/// get the param from the named route as Map response
+/// Get  the param from the named route as Map response
 /// eg {'id' : 1}
 Map<String, dynamic> _getParameterAsMap(
   Iterable<RegExpMatch> matches,
