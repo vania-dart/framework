@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:vania/src/extensions/date_time_aws_format.dart';
 import 'package:vania/src/http/request/request_handler.dart';
 import 'package:vania/vania.dart';
 
@@ -89,7 +90,22 @@ class BaseHttpServer {
         );
       }
 
-      httpServer?.listen(httpRequestHandler);
+      httpServer?.listen((HttpRequest request) async {
+        var startTime = DateTime.now();
+        var requestUri = request.uri.path;
+        var starteRequest = startTime.format();
+
+        await httpRequestHandler(request);
+
+        var endTime = DateTime.now();
+        var duration = endTime.difference(startTime).inMilliseconds;
+        var requestedPath = requestUri.isNotEmpty
+            ? requestUri.padRight(118 - requestUri.length, '.')
+            : ''.padRight(118, '.');
+        if (env<bool>('APP_DEBUG')) {
+          print('$starteRequest $requestedPath ~ ${duration}ms');
+        }
+      });
 
       if (env<bool>('APP_DEBUG')) {
         if (env<bool>('APP_SECURE')) {
