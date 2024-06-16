@@ -61,12 +61,30 @@ String? _extractDomainPlaceholder(String input) {
 RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
   String? domainParameter;
   String? domainPlaceholder;
+
   List<RouteData> routesList = Router().routes.where((route) {
+    String routePath = route.path
+        .trim()
+        .replaceFirst(RegExp(r'^/'), '')
+        .replaceFirst(RegExp(r'/$'), '');
+    inputRoute = inputRoute
+        .replaceFirst(RegExp(r'^/'), '')
+        .replaceFirst(RegExp(r'/$'), '');
+
+    if (route.prefix != null) {
+      routePath =
+          "${route.prefix!.replaceFirst(RegExp(r'^/'), '').replaceFirst(RegExp(r'/$'), '')}/$routePath";
+    }
+
+    if (routePath.split('/').length != inputRoute.split('/').length) {
+      return false;
+    }
     return route.method.toLowerCase() == method.toLowerCase() &&
         inputRoute.contains(
-          route.path.replaceAll(RegExp(r'/\{[^}]*\}'), '').split('/').last,
+          routePath.replaceAll(RegExp(r'/\{[^}]*\}'), '').split('/').last,
         );
   }).toList();
+
   RouteData? matchRoute;
   for (RouteData route in routesList) {
     if (route.domain != null && domain != null) {
@@ -87,10 +105,6 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
     inputRoute = sanitizeRoutePath(inputRoute.toLowerCase());
     String routePath = route.path.trim();
 
-    if (route.prefix != null) {
-      routePath = "${route.prefix}/$routePath";
-    }
-
     /// When route is the same route exactly same route.
     /// route without params, eg. /api/example
     if (routePath == inputRoute.trim() && route.domain == null) {
@@ -98,20 +112,34 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
       break;
     }
 
+    if (route.prefix != null) {
+      routePath = "${route.prefix}/$routePath";
+    }
+
     /// when route have params
     /// eg. /api/admin/{adminId}
     Iterable<String> parameterNames = _getParameterNameFromRoute(route);
-
     Iterable<RegExpMatch> matches = _getPatternMatches(
       inputRoute,
       routePath,
-      route.paramTypes,
-      route.regex,
     );
 
     if (matches.isNotEmpty) {
+      final params = _getParameterAsMap(matches, parameterNames);
+      if (route.paramTypes != null) {
+        if (!checkParamType(params, route.paramTypes!)) {
+          continue;
+        }
+      }
+
+      if (route.regex != null) {
+        if (!checkParamWithRegex(params, route.regex!)) {
+          continue;
+        }
+      }
+
       matchRoute = route;
-      matchRoute.params = _getParameterAsMap(matches, parameterNames);
+      matchRoute.params = params;
       if (domainPlaceholder != null && domainParameter != null) {
         matchRoute.params?.addAll({
           domainPlaceholder: domainParameter,
@@ -121,6 +149,37 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
     }
   }
   return matchRoute;
+}
+
+bool checkParamWithRegex(
+    Map<String, dynamic> param, Map<String, String> regexPatterns) {
+  for (var key in regexPatterns.keys) {
+    var value = param[key];
+    var pattern = regexPatterns[key]!;
+    if (value is String && !RegExp(pattern).hasMatch(value)) {
+      return false;
+    } else if (value is int && !RegExp(pattern).hasMatch(value.toString())) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool checkParamType(Map<String, dynamic> param, Map<String, Type> paramType) {
+  bool isValidType(dynamic value, String type) {
+    value = int.tryParse(value.toString()) ?? value;
+    if (type == 'String') return value is String;
+    if (type == 'int') return value is int;
+    return false;
+  }
+
+  for (var key in paramType.keys) {
+    if (!param.containsKey(key) ||
+        !isValidType(param[key], paramType[key]!.toString())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /// Get parameter name from named route eg. /blog/{id}
@@ -136,21 +195,9 @@ Iterable<String> _getParameterNameFromRoute(RouteData route) {
 Iterable<RegExpMatch> _getPatternMatches(
   String input,
   String route,
-  Map<String, Type>? paramTypes,
-  Map<String, String>? regex,
 ) {
-  String patternString = route;
-  paramTypes?.forEach((key, value) {
-    if (value == int) {
-      patternString = patternString.replaceAll('{$key}', r'(\d+)');
-    } else if (value == String) {
-      patternString = patternString.replaceAll('{$key}', r'([^/]+)');
-    }
-  });
-  regex?.forEach((key, value) {
-    patternString = patternString.replaceAll('{$key}', '($value)');
-  });
-  RegExp pattern = RegExp('^${patternString.replaceAll('/', '\\/')}\$');
+  RegExp pattern = RegExp(
+      '^${route.replaceAllMapped(RegExp(r'{[^/]+}'), (Match match) => '([^/]+)').replaceAll('/', '\\/')}\$');
   return pattern.allMatches(input);
 }
 
