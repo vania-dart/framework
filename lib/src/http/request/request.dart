@@ -8,7 +8,8 @@ import 'package:vania/vania.dart';
 class Request {
   final HttpRequest request;
   final RouteData? route;
-  Request({required this.request, this.route});
+
+  Request.from({required this.request, this.route});
 
   String? get ip => request.connectionInfo?.remoteAddress.address;
 
@@ -39,7 +40,10 @@ class Request {
   }
 
   Future<Request> extractBody() async {
-    if (request.method.toLowerCase() == 'post') {
+    final whereMethod = ['post', 'patch', 'put']
+        .where((method) => method == request.method.toLowerCase())
+        .toList();
+    if (whereMethod.isNotEmpty) {
       body = await RequestBody.extractBody(request: request);
     }
     return this;

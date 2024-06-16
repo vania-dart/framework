@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:vania/src/config/http_cors.dart';
 import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/http/controller/controller_handler.dart';
@@ -18,11 +17,9 @@ Future httpRequestHandler(HttpRequest req) async {
     try {
       /// Check if cors is enabled
       HttpCors(req);
-
       RouteData? route = httpRouteHandler(req);
-
-      Request request = await Request(request: req, route: route).extractBody();
-
+      Request request = Request.from(request: req, route: route);
+      await request.extractBody();
       if (route == null) return;
 
       /// check if pre middleware exist and call it
@@ -31,15 +28,35 @@ Future httpRequestHandler(HttpRequest req) async {
       }
 
       /// Controller and method handler
-      ControllerHandler(route: route, request: request);
-    } on BaseHttpResponseException catch (e) {
-      e.call().makeResponse(req.response);
+      ControllerHandler().create(
+        route: route,
+        request: request,
+      );
+    } on BaseHttpResponseException catch (error) {
+      error
+          .response(
+            req.headers.value('accept') == "application/json",
+          )
+          .makeResponse(req.response);
     } on InvalidArgumentException catch (e) {
-      print(e.message);
       Logger.log(e.message, type: Logger.ERROR);
+      _response(req, e.message);
     } catch (e) {
-      print(e.toString());
       Logger.log(e.toString(), type: Logger.ERROR);
+      _response(req, e.toString());
     }
+  }
+}
+
+void _response(req, message) {
+  if (req.headers.value('accept') == "application/json") {
+    Response.json(
+      {
+        "message": message,
+      },
+      400,
+    ).makeResponse(req.response);
+  } else {
+    Response.html(message).makeResponse(req.response);
   }
 }

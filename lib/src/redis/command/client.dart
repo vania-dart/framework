@@ -5,7 +5,7 @@ import 'package:vania/src/redis/lowlevel/protocol_client.dart';
 import 'package:vania/src/redis/lowlevel/resp.dart';
 import 'package:vania/vania.dart';
 
-class _MultiCodec {
+class MultiCodec {
   final List<RedisCodec> codecs = [
     RedisCodec(encoder: StringEncoder(), decoder: StringDecoder()),
     RedisCodec(encoder: IntEncoder(), decoder: IntDecoder()),
@@ -48,10 +48,10 @@ class CommandsClient<K, V> implements Commands<K, V> {
   CommandsClient._(this._connection);
 
   /// key type codecs
-  final _MultiCodec keyCodec = _MultiCodec();
+  final MultiCodec keyCodec = MultiCodec();
 
   /// value type codecs
-  final _MultiCodec valueCodec = _MultiCodec();
+  final MultiCodec valueCodec = MultiCodec();
 
   @override
   Future<bool> del(K key) async {

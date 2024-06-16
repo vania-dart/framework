@@ -1,4 +1,3 @@
-import 'package:vania/src/database/database_client.dart';
 import 'package:vania/vania.dart';
 
 Future<void> initializeConfig(config) async {
