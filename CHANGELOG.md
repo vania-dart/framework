@@ -1,3 +1,12 @@
+## 0.3.0
+
+- Add Parameter validation conditions for the router([#79](https://github.com/vania-dart/framework/issues/79))
+- Add Resource and Any route ([#80](https://github.com/vania-dart/framework/issues/80))
+- Refactor Router, Route Handler
+- Refactor Controller handler for increasing RPS and decreasing latency
+- Refactor Request handler for increase RPS
+- Fix Null params ([#81](https://github.com/vania-dart/framework/issues/81))
+
 ## 0.2.7
 
 - Optimize PRS
