@@ -46,6 +46,10 @@ class WebSocketHandler implements WebSocketEvent {
       routePath: routePath,
     );
 
+    websocket.add(jsonEncode({
+      'event': 'connect',
+    }));
+
     websocket.listen((data) async {
       try {
         if (_middleware[_websocketRoute] != null) {
@@ -63,10 +67,6 @@ class WebSocketHandler implements WebSocketEvent {
         }));
         return;
       }
-
-      websocket.add(jsonEncode({
-        'event': 'connect',
-      }));
 
       Map<String, dynamic> payload = jsonDecode(data);
       String event = '${routePath}_${payload[webScoketEventKey]}';
