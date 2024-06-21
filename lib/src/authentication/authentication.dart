@@ -59,15 +59,45 @@ class Auth {
     return token;
   }
 
-  Map<String, dynamic> createTokenByRefreshToken(
+  Future<Map<String, dynamic>> createTokenByRefreshToken(
     String token, {
     Duration? expiresIn,
-  }) {
-    return HasApiTokens().refreshToken(
+    bool customToken = false,
+  }) async {
+    final newToken = HasApiTokens().refreshToken(
       token.replaceFirst('Bearer ', ''),
       _userGuard,
       expiresIn,
     );
+
+    if (!customToken) {
+      Map<String, dynamic> payload = HasApiTokens().verify(
+          token.replaceFirst('Bearer ', ''), _userGuard, 'refresh_token');
+
+      Model? authenticatable =
+          Config().get('auth')['guards'][_userGuard]['provider'];
+
+      if (authenticatable == null) {
+        throw InvalidArgumentException('Authenticatable class not found');
+      }
+
+      Map? user =
+          await authenticatable.query().where('id', '=', payload['id']).first();
+
+      if (user == null) {
+        throw Unauthenticated(message: 'Invalid token');
+      }
+
+      _user[_userGuard] = user;
+      await PersonalAccessTokens().query().insert({
+        'name': _userGuard,
+        'tokenable_id': user!['id'],
+        'token': md5.convert(utf8.encode(newToken['access_token'])),
+        'created_at': DateTime.now(),
+      });
+    }
+
+    return newToken;
   }
 
   Future<bool> deleteTokens() async {
