@@ -91,7 +91,7 @@ class Auth {
       _user[_userGuard] = user;
       await PersonalAccessTokens().query().insert({
         'name': _userGuard,
-        'tokenable_id': user!['id'],
+        'tokenable_id': user['id'],
         'token': md5.convert(utf8.encode(newToken['access_token'])),
         'created_at': DateTime.now(),
       });

@@ -1,3 +1,8 @@
+## 0.3.1
+
+- Fix Refresh token bug([#83](https://github.com/vania-dart/framework/issues/83))
+- Fix WebSocket connect event
+
 ## 0.3.0
 
 - Add Parameter validation conditions for the router([#79](https://github.com/vania-dart/framework/issues/79))
