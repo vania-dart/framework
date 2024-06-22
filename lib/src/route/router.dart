@@ -80,7 +80,9 @@ class Router {
   /// Adds a prefix to the last added route.
   Router prefix([String? prefix]) {
     if (prefix != null) {
-      String basePath = _routes.last.path;
+      String basePath = _routes.last.path.startsWith('/')
+          ? _routes.last.path.replaceFirst('/', '')
+          : _routes.last.path;
       _routes.last.path =
           prefix.endsWith("/") ? "$prefix$basePath" : "$prefix/$basePath";
     }
@@ -191,48 +193,51 @@ class Router {
   /// - edit
   /// - update
   /// - destroy
-  static Router resource(String path, dynamic action) {
-    Router router = Router();
+  static void resource(
+    String path,
+    dynamic action, {
+    String? prefix,
+    List<Middleware>? middleware,
+    String? domain,
+  }) {
     Router.get(path, action.index)
-        .middleware(router._groupMiddleware)
-        .domain(router._groupDomain)
-        .prefix(router._groupPrefix);
+        .middleware(middleware)
+        .domain(domain)
+        .prefix(prefix);
 
     Router.get("$path/create", action.create)
-        .middleware(router._groupMiddleware)
-        .domain(router._groupDomain)
-        .prefix(router._groupPrefix);
+        .middleware(middleware)
+        .domain(domain)
+        .prefix(prefix);
 
     Router.post(path, action.store)
-        .middleware(router._groupMiddleware)
-        .domain(router._groupDomain)
-        .prefix(router._groupPrefix);
+        .middleware(middleware)
+        .domain(domain)
+        .prefix(prefix);
 
     Router.get("$path/{id}", action.show)
-        .middleware(router._groupMiddleware)
-        .domain(router._groupDomain)
-        .prefix(router._groupPrefix)
+        .middleware(middleware)
+        .domain(domain)
+        .prefix(prefix)
         .whereInt('id');
 
     Router.get("$path/{id}/edit", action.edit)
-        .middleware(router._groupMiddleware)
-        .domain(router._groupDomain)
-        .prefix(router._groupPrefix)
+        .middleware(middleware)
+        .domain(domain)
+        .prefix(prefix)
         .whereInt('id');
 
     Router.put("$path/{id}", action.update)
-        .middleware(router._groupMiddleware)
-        .domain(router._groupDomain)
-        .prefix(router._groupPrefix)
+        .middleware(middleware)
+        .domain(domain)
+        .prefix(prefix)
         .whereInt('id');
 
     Router.delete("$path/{id}", action.destroy)
-        .middleware(router._groupMiddleware)
-        .domain(router._groupDomain)
-        .prefix(router._groupPrefix)
+        .middleware(middleware)
+        .domain(domain)
+        .prefix(prefix)
         .whereInt('id');
-
-    return router;
   }
 
   /// Adds a websocket route.
