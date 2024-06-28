@@ -31,8 +31,9 @@ class RequestFormData {
 
       if (inputName != null) {
         if (data['filename'] == null || data['filename']!.isEmpty) {
-          String value = String.fromCharCodes(await formItem.first);
-          inputs[inputName] = value;
+          var value = String.fromCharCodes(await formItem.first);
+          inputs[inputName] =
+              int.tryParse(value.toString()) ?? value.toString();
         } else {
           RequestFile file = RequestFile(
             filename: data['filename'].toString(),

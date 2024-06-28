@@ -38,7 +38,7 @@ class FileCacheDriver implements CacheDriver {
 
   @override
   Future<bool> has(String key) async {
-    dynamic data = get(key);
+    dynamic data = await get(key);
 
     if (data == null) {
       return Future.value(false);

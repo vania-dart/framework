@@ -1,4 +1,4 @@
-import 'package:eloquent/eloquent.dart';
+import 'dart:io';
 import 'package:vania/vania.dart';
 
 String storagePath(String file) => 'storage/$file';
@@ -15,4 +15,23 @@ abort(int code, String message) {
   throw HttpResponseException(message: message, code: code);
 }
 
+// Databse Helper
 Connection? get connection => DatabaseClient().database?.connection;
+
+// DB Transaction
+void dbTransaction(
+  Future<void> Function(Connection connection) callback, [
+  int? timeoutInSeconds,
+]) {
+  connection?.transaction(
+    (con) async {
+      callback(con);
+    },
+    timeoutInSeconds,
+  ).onError((e, _) {
+    throw HttpResponseException(
+      message: "DbTransaction error: ${e.toString()}",
+      code: HttpStatus.internalServerError,
+    );
+  });
+}

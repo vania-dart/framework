@@ -180,8 +180,12 @@ class Migration {
   Future<void> dropIfExists(String name) async {
     try {
       String query = 'DROP TABLE IF EXISTS `$name`;';
+
       if (MigrationConnection().database?.driver == 'Postgresql') {
         query = _mysqlToPosgresqlMapper(query.toString());
+      } else {
+        query =
+            'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${query}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
       }
 
       await MigrationConnection().dbConnection?.execute(query.toString());
@@ -199,6 +203,9 @@ class Migration {
 
     if (MigrationConnection().database?.driver == 'Postgresql') {
       query = _mysqlToPosgresqlMapper(query.toString());
+    } else {
+      query =
+          'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${query}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
     }
 
     await MigrationConnection().dbConnection?.execute(query.toString());
