@@ -33,11 +33,9 @@ class Request {
 
   Map<String, dynamic> get _query => uri.queryParameters;
 
-  Map<String, dynamic> body = <String, dynamic>{};
+  List<Cookie> get cookies => request.cookies;
 
-  bool isMethod(String method) {
-    return route?.method.toLowerCase() == method.toLowerCase();
-  }
+  Map<String, dynamic> body = <String, dynamic>{};
 
   Future<Request> extractBody() async {
     final whereMethod = ['post', 'patch', 'put']
@@ -57,6 +55,10 @@ class Request {
     final vParams = route?.params ?? {};
     vParams.removeWhere((key, value) => value is Request);
     return vParams;
+  }
+
+  bool isMethod(String method) {
+    return route?.method.toLowerCase() == method.toLowerCase();
   }
 
   Map<String, dynamic> only(List<String> keys) {
@@ -129,7 +131,7 @@ class Request {
     }
 
     if (_all[key] != null) {
-      return _all[key];
+      return int.tryParse(_all[key].toString()) ?? _all[key];
     }
 
     if (defaultVal != null) {
@@ -166,6 +168,14 @@ class Request {
 
   String string(String key) {
     return _all[key].toString();
+  }
+
+  int? integer(String key) {
+    return int.tryParse(_all[key].toString());
+  }
+
+  double? asDouble(String key) {
+    return double.tryParse(_all[key].toString());
   }
 
   bool boolean(String key) {
