@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:eloquent/eloquent.dart';
 import 'package:vania/vania.dart';
 
@@ -25,6 +27,11 @@ class Model {
       Logger.log(e.cause.toString(), type: Logger.ERROR);
       abort(500, e.cause.toString());
       rethrow;
+    } on QueryException catch (e) {
+      throw HttpResponseException(
+        message: e.sql,
+        code: HttpStatus.internalServerError,
+      );
     }
   }
 }
