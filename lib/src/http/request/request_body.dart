@@ -3,6 +3,11 @@ import 'dart:io';
 
 import 'package:vania/src/http/request/request_form_data.dart';
 
+String _fixJsonString(String jsonString) {
+  return jsonString.replaceAllMapped(RegExp(r'("\w+": )(\d+)([\s,}])'),
+      (Match match) => '${match[1]}"${match[2]}"${match[3]}');
+}
+
 class RequestBody {
   const RequestBody();
 
@@ -11,7 +16,7 @@ class RequestBody {
     if (isJson(request.headers.contentType)) {
       String bodyString = await utf8.decoder.bind(request).join();
       try {
-        return jsonDecode(bodyString);
+        return jsonDecode(_fixJsonString(bodyString));
       } catch (err) {
         return <String, dynamic>{};
       }
@@ -41,7 +46,8 @@ class RequestBody {
     for (String pair in keyValuePairs) {
       List<String> keyValue = pair.split('=');
       if (keyValue.length == 2) {
-        resultMap[keyValue[0]] = keyValue[1];
+        resultMap[keyValue[0]] =
+            int.tryParse(keyValue[1].toString()) ?? keyValue[1];
       }
     }
 
