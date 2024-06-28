@@ -1,3 +1,16 @@
+## 0.3.2
+
+- Refactor Response class
+- Add jsonWithHeader response
+- Add QueryException to model class
+- Add Databse helper
+- Add Create and InsertMany to the ORM
+- Add DB Transaction
+- Add Cookies,Integer,asDouble to request class
+- Fix request body int fields
+- Fix PostgreSQL typo
+- Fix drop table issue when table has foreign key
+
 ## 0.3.1
 
 - Fix Refresh token bug([#83](https://github.com/vania-dart/framework/issues/83))

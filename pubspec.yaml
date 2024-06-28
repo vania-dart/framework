@@ -1,6 +1,6 @@
 name: vania
 description: Fast, simple, and powerful backend framework for Dart built with
-version: 0.3.1
+version: 0.3.2
 homepage: https://vdart.dev
 repository: https://github.com/vania-dart/framework
 issue_tracker: https://github.com/vania-dart/framework/issues
