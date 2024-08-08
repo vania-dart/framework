@@ -43,7 +43,7 @@ class Auth {
     bool withRefreshToken = false,
     bool customToken = false,
   }) async {
-    Map<String, dynamic> token = HasApiTokens()
+    Map<String, dynamic> token = TokenHandler()
         .setPayload(_user[_userGuard])
         .createToken(_userGuard, expiresIn, withRefreshToken);
 
@@ -64,14 +64,14 @@ class Auth {
     Duration? expiresIn,
     bool customToken = false,
   }) async {
-    final newToken = HasApiTokens().refreshToken(
+    final newToken = TokenHandler().refreshToken(
       token.replaceFirst('Bearer ', ''),
       _userGuard,
       expiresIn,
     );
 
     if (!customToken) {
-      Map<String, dynamic> payload = HasApiTokens().verify(
+      Map<String, dynamic> payload = TokenHandler().verify(
           token.replaceFirst('Bearer ', ''), _userGuard, 'refresh_token');
 
       Model? authenticatable =
@@ -122,7 +122,7 @@ class Auth {
     Map<String, dynamic>? user,
     bool isCustomToken = false,
   }) async {
-    Map<String, dynamic> payload = HasApiTokens()
+    Map<String, dynamic> payload = TokenHandler()
         .verify(token.replaceFirst('Bearer ', ''), _userGuard, 'access_token');
 
     if (isCustomToken) {

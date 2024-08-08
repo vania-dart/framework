@@ -4,14 +4,14 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
-class HasApiTokens {
-  static final HasApiTokens _singleton = HasApiTokens._internal();
-  factory HasApiTokens() => _singleton;
-  HasApiTokens._internal();
+class TokenHandler {
+  static final TokenHandler _singleton = TokenHandler._internal();
+  factory TokenHandler() => _singleton;
+  TokenHandler._internal();
 
   Map<String, dynamic>? _userPayload = {};
 
-  HasApiTokens setPayload(Map<String, dynamic> payload) {
+  TokenHandler setPayload(Map<String, dynamic> payload) {
     _userPayload = payload;
     return this;
   }
