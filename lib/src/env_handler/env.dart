@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:vania/src/env_handler/env_interface.dart';
 import 'package:vania/src/env_handler/env_loader_interface.dart';
+import 'package:vania/src/env_handler/parser/parser.dart';
+import 'package:vania/src/utils/helper.dart';
 
 /// A class that implements the IEnv interface to handle environment configurations.
 /// It utilizes an IEnvLoader to load environment variables from a file.
@@ -36,7 +38,7 @@ class Env implements IEnv {
   ///
   /// Examples:
   /// ```dart
-  /// var appKey = env.get<String>('APP_KEY'); 
+  /// var appKey = env.get<String>('APP_KEY');
   /// var port = env.get<int>('PORT', 3000);
   /// var debugMode = env.get<bool>('DEBUG_MODE', false);
   /// ```
@@ -53,12 +55,9 @@ class Env implements IEnv {
   }
 
   T _parseValue<T>(dynamic value) {
-    if (T == int) {
-      return int.parse(value.toString()) as T;
-    } else if (T == num) {
-      return num.parse(value.toString()) as T;
-    } else if (T == bool) {
-      return bool.parse(value.toString()) as T;
+    var parser = parsers[T] as Parser<T>?;
+    if (parser != null) {
+      return parser.parse(value.toString());
     }
     return value as T;
   }

@@ -78,7 +78,7 @@ class MockEnv extends _i1.Mock implements _i3.Env {
   @override
   T get<T>(
     String? key, [
-    dynamic defaultValue,
+    dynamic defaultValue = r'',
   ]) =>
       (super.noSuchMethod(
         Invocation.method(
