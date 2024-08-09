@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
+import 'package:vania/src/env_handler/env_loader_impl.dart';
 import 'package:vania/vania.dart';
 
 class MigrationConnection {
@@ -15,7 +16,7 @@ class MigrationConnection {
   DatabaseDriver? database;
 
   Future<void> setup() async {
-    Env().load();
+    Env(envLoader: EnvLoader()).load();
     try {
       await DatabaseClient().setup();
       database = DatabaseClient().database;

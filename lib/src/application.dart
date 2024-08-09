@@ -1,4 +1,5 @@
 import 'package:vania/src/container.dart';
+import 'package:vania/src/env_handler/env_loader_impl.dart';
 import 'package:vania/src/server/base_http_server.dart';
 import 'package:vania/vania.dart';
 
@@ -8,7 +9,7 @@ class Application extends Container {
   factory Application() {
     if (_singleton == null) {
       _singleton = Application._internal();
-      Env().load();
+      Env(envLoader: EnvLoader()).load();
     }
     return _singleton!;
   }

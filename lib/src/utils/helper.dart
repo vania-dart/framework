@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:vania/src/env_handler/env_loader_impl.dart';
 import 'package:vania/vania.dart';
 
 String storagePath(String file) => 'storage/$file';
@@ -9,7 +10,8 @@ String url(String path) => '${env<String>('APP_URL')}/$path';
 
 String assets(String src) => url(src);
 
-T env<T>(String key, [dynamic defaultValue]) => Env.get<T>(key, defaultValue);
+T env<T>(String key, [dynamic defaultValue]) =>
+    Env(envLoader: EnvLoader()).get<T>(key, defaultValue);
 
 abort(int code, String message) {
   throw HttpResponseException(message: message, code: code);

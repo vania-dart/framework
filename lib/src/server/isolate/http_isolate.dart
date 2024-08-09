@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:vania/src/env_handler/env_loader_impl.dart';
 import 'package:vania/src/http/request/request_handler.dart';
 import 'package:vania/vania.dart';
 
@@ -13,7 +14,7 @@ Future<void> httpIsolate(
   Map config,
 ) async {
   try {
-    Env().load();
+    Env(envLoader: EnvLoader()).load();
     await initializeConfig(config);
     HttpServer server;
     if (handler.secure) {

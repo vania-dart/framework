@@ -1,19 +1,17 @@
 import 'dart:io';
 
-class Env {
-  static final Env _singleton = Env._internal();
+import 'package:vania/src/env_handler/env_interface.dart';
+import 'package:vania/src/env_handler/env_loader_interface.dart';
 
-  factory Env() {
-    return _singleton;
-  }
-
+class Env implements IEnv {
+  final IEnvLoader envLoader;
   Map<String, String> env = <String, String>{};
 
-  Env._internal();
+  Env({required this.envLoader});
 
   void load({File? file}) {
     if (env.isEmpty) {
-      env = _loadEnvFile(file: file);
+      env = envLoader.loadEnvFile(file: file);
     }
   }
 
@@ -25,55 +23,23 @@ class Env {
   /// Evn.get<num>('PORT', 3000);
   /// Evn.get<String>('APP_KEY');
   /// ```
-  static T get<T>(String key, [dynamic defaultValue]) {
-    dynamic value = Env().env[key];
+
+  @override
+  T get<T>(String key, [dynamic defaultValue]) {
+    dynamic value = env[key];
     value ??= Platform.environment[key];
     value ??= defaultValue;
-    if (T.toString() == 'int') {
-      return int.parse(value.toString()) as T;
-    }
-    if (T.toString() == 'num') {
-      return num.parse(value.toString()) as T;
-    }
+    return _parseValue<T>(value);
+  }
 
-    if (T.toString() == 'bool') {
+  T _parseValue<T>(dynamic value) {
+    if (T == int) {
+      return int.parse(value.toString()) as T;
+    } else if (T == num) {
+      return num.parse(value.toString()) as T;
+    } else if (T == bool) {
       return bool.parse(value.toString()) as T;
     }
-
-    return value;
-  }
-
-  /// load env from .env of project directory
-  Map<String, String> _loadEnvFile({File? file}) {
-    Map<String, String> data = <String, String>{};
-
-    File envFile = file ?? File('.env');
-    if (!envFile.existsSync()) return data;
-    String contents = envFile.readAsStringSync();
-    // splitting with new line for each variables
-    List<String> list = contents.split('\n');
-
-    for (String d in list) {
-      // splitting with equal sign to get key and value
-      List<String> keyValue = d.toString().split('=');
-      if (keyValue.first.isNotEmpty) {
-        data[keyValue.first.trim()] = _getValue(keyValue);
-      }
-    }
-
-    return data;
-  }
-
-  String _getValue(List<String> elements) {
-    if (elements.length > 1) {
-      List<String> elementsExceptFirst = elements.sublist(1);
-      String value = elementsExceptFirst.join('=');
-      return value
-          .replaceAll('"', '')
-          .replaceAll("'", '')
-          .replaceAll('`', '')
-          .trim();
-    }
-    return '';
+    return value as T;
   }
 }
