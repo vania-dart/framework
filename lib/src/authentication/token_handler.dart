@@ -1,28 +1,31 @@
 import 'dart:convert';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:vania/src/env_handler/env_interface.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
-import 'package:vania/vania.dart';
 
 class TokenHandler {
-  static final TokenHandler _singleton = TokenHandler._internal();
-  factory TokenHandler() => _singleton;
-  TokenHandler._internal();
-
+  final IEnv env;
   Map<String, dynamic>? _userPayload = {};
+
+  TokenHandler(this.env);
 
   TokenHandler setPayload(Map<String, dynamic> payload) {
     _userPayload = payload;
     return this;
   }
 
-  /// Create new token
-  Map<String, dynamic> createToken([
+  Map<String, dynamic> createToken({
     String guard = '',
     Duration? expiresIn,
     bool withRefreshToken = false,
-  ]) {
-    String secretKey = env('JWT_SECRET_KEY') ?? env<String>('APP_KEY');
+  }) {
+    String secretKey = env.get<String>(
+      'JWT_SECRET_KEY',
+    );
+    if (secretKey.isEmpty) {
+      secretKey = env.get<String>('APP_KEY');
+    }
     Map<String, dynamic> userId = {'id': _userPayload?['id']};
     if (_userPayload?['id'] == null) {
       userId = {'_id': _userPayload?['_id']};
@@ -34,19 +37,17 @@ class TokenHandler {
         'type': 'access_token',
         ...userId,
       },
-      audience: env('JWT_AUDIENCE') == null
-          ? null
-          : Audience.one(env<String>('JWT_AUDIENCE')),
-      jwtId: env<String?>('JWT_ID'),
-      issuer: env<String?>('JWT_ISSUER'),
-      subject: env<String?>('JWT_SUBJECT'),
+      audience: Audience.one(env.get<String>('JWT_AUDIENCE')),
+      jwtId: env.get<String?>('JWT_ID'),
+      issuer: env.get<String?>('JWT_ISSUER'),
+      subject: env.get<String?>('JWT_SUBJECT'),
     );
+
     Map<String, dynamic> payload = {};
     Duration expirationTime = expiresIn ?? const Duration(hours: 1);
 
     String accessToken =
         jwt.sign(SecretKey('$secretKey$guard'), expiresIn: expirationTime);
-
     payload['access_token'] = accessToken;
 
     if (withRefreshToken) {
@@ -61,11 +62,9 @@ class TokenHandler {
 
     payload['expires_in'] =
         DateTime.now().add(expirationTime).toIso8601String();
-
     return payload;
   }
 
-  /// Create new refresh token
   Map<String, dynamic> refreshToken(
     String token, [
     String guard = '',
@@ -73,22 +72,23 @@ class TokenHandler {
   ]) {
     final jwt = verify(token, guard, 'refresh_token');
     _userPayload = jwt;
-    return createToken(guard, expiresIn, true);
+    return createToken(
+        guard: guard, expiresIn: expiresIn, withRefreshToken: true);
   }
 
-// Verify token
   Map<String, dynamic> verify(String token, String guard, String expectedType) {
-    String secretKey = env('JWT_SECRET_KEY') ?? env<String>('APP_KEY');
+    String secretKey = env.get<String>('JWT_SECRET_KEY');
+    if (secretKey.isEmpty) {
+      secretKey = env.get<String>('APP_KEY');
+    }
     try {
       final jwt = JWT.verify(
         token,
         SecretKey('$secretKey$guard'),
-        audience: env('JWT_AUDIENCE') == null
-            ? null
-            : Audience.one(env<String>('JWT_AUDIENCE')),
-        jwtId: env<String?>('JWT_ID'),
-        issuer: env<String?>('JWT_ISSUER'),
-        subject: env<String?>('JWT_SUBJECT'),
+        audience: Audience.one(env.get<String>('JWT_AUDIENCE')),
+        jwtId: env.get<String?>('JWT_ID'),
+        issuer: env.get<String?>('JWT_ISSUER'),
+        subject: env.get<String?>('JWT_SUBJECT'),
       );
 
       if (jwt.payload['type'] != expectedType) {
