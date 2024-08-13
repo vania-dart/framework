@@ -47,7 +47,6 @@ export 'package:eloquent/eloquent.dart' show QueryException, Connection;
 export 'src/authentication/authentication.dart';
 export 'src/authentication/authenticate.dart';
 export 'src/cryptographic/hash.dart';
-export 'src/authentication/token_handler.dart';
 
 export 'src/mail/mailable.dart';
 export 'src/mail/content.dart';

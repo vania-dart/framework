@@ -4,8 +4,9 @@ import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
 class Authenticate extends Middleware {
+  final Auth auth;
   final String? guard;
-  Authenticate({this.guard});
+  Authenticate({required this.auth,this.guard});
 
   @mustCallSuper
   @override
@@ -13,9 +14,9 @@ class Authenticate extends Middleware {
     String? token = req.header('authorization')?.replaceFirst('Bearer ', '');
     try {
       if (guard == null) {
-        await Auth().check(token ?? '');
+        await auth.check(token ?? '');
       } else {
-        await Auth().guard(guard!).check(token ?? '');
+        await auth.guard(guard!).check(token ?? '');
       }
     } on JWTExpiredException {
       throw Unauthenticated(message: 'Token expired');
