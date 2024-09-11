@@ -1,11 +1,11 @@
-import 'package:vania/src/authentication/token_handler.dart';
+import 'package:vania/src/authentication/authentication_manager.dart';
+import 'package:vania/src/authentication/token_handler/token_handler.dart';
 import 'package:vania/src/authentication/user_repository.dart';
 import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
-
-class Auth {
+class AuthenticationManagerImpl implements AuthenticationManager {
   final TokenHandler tokenHandler;
   final UserRepository userRepository;
   final Config config;
@@ -14,26 +14,33 @@ class Auth {
   String _currentToken = '';
   final Map<String, dynamic> _user = {};
 
-  Auth(this.config, {required this.tokenHandler, required this.userRepository});
-
-  Auth guard(String guard) {
+  AuthenticationManagerImpl(this.config,
+      {required this.tokenHandler, required this.userRepository});
+  @override
+  AuthenticationManagerImpl guard(String guard) {
     _userGuard = guard;
     return this;
   }
 
-  Auth login(Map<String, dynamic> user) {
+  @override
+  AuthenticationManagerImpl login(Map<String, dynamic> user) {
     _user[_userGuard] = user;
     return this;
   }
 
+  @override
   bool get isAuthorized => _isAuthorized;
 
+  @override
   Map<String, dynamic>? user() => _user[_userGuard];
 
+  @override
   dynamic id() => _user[_userGuard]['id'] ?? _user[_userGuard]['_id'];
 
+  @override
   dynamic get(String filed) => _user[_userGuard][filed];
 
+  @override
   Future<Map<String, dynamic>> createToken({
     Duration? expiresIn,
     bool withRefreshToken = false,
@@ -54,10 +61,36 @@ class Auth {
         createdAt: DateTime.now(),
       );
     }
-
     return token;
   }
 
+  dynamic _getAuthenticatableStatus() {
+    try {
+      return config.get('auth')['guards'][_userGuard]['provider'];
+    } catch (_) {
+      return InvalidArgumentException('Authenticatable class not found');
+    }
+  }
+
+  Future<dynamic> _verifyTokenAndLoadUser(String token, String type) async {
+    var payload = tokenHandler.verify(
+        token.replaceFirst('Bearer ', ''), _userGuard, type);
+    var user = await _loadUserFromPayload(payload);
+    if (user == null) {
+      throw Unauthenticated(message: 'Invalid token');
+    }
+    return user;
+  }
+
+  Future<dynamic> _loadUserFromPayload(Map<String, dynamic> payload) async {
+    Model? authenticatable = _getAuthenticatableStatus();
+    return await authenticatable!
+        .query()
+        .where('id', '=', payload['id'])
+        .first();
+  }
+
+  @override
   Future<Map<String, dynamic>> createTokenByRefreshToken(
     String token, {
     Duration? expiresIn,
@@ -70,19 +103,7 @@ class Auth {
     );
 
     if (!customToken) {
-      Map<String, dynamic> payload = tokenHandler.verify(
-          token.replaceFirst('Bearer ', ''), _userGuard, 'refresh_token');
-      Model? authenticatable;
-      try {
-        authenticatable = config.get('auth')['guards'][_userGuard]['provider'];
-      } catch (_) {}
-
-      if (authenticatable == null) {
-        throw InvalidArgumentException('Authenticatable class not found');
-      }
-
-      Map? user =
-          await authenticatable.query().where('id', '=', payload['id']).first();
+      Map? user = await _verifyTokenAndLoadUser(token, 'refresh_token');
 
       if (user == null) {
         throw Unauthenticated(message: 'Invalid token');
@@ -100,23 +121,26 @@ class Auth {
     return newToken;
   }
 
+  @override
   Future<bool> deleteTokens() async {
     await userRepository.deleteTokenById(_user[_userGuard]['id']);
     return true;
   }
 
+  @override
   Future<bool> deleteCurrentToken() async {
     await userRepository.deleteTokenByToken(_currentToken);
     return true;
   }
 
+  @override
   Future<bool> check(
     String token, {
     Map<String, dynamic>? user,
     bool isCustomToken = false,
   }) async {
-    Map<String, dynamic> payload = tokenHandler
-        .verify(token.replaceFirst('Bearer ', ''), _userGuard, 'access_token');
+    Map<String, dynamic> payload = tokenHandler.verify(
+        token.replaceFirst('Bearer ', ''), _userGuard, 'access_token');
 
     if (isCustomToken) {
       _user[_userGuard] = payload;
@@ -124,21 +148,17 @@ class Auth {
       _currentToken = token;
       return true;
     } else {
-      Map<String, dynamic>? exists = await userRepository.findUserByToken(token);
+      Map<String, dynamic>? userMap =
+          await userRepository.findUserByToken(token);
       // Throw 401 Error if token not found
-      if (exists == null) {
+      if (userMap == null) {
         throw Unauthenticated(message: 'Invalid token');
       }
 
-    
       if (user == null) {
-        Model? authenticatable =
-            config.get('auth')['guards'][_userGuard]['provider'];
+        Model? authenticatable = _getAuthenticatableStatus();
 
-        if (authenticatable == null) {
-          throw InvalidArgumentException('Authenticatable class not found');
-        }
-        user = await authenticatable
+        user = await authenticatable!
             .query()
             .where('id', '=', payload['id'])
             .first();

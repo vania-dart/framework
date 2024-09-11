@@ -44,7 +44,7 @@ export 'src/extensions/database_operation_extension.dart';
 export 'package:eloquent/src/query/query_builder.dart';
 export 'package:eloquent/eloquent.dart' show QueryException, Connection;
 
-export 'src/authentication/authentication.dart';
+export 'src/authentication/authentication_manager_impl.dart';
 export 'src/authentication/authenticate.dart';
 export 'src/cryptographic/hash.dart';
 

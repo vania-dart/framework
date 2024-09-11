@@ -4,9 +4,9 @@ import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
 class Authenticate extends Middleware {
-  final Auth auth;
+  final AuthenticationManagerImpl auth;
   final String? guard;
-  Authenticate({required this.auth,this.guard});
+  Authenticate({required this.auth, this.guard});
 
   @mustCallSuper
   @override

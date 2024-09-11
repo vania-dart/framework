@@ -3,12 +3,13 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:io' as _i4;
-
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
-import 'package:vania/src/env_handler/env.dart' as _i3;
-import 'package:vania/src/env_handler/env_loader_interface.dart' as _i2;
+import 'package:vania/src/authentication/token_handler/jwt/jwt_config.dart'
+    as _i2;
+import 'package:vania/src/authentication/token_handler/jwt/jwt_signer.dart'
+    as _i3;
+import 'package:vania/src/authentication/token_handler/jwt/jwt_verifier.dart'
+    as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -23,8 +24,8 @@ import 'package:vania/src/env_handler/env_loader_interface.dart' as _i2;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeIEnvLoader_0 extends _i1.SmartFake implements _i2.IEnvLoader {
-  _FakeIEnvLoader_0(
+class _FakeJwtConfig_0 extends _i1.SmartFake implements _i2.JwtConfig {
+  _FakeJwtConfig_0(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -33,70 +34,77 @@ class _FakeIEnvLoader_0 extends _i1.SmartFake implements _i2.IEnvLoader {
         );
 }
 
-/// A class which mocks [Env].
+/// A class which mocks [JwtSigner].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockEnv extends _i1.Mock implements _i3.Env {
-  MockEnv() {
+class MockJwtSigner extends _i1.Mock implements _i3.JwtSigner {
+  MockJwtSigner() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i2.IEnvLoader get envLoader => (super.noSuchMethod(
-        Invocation.getter(#envLoader),
-        returnValue: _FakeIEnvLoader_0(
+  _i2.JwtConfig get config => (super.noSuchMethod(
+        Invocation.getter(#config),
+        returnValue: _FakeJwtConfig_0(
           this,
-          Invocation.getter(#envLoader),
+          Invocation.getter(#config),
         ),
-      ) as _i2.IEnvLoader);
+      ) as _i2.JwtConfig);
 
   @override
-  Map<String, String> get env => (super.noSuchMethod(
-        Invocation.getter(#env),
-        returnValue: <String, String>{},
-      ) as Map<String, String>);
-
-  @override
-  set env(Map<String, String>? _env) => super.noSuchMethod(
-        Invocation.setter(
-          #env,
-          _env,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void load({_i4.File? file}) => super.noSuchMethod(
-        Invocation.method(
-          #load,
-          [],
-          {#file: file},
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  T get<T>(
-    String? key, [
-    dynamic defaultValue = r'',
-  ]) =>
+  Map<String, dynamic> createToken({
+    required Map<String, dynamic>? payload,
+    String? guard = r'',
+    Duration? expiresIn = const Duration(hours: 1),
+    bool? withRefreshToken = false,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #get,
+          #createToken,
+          [],
+          {
+            #payload: payload,
+            #guard: guard,
+            #expiresIn: expiresIn,
+            #withRefreshToken: withRefreshToken,
+          },
+        ),
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
+}
+
+/// A class which mocks [JwtVerifier].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockJwtVerifier extends _i1.Mock implements _i4.JwtVerifier {
+  MockJwtVerifier() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.JwtConfig get config => (super.noSuchMethod(
+        Invocation.getter(#config),
+        returnValue: _FakeJwtConfig_0(
+          this,
+          Invocation.getter(#config),
+        ),
+      ) as _i2.JwtConfig);
+
+  @override
+  Map<String, dynamic> verify(
+    String? token,
+    String? guard,
+    String? expectedType,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verify,
           [
-            key,
-            defaultValue,
+            token,
+            guard,
+            expectedType,
           ],
         ),
-        returnValue: _i5.dummyValue<T>(
-          this,
-          Invocation.method(
-            #get,
-            [
-              key,
-              defaultValue,
-            ],
-          ),
-        ),
-      ) as T);
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
 }

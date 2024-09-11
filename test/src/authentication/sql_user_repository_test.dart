@@ -8,7 +8,7 @@ import 'package:vania/src/authentication/model/personal_access_token.dart';
 import 'package:vania/src/authentication/sql_user_repository.dart';
 import 'package:vania/vania.dart';
 
-import 'sql_user_repository.mocks.dart';
+import 'sql_user_repository_test.mocks.dart';
 
 @GenerateMocks([PersonalAccessTokens, QueryBuilder])
 void main() {
