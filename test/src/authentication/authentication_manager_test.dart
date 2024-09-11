@@ -8,7 +8,6 @@ import 'package:vania/vania.dart';
 
 import 'authentication_manager_test.mocks.dart';
 
-
 @GenerateMocks([TokenHandler, UserRepository, Config])
 void main() {
   group('AuthenticationManagerImpl', () {
@@ -42,7 +41,9 @@ void main() {
       expect(result, false);
     });
 
-    test('check method should return true when isCustomToken is false but user is exist', () async {
+    test(
+        'check method should return true when isCustomToken is false but user is exist',
+        () async {
       when(mockTokenHandler.verify(any, any, any)).thenReturn({'id': '123'});
       when(mockUserRepository.findUserByToken(any))
           .thenAnswer((_) async => {'id': '123'});
@@ -57,7 +58,8 @@ void main() {
           .thenAnswer((_) async => {'id': '123'});
       when(mockConfig.get(any)).thenReturn({'provider': Model()});
 
-      final result = await authManager.check('validToken', isCustomToken: false, user: {'id': '123'});
+      final result = await authManager
+          .check('validToken', isCustomToken: false, user: {'id': '123'});
       expect(result, true);
     });
 

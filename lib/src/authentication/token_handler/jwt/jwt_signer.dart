@@ -71,4 +71,3 @@ class JwtSigner {
         : {'_id': payload['_id']};
   }
 }
-

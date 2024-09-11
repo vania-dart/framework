@@ -7,6 +7,7 @@ import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
 import 'authenticate_test.mocks.dart';
+
 @GenerateMocks([AuthenticationManager, Request])
 void main() {
   group('Authenticate', () {

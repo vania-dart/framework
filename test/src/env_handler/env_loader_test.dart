@@ -6,9 +6,9 @@ import 'package:vania/src/env_handler/env_loader_impl.dart';
 
 import 'env_loader_test.mocks.dart';
 
-
-
-@GenerateMocks([File,])
+@GenerateMocks([
+  File,
+])
 void main() {
   group('EnvLoader', () {
     test('should return empty map if .env file does not exist', () {

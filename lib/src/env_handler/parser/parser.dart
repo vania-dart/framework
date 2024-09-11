@@ -1,3 +1,3 @@
-abstract class Parser<T>{
+abstract class Parser<T> {
   T parse(String value);
 }
