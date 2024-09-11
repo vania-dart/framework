@@ -5,6 +5,7 @@ import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
 import 'package:vania/vania.dart';
 
+/// Manages authentication processes, including token management, user sessions, and authentication states.
 class AuthenticationManagerImpl implements AuthenticationManager {
   final TokenHandler tokenHandler;
   final UserRepository userRepository;
@@ -16,30 +17,103 @@ class AuthenticationManagerImpl implements AuthenticationManager {
 
   AuthenticationManagerImpl(this.config,
       {required this.tokenHandler, required this.userRepository});
+
+  /// Sets the guard for the current authentication process.
+  ///
+  /// [guard] is a string key representing the guard.
+  /// Returns this `AuthenticationManagerImpl` instance for method chaining.
+  ///
+  /// Example:
+  /// ```
+  /// var authManager = AuthenticationManagerImpl(config, tokenHandler: tokenHandler, userRepository: userRepository);
+  /// authManager.guard('admin');
+  /// ```
   @override
   AuthenticationManagerImpl guard(String guard) {
     _userGuard = guard;
     return this;
   }
 
+  /// Logs in a user by setting the user information for the current guard.
+  ///
+  /// [user] is a map containing the user details.
+  /// Returns this `AuthenticationManagerImpl` instance for method chaining.
+  ///
+  /// Example:
+  /// ```
+  /// var user = {'id': 1, 'name': 'John Doe'};
+  /// authManager.login(user);
+  /// ```
   @override
   AuthenticationManagerImpl login(Map<String, dynamic> user) {
     _user[_userGuard] = user;
     return this;
   }
 
+  /// Checks if a user is currently authorized.
+  ///
+  /// Returns `true` if the user is authorized, otherwise `false`.
+  ///
+  /// Example:
+  /// ```
+  /// if (authManager.isAuthorized) {
+  ///   print('User is authorized.');
+  /// }
+  /// ```
   @override
   bool get isAuthorized => _isAuthorized;
 
+  /// Retrieves the user details for the current guard.
+  ///
+  /// Returns a map of user details if logged in, otherwise `null`.
+  ///
+  /// Example:
+  /// ```
+  /// var userDetails = authManager.user();
+  /// print(userDetails);
+  /// ```
   @override
   Map<String, dynamic>? user() => _user[_userGuard];
 
+  /// Retrieves the unique identifier of the currently logged-in user.
+  ///
+  /// Returns the user identifier.
+  ///
+  /// Example:
+  /// ```
+  /// var userId = authManager.id();
+  /// print('User ID: $userId');
+  /// ```
   @override
   dynamic id() => _user[_userGuard]['id'] ?? _user[_userGuard]['_id'];
 
+  /// Retrieves a specific field value from the currently logged-in user's details.
+  ///
+  /// [field] is a string specifying the field to retrieve.
+  /// Returns the value of the specified field.
+  ///
+  /// Example:
+  /// ```
+  /// var userName = authManager.get('name');
+  /// print('User Name: $userName');
+  /// ```
   @override
   dynamic get(String filed) => _user[_userGuard][filed];
 
+  /// Creates a new authentication token for the currently logged-in user.
+  ///
+  /// Optional parameters:
+  /// [expiresIn] customizes the expiration of the token.
+  /// [withRefreshToken] indicates whether a refresh token should also be generated.
+  /// [customToken] specifies if the token should be stored or managed in a custom way.
+  ///
+  /// Returns a `Future` that resolves to a map containing token details.
+  ///
+  /// Example:
+  /// ```
+  /// var tokenDetails = await authManager.createToken();
+  /// print(tokenDetails);
+  /// ```
   @override
   Future<Map<String, dynamic>> createToken({
     Duration? expiresIn,
