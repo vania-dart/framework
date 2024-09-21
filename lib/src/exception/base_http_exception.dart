@@ -14,6 +14,6 @@ class BaseHttpResponseException {
   });
 
   Response response(bool isJson) => isJson
-      ? Response.html(message)
-      : Response.json(message is Map ? message : {'message': message}, code);
+      ? Response.json(message is Map ? message : {'message': message}, code)
+      : Response.html(message);
 }
