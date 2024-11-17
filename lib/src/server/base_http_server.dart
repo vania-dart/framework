@@ -32,7 +32,7 @@ class BaseHttpServer {
   Future<void> spawnIsolates(int numIsolates) async {
     IsolateHandler isolateHandler = IsolateHandler(
       host: env<String>('APP_HOST', '127.0.0.1'),
-      port: env<int>('APP_PORT', 8000),
+      port: 8000,
       shared: env<bool>('APP_SHARED', false),
       secure: env<bool>('APP_SECURE', false),
       certficate: env<String>('APP_CERTIFICATE'),
@@ -77,14 +77,14 @@ class BaseHttpServer {
 
         httpServer = await HttpServer.bindSecure(
           env<String>('APP_HOST', '127.0.0.1'),
-          env<int>('APP_PORT', 8000),
+          8000,
           context,
           shared: env<bool>('APP_SHARED', false),
         );
       } else {
         httpServer = await HttpServer.bind(
           env<String>('APP_HOST', '127.0.0.1'),
-          env<int>('APP_PORT', 8000),
+          8000,
           shared: env<bool>('APP_SHARED', false),
         );
       }
