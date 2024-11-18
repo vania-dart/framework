@@ -32,7 +32,7 @@ class BaseHttpServer {
   Future<void> spawnIsolates(int numIsolates) async {
     IsolateHandler isolateHandler = IsolateHandler(
       host: Platform.environment['APP_HOST'] ?? '127.0.0.1',
-      port: int.parse(Platform.environment['\$PORT'] ?? '8000'),
+      port: int.parse(Platform.environment['PORT'] ?? '8080'),
       shared: bool.parse((Platform.environment['APP_SHARED'] ??  'false')) ,
       secure:  bool.parse(Platform.environment['APP_SECURE'] ??  'false'),
       certficate: Platform.environment['APP_CERTIFICATE'],
@@ -78,14 +78,14 @@ class BaseHttpServer {
 
         httpServer = await HttpServer.bindSecure(
           Platform.environment['APP_HOST'] ?? '127.0.0.1',
-          int.parse(Platform.environment['\$PORT'] ?? '8000'),
+          int.parse(Platform.environment['PORT'] ?? '8080'),
           context,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
       } else {
         httpServer = await HttpServer.bind(
           Platform.environment['APP_HOST'] ?? '127.0.0.1',
-          int.parse(Platform.environment['\$PORT'] ?? '8000'),
+          int.parse(Platform.environment['PORT'] ?? '8080'),
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
       }
@@ -95,7 +95,7 @@ class BaseHttpServer {
 
       if (appDebugStatus) {
         final bool appSecureStatus =  bool.tryParse(Platform.environment['APP_SECURE'] ?? 'false') ?? false;
-        final int appPort = int.parse(Platform.environment['\$PORT'] ?? '8000');
+        final int appPort = int.parse(Platform.environment['PORT'] ?? '8080');
 
         if (appSecureStatus) {
           print("Server started on https://127.0.0.1:$appPort");
