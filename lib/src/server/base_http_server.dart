@@ -31,13 +31,13 @@ class BaseHttpServer {
 
   Future<void> spawnIsolates(int numIsolates) async {
     IsolateHandler isolateHandler = IsolateHandler(
-      host: env<String>('APP_HOST', '127.0.0.1'),
+      host: Platform.environment['APP_HOST'] ?? '127.0.0.1',
       port: int.parse(Platform.environment['PORT'] ?? '8080'),
-      shared: env<bool>('APP_SHARED', false),
-      secure: env<bool>('APP_SECURE', false),
-      certficate: env<String>('APP_CERTIFICATE'),
-      privateKey: env<String>('APP_PRIVATE_KEY'),
-      privateKeyPassword: env<String>('APP_PRIVATE_KEY_PASSWORD'),
+      shared: bool.parse((Platform.environment['APP_SHARED'] ??  'false')) ,
+      secure:  bool.parse(Platform.environment['APP_SECURE'] ??  'false'),
+      certficate: Platform.environment['APP_CERTIFICATE'],
+      privateKey: Platform.environment['APP_PRIVATE_KEY'],
+      privateKeyPassword: Platform.environment['APP_PRIVATE_KEY_PASSWORD'] ,
     );
 
     final receivePort = ReceivePort();
@@ -66,36 +66,41 @@ class BaseHttpServer {
   }) async {
     try {
       await initializeConfig(config);
-      if (env<bool>('APP_SECURE', false)) {
-        var certificateChain = env<String>('APP_CERTIFICATE');
-        var serverKey = env<String>('APP_PRIVATE_KEY');
-        var password = env<String>('APP_PRIVATE_KEY_PASSWORD');
+      final bool appSecureStatus = bool.tryParse(Platform.environment['APP_SECURE'] ?? 'false') ?? false ;
+      if (appSecureStatus) {
+        var certificateChain = Platform.environment['APP_CERTIFICATE'] ??  env<String>('APP_CERTIFICATE');
+        var serverKey = Platform.environment['APP_PRIVATE_KEY'] ?? env<String>('APP_PRIVATE_KEY');
+        var password =  Platform.environment['APP_PRIVATE_KEY_PASSWORD'] ?? env<String>('APP_PRIVATE_KEY_PASSWORD');
 
         var context = SecurityContext()
           ..useCertificateChain(certificateChain)
           ..usePrivateKey(serverKey, password: password);
 
         httpServer = await HttpServer.bindSecure(
-          env<String>('APP_HOST', '127.0.0.1'),
+          Platform.environment['APP_HOST'] ?? '127.0.0.1',
           int.parse(Platform.environment['PORT'] ?? '8080'),
           context,
-          shared: env<bool>('APP_SHARED', false),
+          shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
       } else {
         httpServer = await HttpServer.bind(
-          env<String>('APP_HOST', '127.0.0.1'),
+          Platform.environment['APP_HOST'] ?? '127.0.0.1',
           int.parse(Platform.environment['PORT'] ?? '8080'),
-          shared: env<bool>('APP_SHARED', false),
+          shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
       }
 
       httpServer?.listen(httpRequestHandler);
+      final bool appDebugStatus = bool.tryParse(Platform.environment['APP_DEBUG'] ?? 'false') ?? false;
 
-      if (env<bool>('APP_DEBUG')) {
-        if (env<bool>('APP_SECURE')) {
-          print("Server started on https://127.0.0.1:${env('APP_PORT')}");
+      if (appDebugStatus) {
+        final bool appSecureStatus =  bool.tryParse(Platform.environment['APP_SECURE'] ?? 'false') ?? false;
+        final int appPort = int.parse(Platform.environment['PORT'] ?? '8080');
+
+        if (appSecureStatus) {
+          print("Server started on https://127.0.0.1:$appPort");
         } else {
-          print("Server started on http://127.0.0.1:${env('APP_PORT')}");
+          print("Server started on http://127.0.0.1:$appPort");
         }
       }
       return httpServer!;
