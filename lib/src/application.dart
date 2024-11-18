@@ -9,7 +9,7 @@ class Application extends Container {
   factory Application() {
     if (_singleton == null) {
       _singleton = Application._internal();
-      Env().load();
+      // Env().load();
       Localization().init();
     }
     return _singleton!;
