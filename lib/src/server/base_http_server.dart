@@ -77,7 +77,7 @@ class BaseHttpServer {
           ..usePrivateKey(serverKey, password: password);
         final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bindSecure(
-          Platform.environment['APP_HOST'] ?? '127.0.0.1',
+          InternetAddress.anyIPv6.host,
           port,
           context,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
@@ -85,7 +85,7 @@ class BaseHttpServer {
       } else {
         final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bind(
-          Platform.environment['APP_HOST'] ?? '127.0.0.1',
+          InternetAddress.anyIPv6.host,
           port,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
