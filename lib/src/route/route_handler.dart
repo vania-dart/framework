@@ -4,7 +4,7 @@ import 'package:vania/src/exception/not_found_exception.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 RouteData? httpRouteHandler(HttpRequest req) {
   final route = _getMatchRoute(

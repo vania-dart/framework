@@ -6,7 +6,7 @@ import 'package:vania/src/http/middleware/middleware_handler.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/route_handler.dart';
 import 'package:vania/src/websocket/web_socket_handler.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 Future httpRequestHandler(HttpRequest req) async {
   /// Check the incoming request is web socket or not

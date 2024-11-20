@@ -1,4 +1,4 @@
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class IsImage extends ValidationRule {
   final String args;

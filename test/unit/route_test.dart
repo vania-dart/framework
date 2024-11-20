@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:vania/src/route/route_data.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 void main() {
   group('Route Test', () {

@@ -1,6 +1,6 @@
 import 'package:vania/src/database/pagination.dart';
 import 'package:vania/src/database/simple_pagination.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 extension Pagination on QueryBuilder {
   /// Fetches data in a paginated format based on the specified page and number of items per page.

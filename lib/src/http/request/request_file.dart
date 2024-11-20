@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 import 'package:mime/mime.dart';
 import 'package:vania/src/utils/functions.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class RequestFile {
   final String filename;

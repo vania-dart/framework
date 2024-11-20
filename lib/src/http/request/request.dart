@@ -4,7 +4,7 @@ import 'package:vania/src/exception/validation_exception.dart';
 import 'package:vania/src/http/request/request_body.dart';
 import 'package:vania/src/http/validation/validator.dart';
 import 'package:vania/src/route/route_data.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class Request {
   final HttpRequest request;

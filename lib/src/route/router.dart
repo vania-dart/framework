@@ -1,7 +1,7 @@
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/websocket/web_socket_handler.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class Router {
   static final Router _singleton = Router._internal();

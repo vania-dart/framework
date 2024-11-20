@@ -1,7 +1,7 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:meta/meta.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class Authenticate extends Middleware {
   final String? guard;

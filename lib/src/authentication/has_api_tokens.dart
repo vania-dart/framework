@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class HasApiTokens {
   static final HasApiTokens _singleton = HasApiTokens._internal();

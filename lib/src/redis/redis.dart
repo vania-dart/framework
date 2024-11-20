@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class Redis {
   late Commands<String, String> command;

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:vania/src/utils/functions.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 import 'package:path/path.dart' as path;
 
 bool? setStaticPath(HttpRequest req) {

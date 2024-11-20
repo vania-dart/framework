@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 import 'model/personal_access_token.dart';
 

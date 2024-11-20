@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 import '../../exception/throttle_exception.dart';
 import '../throttle_requests.dart';

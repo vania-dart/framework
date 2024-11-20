@@ -1,5 +1,5 @@
 import 'package:eloquent/eloquent.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class PostgreSQLDriver implements DatabaseDriver {
   static final PostgreSQLDriver _singleton = PostgreSQLDriver._internal();

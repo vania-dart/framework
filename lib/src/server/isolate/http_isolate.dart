@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:vania/src/http/request/request_handler.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 import '../initialize_config.dart';
 import 'isolate_handler.dart';

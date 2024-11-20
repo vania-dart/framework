@@ -1,4 +1,4 @@
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class RedisCacheDriver extends CacheDriver {
   String prefix = env('REDIS_PREFIX', '${env('APP_NAME', 'vania')}_database_');

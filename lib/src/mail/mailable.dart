@@ -2,7 +2,7 @@ import 'package:mailer/mailer.dart' as mailer;
 import 'package:mailer/smtp_server.dart';
 import 'package:meta/meta.dart';
 import 'package:vania/src/mail/mail.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 @immutable
 class Mailable implements Mail {

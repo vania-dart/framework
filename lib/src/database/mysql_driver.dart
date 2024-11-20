@@ -1,5 +1,5 @@
 import 'package:eloquent/eloquent.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/vania_framework.dart';
 
 class MysqlDriver implements DatabaseDriver {
   static final MysqlDriver _singleton = MysqlDriver._internal();
