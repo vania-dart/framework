@@ -31,7 +31,7 @@ class BaseHttpServer {
 
   Future<void> spawnIsolates(int numIsolates) async {
     IsolateHandler isolateHandler = IsolateHandler(
-      host: Platform.environment['APP_HOST'] ?? '127.0.0.1',
+      host: InternetAddress.anyIPv6.host,
       port: int.parse(Platform.environment['PORT'] ?? '8080'),
       shared: bool.parse((Platform.environment['APP_SHARED'] ??  'false')) ,
       secure:  bool.parse(Platform.environment['APP_SECURE'] ??  'false'),
