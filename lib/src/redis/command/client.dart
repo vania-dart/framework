@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:vania/src/redis/exception.dart';
-import 'package:vania/src/redis/lowlevel/protocol_client.dart';
-import 'package:vania/src/redis/lowlevel/resp.dart';
-import 'package:vania/vania.dart';
+import 'package:vaniaFramework/src/redis/exception.dart';
+import 'package:vaniaFramework/src/redis/lowlevel/protocol_client.dart';
+import 'package:vaniaFramework/src/redis/lowlevel/resp.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class MultiCodec {
   final List<RedisCodec> codecs = [

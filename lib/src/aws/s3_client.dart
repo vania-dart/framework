@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:vania/src/extensions/date_time_extension.dart';
-import 'package:vania/src/utils/helper.dart';
+import 'package:vaniaFramework/src/extensions/date_time_extension.dart';
+import 'package:vaniaFramework/src/utils/helper.dart';
 
 class S3Client {
   static final S3Client _singleton = S3Client._internal();

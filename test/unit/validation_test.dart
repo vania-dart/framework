@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:vania/src/http/validation/validator.dart';
+import 'package:vaniaFramework/src/http/validation/validator.dart';
 
 void main() {
   group('Validation Test', () {

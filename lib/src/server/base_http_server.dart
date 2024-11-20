@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:vania/src/http/request/request_handler.dart';
-import 'package:vania/vania.dart';
-
+import 'package:vaniaFramework/src/http/request/request_handler.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 import 'initialize_config.dart';
 import 'isolate/isolate_handler.dart';
 import 'isolate/http_isolate.dart';
@@ -66,36 +65,41 @@ class BaseHttpServer {
   }) async {
     try {
       await initializeConfig(config);
-      if (env<bool>('APP_SECURE', false)) {
-        var certificateChain = env<String>('APP_CERTIFICATE');
-        var serverKey = env<String>('APP_PRIVATE_KEY');
-        var password = env<String>('APP_PRIVATE_KEY_PASSWORD');
+      final bool appSecureStatus = bool.tryParse(Platform.environment['APP_SECURE'] ?? 'false') ?? false ;
+      if (appSecureStatus) {
+        var certificateChain = Platform.environment['APP_CERTIFICATE'] ??  env<String>('APP_CERTIFICATE');
+        var serverKey = Platform.environment['APP_PRIVATE_KEY'] ?? env<String>('APP_PRIVATE_KEY');
+        var password =  Platform.environment['APP_PRIVATE_KEY_PASSWORD'] ?? env<String>('APP_PRIVATE_KEY_PASSWORD');
 
         var context = SecurityContext()
           ..useCertificateChain(certificateChain)
           ..usePrivateKey(serverKey, password: password);
-
+        final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bindSecure(
           env<String>('APP_HOST', '127.0.0.1'),
           env<int>('APP_PORT' ,'8080'),
           context,
-          shared: env<bool>('APP_SHARED', false),
+          shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
-      } else {
         httpServer = await HttpServer.bind(
-          env<String>('APP_HOST', '127.0.0.1'),
-          env<int>('APP_PORT' ,'8080'),
-          shared: env<bool>('APP_SHARED', false),
+          // InternetAddress.anyIPv6.host,
+          Platform.environment['APP_HOST'] ??  '0.0.0.0',
+          port,
+          shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
+
         );
       }
 
       httpServer?.listen(httpRequestHandler);
+      final bool appDebugStatus = bool.tryParse(Platform.environment['APP_DEBUG'] ?? 'false') ?? false;
 
-      if (env<bool>('APP_DEBUG')) {
-        if (env<bool>('APP_SECURE')) {
-          print("Server started on https://127.0.0.1:${env('APP_PORT')}");
+      if (appDebugStatus) {
+        final bool appSecureStatus =  bool.tryParse(Platform.environment['APP_SECURE'] ?? 'false') ?? false;
+        final port = int.parse(Platform.environment['PORT'] ?? '8080');
+        if (appSecureStatus) {
+          print("Server started on https://127.0.0.1:$port");
         } else {
-          print("Server started on http://127.0.0.1:${env('APP_PORT')}");
+          print("Server started on http://127.0.0.1:$port");
         }
       }
       return httpServer!;

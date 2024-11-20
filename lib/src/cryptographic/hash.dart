@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'package:vania/vania.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class Hash {
   static final Hash _singleton = Hash._internal();

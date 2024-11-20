@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:vania/src/extensions/date_time_extension.dart';
+import 'package:vaniaFramework/src/extensions/date_time_extension.dart';
 
 void main() {
   group('DateTimeExtension Tests', () {

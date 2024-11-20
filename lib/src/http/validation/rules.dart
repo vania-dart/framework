@@ -1,4 +1,4 @@
-import 'package:vania/src/http/request/request_file.dart';
+import 'package:vaniaFramework/src/http/request/request_file.dart';
 
 class Rules {
   /// check field is required

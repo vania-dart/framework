@@ -1,4 +1,4 @@
-import 'package:vania/src/http/response/response.dart';
+import 'package:vaniaFramework/src/http/response/response.dart';
 
 class BaseHttpResponseException {
   final String errorCode;

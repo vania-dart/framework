@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:vania/src/localization_handler/localization.dart';
-import 'package:vania/vania.dart';
+import 'package:vaniaFramework/src/localization_handler/localization.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 String storagePath(String file) => 'storage/$file';
 
@@ -14,7 +14,7 @@ bool can(String ability) => Gate().allows(ability);
 
 bool cannot(String ability) => Gate().denies(ability);
 
-T env<T>(String key, [dynamic defaultValue]) => Env.get<T>(key, defaultValue);
+T env<T>(String key, [dynamic defaultValue]) => Platform.environment[key] as T ?? defaultValue;
 
 String trans(
   String key, [

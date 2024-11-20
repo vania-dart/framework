@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:vania/src/redis/exception.dart';
+import 'package:vaniaFramework/src/redis/exception.dart';
 
 /// Redis error reply
 class RedisError {

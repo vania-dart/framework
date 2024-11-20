@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:vania/src/http/request/request_form_data.dart';
+import 'package:vaniaFramework/src/http/request/request_form_data.dart';
 
 String _fixJsonString(String jsonString) {
   return jsonString.replaceAllMapped(

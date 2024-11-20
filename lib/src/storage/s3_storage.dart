@@ -4,7 +4,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:mime/mime.dart';
-import 'package:vania/src/aws/s3_client.dart';
+import 'package:vaniaFramework/src/aws/s3_client.dart';
 
 import 'storage_driver.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:vania/src/http/validation/validation_chain/validation_rule.dart';
+import 'package:vaniaFramework/src/http/validation/validation_chain/validation_rule.dart';
 
 class GreaterThan extends ValidationRule {
   final num compare;

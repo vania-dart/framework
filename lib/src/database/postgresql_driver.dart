@@ -1,5 +1,5 @@
 import 'package:eloquent/eloquent.dart';
-import 'package:vania/vania.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class PostgreSQLDriver implements DatabaseDriver {
   static final PostgreSQLDriver _singleton = PostgreSQLDriver._internal();
@@ -19,7 +19,7 @@ class PostgreSQLDriver implements DatabaseDriver {
         'driver': 'pgsql',
         'host': env<String>('DB_HOST', '127.0.0.1'),
         'port': env<int>('DB_PORT', 5432),
-        'database': env<String>('DB_DATABASE', 'vania'),
+        'database': env<String>('DB_DATABASE', 'vaniaFramework'),
         'username': env<String>('DB_USERNAME', 'root'),
         'password': env<String>('DB_PASSWORD', ''),
         'pool': env<bool>('DB_POOL', false),

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:eloquent/eloquent.dart';
-import 'package:vania/vania.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class Model {
   String? _table;

@@ -3,8 +3,8 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:vania/src/redis/exception.dart';
-import 'package:vania/src/redis/lowlevel/resp.dart';
+import 'package:vaniaFramework/src/redis/exception.dart';
+import 'package:vaniaFramework/src/redis/lowlevel/resp.dart';
 
 /// low level Redis Client
 class RedisProtocolClient {

@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:vania/src/extensions/map_extension.dart';
+import 'package:vaniaFramework/src/extensions/map_extension.dart';
 
 void main() {
   group('MapExtensions Tests', () {

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:test/test.dart';
-import 'package:vania/vania.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 void main() {
   group('Hash class test', () {

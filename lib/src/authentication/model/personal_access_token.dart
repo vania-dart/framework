@@ -1,4 +1,4 @@
-import 'package:vania/src/database/model.dart';
+import 'package:vaniaFramework/src/database/model.dart';
 
 class PersonalAccessTokens extends Model {
   PersonalAccessTokens() {

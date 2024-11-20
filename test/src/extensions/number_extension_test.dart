@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:vania/src/extensions/number_extension.dart';
+import 'package:vaniaFramework/src/extensions/number_extension.dart';
 
 void main() {
   group('NumberExtension.toFixed', () {

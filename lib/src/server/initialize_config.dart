@@ -1,5 +1,5 @@
 import 'package:eloquent/eloquent.dart';
-import 'package:vania/vania.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 Future<void> initializeConfig(config) async {
   Config().setApplicationConfig = config;

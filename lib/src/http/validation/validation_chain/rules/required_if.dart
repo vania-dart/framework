@@ -1,5 +1,5 @@
-import 'package:vania/src/http/validation/validation_chain/rules/is_required.dart';
-import 'package:vania/src/http/validation/validation_chain/validation_rule.dart';
+import 'package:vaniaFramework/src/http/validation/validation_chain/rules/is_required.dart';
+import 'package:vaniaFramework/src/http/validation/validation_chain/validation_rule.dart';
 
 class RequiredIf extends ValidationRule {
   final String payload;
