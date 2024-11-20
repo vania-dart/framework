@@ -6,13 +6,13 @@
 
 - Refactor incoming route log
 - Remove unnecessary library name
-- Add Multi-language support [#141](https://github.com/vania-dart/framework/issues/141) [Localization](https://vdart.dev/docs/the-basics/localization)
+- Add Multi-language support [#141](https://github.com/vaniaFramework-dart/framework/issues/141) [Localization](https://vdart.dev/docs/the-basics/localization)
 
 ## 0.5.1
 
 - Add support for unique constraints in migrations. Thanks to [WellingtonNico](https://github.com/WellingtonNico) for the contribution.
 - Refactor configuration initialization by moving database setup before service provider registration, ensuring a more reliable startup sequence.
-- Fix Resolved an issue with WebSocket middleware that caused unexpected behavior. See [#132](https://github.com/vania-dart/framework/issues/132) for details.
+- Fix Resolved an issue with WebSocket middleware that caused unexpected behavior. See [#132](https://github.com/vaniaFramework-dart/framework/issues/132) for details.
 - Chore Upgraded dependencies to their latest versions.
 
 ## 0.5.0
@@ -23,25 +23,25 @@
 
 ## 0.4.3
 
-- Fix nested json [#128](https://github.com/vania-dart/framework/issues/128)
+- Fix nested json [#128](https://github.com/vaniaFramework-dart/framework/issues/128)
 - Add  json to the request `request.json()`
 
 ## 0.4.2
 
-- Fix id auto-increment for PostgreSQL compatibility [#127](https://github.com/vania-dart/framework/issues/118)
+- Fix id auto-increment for PostgreSQL compatibility [#127](https://github.com/vaniaFramework-dart/framework/issues/118)
 
 ## 0.4.1
 
 - Refactor validation rule customErrorMessage to message
 - Fix JSON response for API
-- Fix PostgreSQL sslmode [#118](https://github.com/vania-dart/framework/issues/118)
+- Fix PostgreSQL sslmode [#118](https://github.com/vaniaFramework-dart/framework/issues/118)
 - Add enable support for list item submission `form/data` request
 - chore: upgrade dependencies
 
 ## 0.4.0
 
-- feat: a new field validation mechanism by [alirezat66](https://github.com/alirezat66) - [PR 99](https://github.com/vania-dart/framework/pull/99)
-- Fix nested route group [#98](https://github.com/vania-dart/framework/issues/98)
+- feat: a new field validation mechanism by [alirezat66](https://github.com/alirezat66) - [PR 99](https://github.com/vaniaFramework-dart/framework/pull/99)
+- Fix nested route group [#98](https://github.com/vaniaFramework-dart/framework/issues/98)
 - Fix middleware issue
 
 ## 0.3.5+1
@@ -86,17 +86,17 @@
 
 ## 0.3.1
 
-- Fix Refresh token bug([#83](https://github.com/vania-dart/framework/issues/83))
+- Fix Refresh token bug([#83](https://github.com/vaniaFramework-dart/framework/issues/83))
 - Fix WebSocket connect event
 
 ## 0.3.0
 
-- Add Parameter validation conditions for the router([#79](https://github.com/vania-dart/framework/issues/79))
-- Add Resource and Any route ([#80](https://github.com/vania-dart/framework/issues/80))
+- Add Parameter validation conditions for the router([#79](https://github.com/vaniaFramework-dart/framework/issues/79))
+- Add Resource and Any route ([#80](https://github.com/vaniaFramework-dart/framework/issues/80))
 - Refactor Router, Route Handler
 - Refactor Controller handler for increasing RPS and decreasing latency
 - Refactor Request handler for increase RPS
-- Fix Null params ([#81](https://github.com/vania-dart/framework/issues/81))
+- Fix Null params ([#81](https://github.com/vaniaFramework-dart/framework/issues/81))
 
 ## 0.2.7
 
@@ -153,7 +153,7 @@
 
 ## 0.2.2
 
-- Fix Websocket Join and Left room issue([#63](https://github.com/vania-dart/framework/issues/63))
+- Fix Websocket Join and Left room issue([#63](https://github.com/vaniaFramework-dart/framework/issues/63))
 - Refactor Migration and model
 - Add DatabseClient class
 
@@ -290,7 +290,7 @@
 
 ## 0.0.2
 
-- Add column index to vania file
+- Add column index to vaniaFramework file
 - Code formatted
 
 ## 0.0.1

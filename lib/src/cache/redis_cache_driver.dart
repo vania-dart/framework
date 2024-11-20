@@ -1,7 +1,7 @@
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class RedisCacheDriver extends CacheDriver {
-  String prefix = env('REDIS_PREFIX', '${env('APP_NAME', 'vania')}_database_');
+  String prefix = env('REDIS_PREFIX', '${env('APP_NAME', 'vaniaFramework')}_database_');
 
   @override
   Future<void> delete(String key) async {

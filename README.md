@@ -2,7 +2,7 @@
 
 [Vania Dart Documentation](https://vdart.dev)
 
-[Contributing to Vania](https://github.com/vania-dart/framework/blob/main/CONTRIBUTING.md)
+[Contributing to Vania](https://github.com/vaniaFramework-dart/framework/blob/main/CONTRIBUTING.md)
 
 Vania is a robust backend framework designed for building high-performance web applications using Dart. With its straightforward approach and powerful features, Vania streamlines the development process for both beginners and experienced developers alike.
 
@@ -39,17 +39,17 @@ YouTube Video [Dart & flutter Fullstack with Vania](https://youtu.be/1tfqpusIXwQ
 ## Installing 🧑‍💻
 
 ```shell
-# 📦 Install the vania cli from pub.dev
+# 📦 Install the vaniaFramework cli from pub.dev
 dart pub global activate vania_cli
 ```
 
 ## Creating a Project ✨
 
-Use the `vania create` command to create a new project.
+Use the `vaniaFramework create` command to create a new project.
 
 ```shell
 # 🚀 Create a new project called "blog"
-vania create blog
+vaniaFramework create blog
 ```
 
 ## Start the Dev Server 🏁
@@ -58,7 +58,7 @@ Open the newly created project and start the development server.
 
 ```shell
 # 🏁 Start the dev server
-vania serve
+vaniaFramework serve
 ```
 
 You can also include the `--vm` flag to enable VM service.
@@ -69,9 +69,9 @@ Create a production build:
 
 ```shell
 # 📦 Create a production build
-vania build
+vaniaFramework build
 ```
 
 For production use, deploy using the provided `Dockerfile` and `docker-compose.yml` files to deploy anywhere.
 
-Example CRUD API Project [Github](https://github.com/vania-dart/example)
+Example CRUD API Project [Github](https://github.com/vaniaFramework-dart/example)

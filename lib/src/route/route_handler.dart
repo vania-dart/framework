@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:vania/src/enum/http_request_method.dart';
-import 'package:vania/src/exception/not_found_exception.dart';
-import 'package:vania/src/route/route_data.dart';
-import 'package:vania/src/route/set_static_path.dart';
-import 'package:vania/src/utils/functions.dart';
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/src/enum/http_request_method.dart';
+import 'package:vaniaFramework/src/exception/not_found_exception.dart';
+import 'package:vaniaFramework/src/route/route_data.dart';
+import 'package:vaniaFramework/src/route/set_static_path.dart';
+import 'package:vaniaFramework/src/utils/functions.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 RouteData? httpRouteHandler(HttpRequest req) {
   final route = _getMatchRoute(

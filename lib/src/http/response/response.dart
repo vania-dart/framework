@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:meta/meta.dart';
-import 'package:vania/src/http/response/stream_file.dart';
+import 'package:vaniaFramework/src/http/response/stream_file.dart';
 
 enum ResponseType {
   json,

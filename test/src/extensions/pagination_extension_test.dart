@@ -1,8 +1,7 @@
 import 'package:mockito/annotations.dart';
 import 'package:test/test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:vania/vania_framework.dart';
-
+import 'package:vaniaFramework/vania_framework.dart';
 import 'pagination_extension_test.mocks.dart';
 
 @GenerateMocks([QueryBuilder])

@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:vania/src/logger/logger.dart';
-import 'package:vania/src/utils/helper.dart';
+import 'package:vaniaFramework/src/logger/logger.dart';
+import 'package:vaniaFramework/src/utils/helper.dart';
 
 class Localization {
   static final Localization _singleton = Localization._internal();

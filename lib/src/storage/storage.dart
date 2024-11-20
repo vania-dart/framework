@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:vania/src/storage/local_storage.dart';
-import 'package:vania/src/storage/s3_storage.dart';
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/src/storage/local_storage.dart';
+import 'package:vaniaFramework/src/storage/s3_storage.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class Storage {
   static final Storage _singleton = Storage._internal();

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:eloquent/eloquent.dart';
-import 'package:vania/src/exception/http_exception.dart';
+import 'package:vaniaFramework/src/exception/http_exception.dart';
 
 extension DatabaseOperationExtension on QueryBuilder {
   // Create and return inserted data

@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:mime/mime.dart';
-import 'package:vania/src/storage/storage_driver.dart';
-import 'package:vania/src/utils/functions.dart';
+import 'package:vaniaFramework/src/storage/storage_driver.dart';
+import 'package:vaniaFramework/src/utils/functions.dart';
 
 class LocalStorage implements StorageDriver {
   String storagePath = "storage/app/public";

@@ -13,7 +13,7 @@ class Logger {
   static const INFO = 'INFO';
   static const DEBUG = 'DEBUG';
 
-  static log(String content, {String type = INFO, String fileName = 'vania'}) {
+  static log(String content, {String type = INFO, String fileName = 'vaniaFramework'}) {
     final now = DateTime.now();
 
     final directory = Directory(storagePath('logs'));

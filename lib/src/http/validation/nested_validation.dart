@@ -1,4 +1,4 @@
-import 'package:vania/src/extensions/map_extension.dart';
+import 'package:vaniaFramework/src/extensions/map_extension.dart';
 
 import 'validation_item.dart';
 

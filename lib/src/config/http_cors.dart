@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class HttpCors {
   HttpCors(HttpRequest req) {

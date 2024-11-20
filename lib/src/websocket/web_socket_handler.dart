@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:uuid/v8.dart';
-import 'package:vania/src/http/middleware/middleware.dart';
-import 'package:vania/src/http/middleware/web_socket_middleware_handler.dart';
+import 'package:vaniaFramework/src/http/middleware/middleware.dart';
+import 'package:vaniaFramework/src/http/middleware/web_socket_middleware_handler.dart';
 import 'websocket_client.dart';
 import 'websocket_constants.dart';
 import 'websocket_event.dart';

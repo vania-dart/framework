@@ -42,11 +42,11 @@ dart pub global activate vania_cli
 
 ## Proje Oluşturma ✨
 
-Oluşturmak için `vania create` komutunu kullanın.
+Oluşturmak için `vaniaFramework create` komutunu kullanın.
 
 ```shell
 # 🚀 "blog" isminde yeni bir proje oluşturun
-vania create blog
+vaniaFramework create blog
 ```
 
 ## Geliştirme Sunucusunu Başlatın 🏁
@@ -55,7 +55,7 @@ Yeni oluşturulan projeyi açın ve geliştirme sunucusunu başlatın.
 
 ```shell
 # 🏁 Sunucuyu başlat
-vania serve
+vaniaFramework serve
 ```
 
 Sanal Makine (VM) hizmetini etkinleştirmek için `--vm` bayrağını da ekleyebilirsiniz.
@@ -66,9 +66,9 @@ Hazırladığınız projeyi derleyin
 
 ```shell
 # 📦 Projeyi derleyin
-vania build
+vaniaFramework build
 ```
 
 Proje kullanımı için, herhangi bir yere dağıtmak üzere sağlanan `Dockerfile` ve `docker-compose.yml` dosyalarını kullanarak dağıtın.
 
-Örnek CRUD API Projesi [Github](https://github.com/vania-dart/example)
+Örnek CRUD API Projesi [Github](https://github.com/vaniaFramework-dart/example)

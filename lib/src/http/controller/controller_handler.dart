@@ -1,6 +1,6 @@
-import 'package:vania/src/exception/validation_exception.dart';
-import 'package:vania/src/route/route_data.dart';
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/src/exception/validation_exception.dart';
+import 'package:vaniaFramework/src/route/route_data.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class ControllerHandler {
   void create({

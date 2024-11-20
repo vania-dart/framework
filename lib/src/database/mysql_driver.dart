@@ -1,5 +1,5 @@
 import 'package:eloquent/eloquent.dart';
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class MysqlDriver implements DatabaseDriver {
   static final MysqlDriver _singleton = MysqlDriver._internal();
@@ -19,7 +19,7 @@ class MysqlDriver implements DatabaseDriver {
         'driver': 'mysql',
         'host': env<String>('DB_HOST', '127.0.0.1'),
         'port': env<int>('DB_PORT', 3306),
-        'database': env<String>('DB_DATABASE', 'vania'),
+        'database': env<String>('DB_DATABASE', 'vaniaFramework'),
         'username': env<String>('DB_USERNAME', 'root'),
         'password': env<String>('DB_PASSWORD', ''),
         'sslmode': env<bool>('DB_SSL_MODE', true) == true ? 'require' : '',

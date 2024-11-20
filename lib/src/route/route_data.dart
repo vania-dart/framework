@@ -1,4 +1,4 @@
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class RouteData {
   final String method;

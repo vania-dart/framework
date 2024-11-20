@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class MigrationConnection {
   static final MigrationConnection _singleton = MigrationConnection._internal();

@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:vania/src/extensions/string_list_extension.dart';
+import 'package:vaniaFramework/src/extensions/string_list_extension.dart';
 
 void main() {
   group('List<String>.joinWithAnd', () {

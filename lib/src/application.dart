@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:vania/src/container.dart';
-import 'package:vania/src/localization_handler/localization.dart';
-import 'package:vania/src/server/base_http_server.dart';
-import 'package:vania/vania_framework.dart';
+import 'package:vaniaFramework/src/container.dart';
+import 'package:vaniaFramework/src/localization_handler/localization.dart';
+import 'package:vaniaFramework/src/server/base_http_server.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 
 class Application extends Container {
   static Application? _singleton;

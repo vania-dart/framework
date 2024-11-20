@@ -1,13 +1,12 @@
 import 'dart:io';
-import 'package:vania/src/config/http_cors.dart';
-import 'package:vania/src/exception/invalid_argument_exception.dart';
-import 'package:vania/src/http/controller/controller_handler.dart';
-import 'package:vania/src/http/middleware/middleware_handler.dart';
-import 'package:vania/src/route/route_data.dart';
-import 'package:vania/src/route/route_handler.dart';
-import 'package:vania/src/websocket/web_socket_handler.dart';
-import 'package:vania/vania_framework.dart';
-
+import 'package:vaniaFramework/src/config/http_cors.dart';
+import 'package:vaniaFramework/src/exception/invalid_argument_exception.dart';
+import 'package:vaniaFramework/src/http/controller/controller_handler.dart';
+import 'package:vaniaFramework/src/http/middleware/middleware_handler.dart';
+import 'package:vaniaFramework/src/route/route_data.dart';
+import 'package:vaniaFramework/src/route/route_handler.dart';
+import 'package:vaniaFramework/src/websocket/web_socket_handler.dart';
+import 'package:vaniaFramework/vania_framework.dart';
 Future httpRequestHandler(HttpRequest req) async {
   /// Check the incoming request is web socket or not
   if (env<bool>('APP_WEBSOCKET', false) &&
