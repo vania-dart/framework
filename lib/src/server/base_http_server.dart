@@ -30,7 +30,7 @@ class BaseHttpServer {
 
   Future<void> spawnIsolates(int numIsolates) async {
     IsolateHandler isolateHandler = IsolateHandler(
-      host: InternetAddress.anyIPv6.host,
+      host: Platform.environment['APP_HOST'] ??  '0.0.0.0',
       port: int.parse(Platform.environment['PORT'] ?? '8080'),
       shared: bool.parse((Platform.environment['APP_SHARED'] ??  'false')) ,
       secure:  bool.parse(Platform.environment['APP_SECURE'] ??  'false'),
@@ -76,7 +76,7 @@ class BaseHttpServer {
           ..usePrivateKey(serverKey, password: password);
         final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bindSecure(
-          InternetAddress.anyIPv6.host,
+          Platform.environment['APP_HOST'] ??  '0.0.0.0',
           port,
           context,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
@@ -84,7 +84,8 @@ class BaseHttpServer {
       } else {
         final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bind(
-          InternetAddress.anyIPv6.host,
+          // InternetAddress.anyIPv6.host,
+          Platform.environment['APP_HOST'] ??  '0.0.0.0'
           port,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
