@@ -85,7 +85,7 @@ class BaseHttpServer {
         final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bind(
           // InternetAddress.anyIPv6.host,
-          Platform.environment['APP_HOST'] ??  '0.0.0.0'
+          Platform.environment['APP_HOST'] ??  '0.0.0.0',
           port,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
