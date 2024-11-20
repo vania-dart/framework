@@ -75,17 +75,18 @@ class BaseHttpServer {
         var context = SecurityContext()
           ..useCertificateChain(certificateChain)
           ..usePrivateKey(serverKey, password: password);
-
+        final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bindSecure(
           Platform.environment['APP_HOST'] ?? '127.0.0.1',
-          int.parse(Platform.environment['PORT'] ?? '8080'),
+          port,
           context,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
       } else {
+        final port = int.parse(Platform.environment['PORT'] ?? '8080');
         httpServer = await HttpServer.bind(
           Platform.environment['APP_HOST'] ?? '127.0.0.1',
-          int.parse(Platform.environment['PORT'] ?? '8080'),
+          port,
           shared: bool.parse(Platform.environment['APP_SHARED'] ?? 'false'),
         );
       }
@@ -95,12 +96,12 @@ class BaseHttpServer {
 
       if (appDebugStatus) {
         final bool appSecureStatus =  bool.tryParse(Platform.environment['APP_SECURE'] ?? 'false') ?? false;
-        final int appPort = int.parse(Platform.environment['PORT'] ?? '8080');
+        final port = int.parse(Platform.environment['PORT'] ?? '8080');
 
         if (appSecureStatus) {
-          print("Server started on https://127.0.0.1:$appPort");
+          print("Server started on https://127.0.0.1:$port");
         } else {
-          print("Server started on http://127.0.0.1:$appPort");
+          print("Server started on http://127.0.0.1:$port");
         }
       }
       return httpServer!;
