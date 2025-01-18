@@ -1,5 +1,6 @@
 import 'package:vania/src/exception/validation_exception.dart';
 import 'package:vania/src/route/route_data.dart';
+import 'package:vania/src/route/route_history.dart';
 import 'package:vania/vania.dart';
 
 class ControllerHandler {
@@ -28,9 +29,14 @@ class ControllerHandler {
 
       response.makeResponse(request.response);
     } on ValidationException catch (error) {
-      error
-          .response(request.headers['accept'].toString().contains('html'))
-          .makeResponse(request.response);
+      bool isHtml =
+          request.request.headers.value('accept').toString().contains('html');
+      if (isHtml) {
+        Response.redirect(RouteHistory().previousRoute)
+            .makeResponse(request.response);
+      } else {
+        error.response(false).makeResponse(request.response);
+      }
     } catch (error) {
       _response(request, error.toString());
     }

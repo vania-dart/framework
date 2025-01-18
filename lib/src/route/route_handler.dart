@@ -6,9 +6,29 @@ import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
 import 'package:vania/vania.dart';
 
+/// Find the matched route from the given request and return the
+/// [RouteData] for the matched route.
+///
+/// The function first checks if the request is an OPTIONS request. If it is,
+/// the request is closed and null is returned. If the request is not an
+/// OPTIONS request, the function checks if the request path matches a static
+/// file. If it does, the function returns null. If it doesn't, the function
+/// throws a [NotFoundException].
+///
+/// If the request is not an OPTIONS request and the request path doesn't match
+/// a static file, the function returns the matched [RouteData].
+///
+/// Throws a [NotFoundException] if the request is not an OPTIONS request and
+/// the request path doesn't match a static file.
 RouteData? httpRouteHandler(HttpRequest req) {
   final route = _getMatchRoute(
-    Uri.decodeComponent(req.uri.path.toLowerCase()),
+    Uri.decodeComponent(
+      Uri.parse(
+        sanitizeRoutePath(
+          req.uri.toString(),
+        ),
+      ).path.toLowerCase(),
+    ),
     req.method,
     req.headers.value(HttpHeaders.hostHeader),
   );
@@ -19,29 +39,17 @@ RouteData? httpRouteHandler(HttpRequest req) {
       return null;
     } else {
       final isFile = setStaticPath(req);
-      if (isFile == null) {
-        if (!req.headers.value('accept').toString().contains('html')) {
-          throw NotFoundException(
-            message: {'message': 'Not found'},
-            responseType: ResponseType.json,
-          );
-        } else {
-          Directory errorsDirectory = Directory('errors');
-          if (errorsDirectory.existsSync()) {
-            File errorFile = File('errors/404.html');
-            if (errorFile.existsSync()) {
-              throw NotFoundException(message: errorFile.readAsStringSync());
-            }
-          }
-          throw NotFoundException();
-        }
+      if (!isFile) {
+        throw NotFoundException(
+          message: {'message': 'Not found'},
+          responseType: ResponseType.json,
+        );
       }
     }
   }
   return route;
 }
 
-/// Exctract the domain from the url
 String _extractDomain(String domain, String path) {
   String firstPart = domain.split('.').first.toLowerCase();
   final RegExp domainRegex = RegExp(r'\{[^}]*\}');
@@ -53,8 +61,6 @@ String _extractDomain(String domain, String path) {
   return domainUri;
 }
 
-/// Exctarct username from {username}
-/// Or any string between {}
 String? _extractDomainPlaceholder(String input) {
   final RegExp regex = RegExp(r'\{([^}]*)\}');
   final match = regex.firstMatch(input);
@@ -114,9 +120,8 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
       domainParameter = subDomain.split('.').first.toLowerCase();
     }
 
-    route.path = sanitizeRoutePath(route.path.toLowerCase());
+    String routePath = sanitizeRoutePath(route.path.trim().toLowerCase());
     inputRoute = sanitizeRoutePath(inputRoute.toLowerCase());
-    String routePath = route.path.trim();
 
     /// When route is the same route exactly same route.
     /// route without params, eg. /api/example

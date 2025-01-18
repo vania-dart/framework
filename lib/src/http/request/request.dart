@@ -4,6 +4,7 @@ import 'package:vania/src/exception/validation_exception.dart';
 import 'package:vania/src/http/request/request_body.dart';
 import 'package:vania/src/http/validation/validator.dart';
 import 'package:vania/src/route/route_data.dart';
+import 'package:vania/src/view_engine/template_engine.dart';
 import 'package:vania/vania.dart';
 
 class Request {
@@ -39,6 +40,16 @@ class Request {
   Map<String, dynamic> body = <String, dynamic>{};
   final Map<String, dynamic> _cookies = <String, dynamic>{};
 
+  /// Gets a cookie by name and casts it to type [T].
+  ///
+  /// If the cookie doesn't exist, it returns `null`.
+  ///
+  /// If [T] is [String], it's casted to a string.
+  /// If [T] is [bool], it's parsed from a string.
+  /// If [T] is [int], it's parsed from a string.
+  /// If [T] is [double], it's parsed from a string.
+  /// Otherwise, it's casted to [T].
+  ///
   T? cookie<T>(String key) {
     if (_cookies[key] == null) return null;
     return switch (T.toString()) {
@@ -50,6 +61,9 @@ class Request {
     };
   }
 
+  /// Extracts the cookies from the headers and stores them in [_cookies].
+  ///
+  /// The format of the [HttpHeaders.cookieHeader] is:
   void _extractCookies() {
     List<String>? cookies = _httpHeaders[HttpHeaders.cookieHeader];
     if (cookies == null) {
@@ -308,6 +322,7 @@ class Request {
       [Map<String, String> messages = const <String, String>{}]) {
     assert(rules is Map<String, String> || rules is List<Validation>,
         'Rules must be either Map<String, String> or List<Validation>.');
+    TemplateEngine().sessionErrors.clear();
     if (rules is Map<String, String>) {
       _validate(rules, messages);
     } else {
@@ -323,6 +338,10 @@ class Request {
     }
     validator.validate(rules);
     if (validator.hasError) {
+      bool isHtml = request.headers.value('accept').toString().contains('html');
+      if (isHtml) {
+        TemplateEngine().sessionErrors.addAll(validator.errors);
+      }
       throw ValidationException(message: validator.errors);
     }
   }
@@ -341,6 +360,10 @@ class Request {
       }
     }
     if (errors.isNotEmpty) {
+      bool isHtml = request.headers.value('accept').toString().contains('html');
+      if (isHtml) {
+        TemplateEngine().sessionErrors.addAll(errors);
+      }
       throw ValidationException(message: errors);
     }
   }

@@ -14,23 +14,13 @@ class Auth {
 
   String _userGuard = 'default';
 
-  bool _isAuthorized = false;
+  bool _loggedIn = false;
 
   String _currentToken = '';
 
   final Map<String, dynamic> _user = {};
 
-  Auth guard(String guard) {
-    _userGuard = guard;
-    return this;
-  }
-
-  Auth login(Map<String, dynamic> user) {
-    _user[_userGuard] = user;
-    return this;
-  }
-
-  bool get isAuthorized => _isAuthorized;
+  bool get loggedIn => _loggedIn;
 
   Map<String, dynamic>? user() => _user[_userGuard];
 
@@ -38,6 +28,98 @@ class Auth {
 
   dynamic get(String filed) => _user[_userGuard][filed];
 
+  /// Sets the authentication guard to the specified guard name.
+  ///
+  /// This method changes the current user guard to the specified guard, which
+  /// determines the user provider and authentication logic to use. If the
+  /// specified guard is not defined in the configuration, an
+  /// [InvalidArgumentException] is thrown.
+  ///
+  /// Returns the current instance of the `Auth` class.
+  ///
+  /// Throws:
+  /// - [InvalidArgumentException] if the specified guard is not defined.
+  ///
+  Auth guard(String guard) {
+    if (Config().get('auth')['guards'][guard] == null) {
+      throw InvalidArgumentException('Auth guard [$guard] is not defined.');
+    }
+
+    _userGuard = guard;
+    return this;
+  }
+
+  /// Set the current user from a given user object.
+  ///
+  /// The object is expected to contain at least the `id` key.
+  ///
+  /// The user object will be stored in the `_user` map with the key being the
+  /// current guard.
+  ///
+  /// Returns the current instance of the `Auth` class.
+  Auth login(Map<String, dynamic> user) {
+    _user[_userGuard] = user;
+    _updateSession();
+    return this;
+  }
+
+  Future<void> logout() async {
+    await setSession('logged_in', false);
+    await setSession('auth_user', null);
+    await setSession('auth_guard', null);
+    _loggedIn = false;
+    if (_currentToken.isNotEmpty) {
+      try {
+        await PersonalAccessTokens()
+            .query()
+            .where('token', '=', md5.convert(utf8.encode(_currentToken)))
+            .update({'deleted_at': DateTime.now()});
+      } catch (_) {}
+    }
+  }
+
+  /// Updates the current session with the given user and guard.
+  ///
+  /// The function sets the `logged_in` session key to true, and updates the
+  /// `auth_user` and `auth_guard` session keys if they are not already set or
+  /// have changed. The function also sets the `_isAuthorized` flag to true.
+  ///
+  /// The session is only updated if the user and guard have changed, and the
+  /// function does not return anything.
+  Future<void> _updateSession() async {
+    await setSession('logged_in', true);
+
+    if (await getSession<Map?>('auth_user') != _user) {
+      await setSession('auth_user', _user);
+    }
+
+    if (await getSession<String?>('auth_guard') != _userGuard) {
+      await setSession('auth_guard', _userGuard);
+    }
+
+    _loggedIn = true;
+  }
+
+  /// Create new token for the given user.
+  ///
+  /// The token created is a JWT token that contains the user's ID and the
+  /// guard's name. The token is then signed with the secret key from the
+  /// environment variable `JWT_SECRET_KEY`.
+  ///
+  /// If `withRefreshToken` is true, a refresh token is also created and
+  /// returned in the `refresh_token` key of the map.
+  ///
+  /// If `customToken` is true, the token is not stored in the database and
+  /// is returned as is.
+  ///
+  /// The `expiresIn` parameter is the duration after which the token will
+  /// expire. If not provided, the token will expire after 1 hour.
+  ///
+  /// Returns a map containing the following keys:
+  ///
+  /// * `access_token`: the JWT token
+  /// * `refresh_token`: the refresh token if `withRefreshToken` is true
+  /// * `expires_in`: the duration after which the token will expire in seconds
   Future<Map<String, dynamic>> createToken({
     Duration? expiresIn,
     bool withRefreshToken = false,
@@ -59,6 +141,22 @@ class Auth {
     return token;
   }
 
+  /// Create a new token by given refresh token.
+  //
+  /// The given token must be a valid refresh token.
+  //
+  /// The `expiresIn` parameter is the duration after which the token will
+  /// expire. If not provided, the token will expire after 1 hour.
+  //
+  /// The `customToken` parameter determines if the token should be stored in
+  /// the database or not. If `customToken` is true, the token is not stored
+  /// in the database.
+  //
+  /// Returns a map containing the following keys:
+  //
+  /// * `access_token`: the JWT token
+  /// * `refresh_token`: the refresh token
+  /// * `expires_in`: the duration after which the token will expire in seconds
   Future<Map<String, dynamic>> createTokenByRefreshToken(
     String token, {
     Duration? expiresIn,
@@ -100,6 +198,12 @@ class Auth {
     return newToken;
   }
 
+  /// Delete all the tokens for the user that is currently logged in.
+  ///
+  /// This is useful when a user logs out and you want to delete all of their
+  /// tokens.
+  ///
+  /// Returns true if the operation was successful.
   Future<bool> deleteTokens() async {
     await PersonalAccessTokens()
         .query()
@@ -109,6 +213,14 @@ class Auth {
     return true;
   }
 
+  /// Delete the current token for the user that is currently logged in.
+  ///
+  /// This function marks the current token as deleted by setting the `deleted_at`
+  /// field to the current time in the database. This operation helps to effectively
+  /// invalidate the token.
+  ///
+  /// Returns a Future that resolves to true if the operation was successful.
+  ///
   Future<bool> deleteCurrentToken() async {
     await PersonalAccessTokens()
         .query()
@@ -117,6 +229,23 @@ class Auth {
     return true;
   }
 
+  /// Validates and checks the provided token for authentication.
+  ///
+  /// This function verifies the provided JWT access token and checks its validity
+  /// against stored personal access tokens. If the token is valid, it updates the
+  /// token's last used timestamp and sets the current user context, marking them
+  /// as authorized.
+  ///
+  /// The function handles both custom and stored tokens. For custom tokens, it
+  /// sets the user payload directly. For stored tokens, it ensures the token exists
+  /// and is not marked as deleted, then retrieves the associated user.
+  ///
+  /// Throws:
+  /// - [Unauthenticated] if the token is invalid or not found.
+  /// - [InvalidArgumentException] if the authenticatable provider class is not found.
+  ///
+  /// Returns a Future that resolves to true if the token is valid and the user is successfully authenticated.
+  ///
   Future<bool> check(
     String token, {
     Map<String, dynamic>? user,
@@ -127,7 +256,7 @@ class Auth {
 
     if (isCustomToken) {
       _user[_userGuard] = payload;
-      _isAuthorized = true;
+      _loggedIn = true;
       _currentToken = token;
       return true;
     } else {
@@ -161,7 +290,7 @@ class Auth {
 
       if (user != null) {
         _user[_userGuard] = user;
-        _isAuthorized = true;
+        _loggedIn = true;
         _currentToken = token;
         return true;
       } else {

@@ -59,7 +59,7 @@ Response view(String template, [Map<String, dynamic>? context]) =>
 Future<void> setSession(String key, dynamic value) async =>
     await SessionManager().setSession(key, value);
 Future<T> getSession<T>(String key) async =>
-    await SessionManager().getSession<T>(key);
+    TemplateEngine().sessions[key] ?? await SessionManager().getSession<T>(key);
 Future<Map<String, dynamic>?> allSessions() async =>
     await SessionManager().allSessions();
 Future<void> deleteSession(String key) async =>

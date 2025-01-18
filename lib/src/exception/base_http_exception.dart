@@ -1,7 +1,7 @@
 import 'package:vania/src/http/response/response.dart';
 
 class BaseHttpResponseException {
-  final String errorCode;
+  final String? errorCode;
   final dynamic message;
   final ResponseType responseType;
   final int code;
@@ -9,7 +9,7 @@ class BaseHttpResponseException {
   const BaseHttpResponseException({
     required this.message,
     required this.code,
-    required this.errorCode,
+    this.errorCode,
     this.responseType = ResponseType.json,
   });
 

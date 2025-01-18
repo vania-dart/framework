@@ -1,3 +1,14 @@
+## 0.7.2
+
+- Add(Template engine): error handler `hasError('email')` , `{@ error('email') @}`
+- Add(Template engine): session message handler `hasSession('email')` , `{@ session('success') @}`
+- Add(Template engine): Cross-Site Request Forgery (`CSRF`) `{@ CSRF @}` , `{@ csrf_token() @}`
+- Add `back()` to the response
+- Refactor exception handling
+- Refactor and sanitize route
+- Add Basic Auth with session to the `Authenticate`
+- chore: Upgraded project dependencies
+
 ## 0.7.1
 
 - Add delete Session to the helper
@@ -39,8 +50,8 @@
 
 ## 0.4.3
 
-- Fix nested json [#128](https://github.com/vania-dart/framework/issues/128)
-- Add json to the request `request.json()`
+- Fix nested JSON [#128](https://github.com/vania-dart/framework/issues/128)
+- Add JSON to the request `request.json()`
 
 ## 0.4.2
 
@@ -56,7 +67,7 @@
 
 ## 0.4.0
 
-- feat: a new field validation mechanism by [alirezat66](https://github.com/alirezat66) - [PR 99](https://github.com/vania-dart/framework/pull/99)
+- Feat: a new field validation mechanism by [alirezat66](https://github.com/alirezat66) - [PR 99](https://github.com/vania-dart/framework/pull/99)
 - Fix nested route group [#98](https://github.com/vania-dart/framework/issues/98)
 - Fix middleware issue
 

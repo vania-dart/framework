@@ -3,6 +3,8 @@ import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/websocket/web_socket_handler.dart';
 import 'package:vania/vania.dart';
 
+import 'middleware/csrf_middleware.dart';
+
 class Router {
   static final Router _singleton = Router._internal();
   factory Router() => _singleton;
@@ -11,7 +13,7 @@ class Router {
   String? _prefix;
   String? _groupPrefix;
   String? _groupDomain;
-  final List<Middleware> _groupMiddleware = [];
+  final List<Middleware> _groupMiddleware = [CsrfMiddleware()];
 
   final List<RouteData> _routes = [];
 
@@ -23,7 +25,20 @@ class Router {
         prefix.endsWith("/") ? prefix.substring(0, prefix.length - 1) : prefix;
   }
 
-  /// Adds a route internally.
+  /// Internal method to add a route to the router. This method is used by the
+  /// route macros like [get], [post], [put], [patch], [delete], etc.
+  ///
+  /// The [path] parameter is the path of the route. The [action] parameter is the
+  /// function that will be called when the route is matched. The [paramTypes]
+  /// parameter is a map of the parameter names to their types. The [regex]
+  /// parameter is a map of the parameter names to their regular expressions.
+  ///
+  /// The [hasRequest] parameter is a boolean that indicates whether the route
+  /// action has a request parameter. If it is true then the route action will
+  /// receive a request object as a parameter.
+  ///
+  /// The method returns the router object so that you can chain it with other
+  /// methods.
   Router _addRouteInternal(
     HttpRequestMethod method,
     String path,
@@ -44,6 +59,17 @@ class Router {
     return this;
   }
 
+  /// Checks if the given input string is a closure that contains a
+  /// [Request] object as its first parameter.
+  ///
+  /// The check is done by looking for the string 'Closure: (' and then
+  /// extracting the parameter names and checking if the first one is
+  /// 'Request'. If it is, then the method returns true. Otherwise, it
+  /// returns false.
+  ///
+  /// The method is used by [_addRouteInternal] to determine if the route
+  /// action has a request parameter. If it does, then the route action
+  /// will receive a request object as a parameter.
   bool _getRequestVar(String input) {
     RegExp closureRegExp = RegExp(r'Closure: \(([^)]*)\) =>');
     Match? closureMatch = closureRegExp.firstMatch(input);
@@ -250,7 +276,14 @@ class Router {
         WebSocketHandler().websocketRoute(path, middleware: middleware));
   }
 
-  /// Groups a set of routes under a common prefix, middleware, and/or domain.
+  /// Groups a set of routes under the same prefix, middleware, and domain settings.
+  ///
+  /// The [callBack] function is executed within the context of the group, allowing
+  /// routes added inside to inherit the specified [prefix], [middleware], and [domain].
+  ///
+  /// - [prefix]: An optional string to be added as a prefix to all routes within the group.
+  /// - [middleware]: A list of middleware to be applied to all routes within the group.
+  /// - [domain]: An optional domain that all routes within the group will respond to.
   static void group(
     Function callBack, {
     String? prefix,

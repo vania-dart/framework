@@ -6,5 +6,6 @@ class Unauthenticated extends BaseHttpResponseException {
   Unauthenticated(
       {required super.message,
       super.code = HttpStatus.unauthorized,
-      super.errorCode = 'Unauthenticated'});
+      super.errorCode = 'Unauthenticated',
+      super.responseType});
 }

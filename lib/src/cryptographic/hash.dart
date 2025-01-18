@@ -10,8 +10,9 @@ class Hash {
 
   String? _hashKey;
 
-  void setHashKey(String hashKey) {
+  Hash setHashKey(String hashKey) {
     _hashKey = hashKey;
+    return this;
   }
 
   /// Generates a hashed password using PBKDF2.
@@ -29,20 +30,21 @@ class Hash {
     return hashedPassword;
   }
 
-  /// Verifies if the provided password matches the stored hash.
+  /// Verifies that the given [plainPassword] matches the given [hashedPassword].
   ///
-  /// The method extracts the salt from the first 4 characters of the stored hash,
-  /// then hashes the provided password with this salt using the same hashing
-  /// mechanism. It then compares the newly created hash with the stored hash.
+  /// This method works by first extracting the salt from the given [hashedPassword]
+  /// and then using the extracted salt and the given [plainPassword] to generate
+  /// a hash using the PBKDF2 algorithm. The resulting hash is then compared to
+  /// the given [hashedPassword] to check if it matches.
   ///
-  /// Returns `true` if the hashes match, indicating the password is correct;
-  /// otherwise, returns `false`.
-  bool verify(String providedPassword, String storedHash) {
+  /// Returns true if the given [plainPassword] matches the given [hashedPassword],
+  /// false otherwise.
+  bool verify(String plainPassword, String hashedPassword) {
     int saltLength = 4;
-    String salt = storedHash.substring(0, saltLength);
-    String hash = _hashPbkdf2(providedPassword, salt);
-    String recreatedStoredHash = salt + hash;
-    return _hashEquals(recreatedStoredHash, storedHash);
+    String salt = hashedPassword.substring(0, saltLength);
+    String hash = _hashPbkdf2(plainPassword, salt);
+    String saltHash = salt + hash;
+    return _hashEquals(saltHash, hashedPassword);
   }
 
   String _generateSalt() {
@@ -68,13 +70,23 @@ class Hash {
     return base64.encode(hmac.convert(bytes).bytes);
   }
 
-  bool _hashEquals(String a, String b) {
-    if (a.length != b.length) {
+  /// Compares two strings in a timing-safe manner to prevent timing attacks.
+  ///
+  /// This method works by first checking if the lengths of the two strings
+  /// are equal. If they are not, the method immediately returns false.
+  ///
+  /// If the lengths are equal, the method then compares the individual characters
+  /// of the two strings. If any of the characters are not equal, the method
+  /// immediately returns false.
+  ///
+  /// If all characters are equal, the method returns true.
+  bool _hashEquals(String salt, String hashedPassword) {
+    if (salt.length != hashedPassword.length) {
       return false;
     }
     var result = 0;
-    for (int i = 0; i < a.length; i++) {
-      result |= a.codeUnitAt(i) ^ b.codeUnitAt(i);
+    for (int i = 0; i < salt.length; i++) {
+      result |= salt.codeUnitAt(i) ^ hashedPassword.codeUnitAt(i);
     }
     return result == 0;
   }
