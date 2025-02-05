@@ -352,14 +352,16 @@ class Request {
     if (messages.isNotEmpty) {
       validator.setNewMessages(messages);
     }
-    validator.validate(rules);
-    if (validator.hasError) {
-      bool isHtml = request.headers.value('accept').toString().contains('html');
-      if (isHtml) {
-        TemplateEngine().sessionErrors.addAll(validator.errors);
+    validator.validate(rules).then((_) {
+      if (validator.hasError) {
+        bool isHtml =
+            request.headers.value('accept').toString().contains('html');
+        if (isHtml) {
+          TemplateEngine().sessionErrors.addAll(validator.errors);
+        }
+        throw ValidationException(message: validator.errors);
       }
-      throw ValidationException(message: validator.errors);
-    }
+    }).catchError((_) {});
   }
 
   void _validateChain(List<Validation> validations) {

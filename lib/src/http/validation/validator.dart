@@ -71,26 +71,31 @@ class Validator {
   /// ```
   /// validator.validate({'field' : 'required|string'});
   /// ```
-  void validate(Map<String, String> rules) {
-    rules.forEach((String field, String rule) {
+  Future<void> validate(Map<String, String> rules) async {
+    for (var entry in rules.entries) {
+      String field = entry.key;
+      String rule = entry.value;
+
       if (_isNestedValidation(field)) {
         NestedValidation v =
             NestedValidation(data: data, field: field, rule: rule);
         for (ValidationItem item in v.fieldsToValidate) {
-          _validateItem(item);
+          await _validateItem(item);
         }
       } else {
-        _validateItem(ValidationItem(
-          field: field,
-          name: field.split('.').last,
-          value: data.getParam(field),
-          rule: rule,
-        ));
+        await _validateItem(
+          ValidationItem(
+            field: field,
+            name: field.split('.').last,
+            value: data.getParam(field),
+            rule: rule,
+          ),
+        );
       }
-    });
+    }
   }
 
-  void _validateItem(ValidationItem item) {
+  Future<void> _validateItem(ValidationItem item) async {
     if (item.value == null && !item.rule.contains('required')) {
       return;
     }
@@ -98,7 +103,7 @@ class Validator {
     List<String> rulesForEachName = item.rule.split('|');
     for (String rule in rulesForEachName) {
       String? error =
-          _applyMatchingRule(item.field, item.name, item.value, rule);
+          await _applyMatchingRule(item.field, item.name, item.value, rule);
       if (error != null) {
         _errors[item.field] = error;
         break;
@@ -106,12 +111,12 @@ class Validator {
     }
   }
 
-  String? _applyMatchingRule(
+  Future<String?> _applyMatchingRule(
     String field,
     String name,
     dynamic value,
     String rule,
-  ) {
+  ) async {
     List<String> parts = rule.split(':');
     String ruleKey = parts.first.toString().toLowerCase();
     String args = parts.length >= 2 ? parts[1] : '';
@@ -121,8 +126,12 @@ class Validator {
       return null;
     }
 
-    bool result =
+    var result =
         Function.apply(match['function'], <dynamic>[data, value, args]);
+
+    if (result is Future<bool>) {
+      result = await result;
+    }
     if (result == true) {
       return null;
     }
