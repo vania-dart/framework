@@ -62,7 +62,7 @@ class RequestFile {
   /// ```
   Future<String> store({required String path, required String filename}) async {
     path = path.endsWith("/") ? path : "$path/";
-    return Storage.put(path, filename, await bytes);
+    return Storage.put(path, filename, stream);
   }
 
   /// this function will upload the file in your project custom path
@@ -78,7 +78,12 @@ class RequestFile {
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
     }
-    await file.writeAsBytes(await bytes);
+    final IOSink sink = file.openWrite();
+    await for (List<int> chunk in stream) {
+      sink.add(chunk);
+    }
+    await sink.close();
+
     if (path.startsWith('/public')) {
       return path.replaceFirst('/public', '');
     }

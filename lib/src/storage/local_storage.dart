@@ -65,6 +65,15 @@ class LocalStorage implements StorageDriver {
       directory.createSync(recursive: true);
     }
 
+    if (content is MimeMultipart) {
+      final IOSink sink = file.openWrite();
+      await for (List<int> chunk in content) {
+        sink.add(chunk);
+      }
+      await sink.close();
+      return file.path.replaceFirst(storagePath, '');
+    }
+
     if (content is List<int>) {
       file.writeAsBytesSync(content);
     }
