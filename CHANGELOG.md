@@ -1,3 +1,8 @@
+## 0.8.1
+
+- Fix(Request Validation): Custom validation rule Future
+- fix(upload): prevent "Exhausted heap space" error on large file uploads
+
 ## 0.8.0
 
 - Fix session bug
