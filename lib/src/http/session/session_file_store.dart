@@ -12,40 +12,6 @@ class SessionFileStore {
   final String _secretKey = env('APP_KEY');
   final String sessionPath = 'storage/framework/sessions';
 
-  /// Tries to lock a file in the given mode, with retries in case of failure.
-  ///
-  /// This method attempts to lock a file in the given mode, and if the
-  /// operation fails, it waits for the given delay and then retries. This
-  /// process is repeated for the given number of retries. If the lock
-  /// operation still fails after the specified number of retries, the
-  /// exception is rethrown.
-  ///
-  /// Parameters:
-  /// - [raf]: The file to lock.
-  /// - [mode]: The lock mode to use.
-  /// - [retries]: The number of times to retry the lock operation in
-  ///   case of failure. Defaults to 5.
-  /// - [delay]: The delay between retries. Defaults to a 150ms delay.
-  ///
-  Future<void> _lockFile(
-    RandomAccessFile raf,
-    FileLock mode, {
-    int retries = 5,
-    Duration delay = const Duration(milliseconds: 150),
-  }) async {
-    for (int i = 0; i < retries; i++) {
-      try {
-        await raf.lock(mode);
-        return;
-      } catch (e) {
-        if (i == retries - 1) {
-          rethrow;
-        }
-        await Future.delayed(delay);
-      }
-    }
-  }
-
   /// Stores session data in a file with the given session ID.
   ///
   /// This method creates or overwrites a file in the session path to store
@@ -81,7 +47,6 @@ class SessionFileStore {
 
     final raf = await file.open(mode: FileMode.write);
     try {
-      await _lockFile(raf, FileLock.exclusive);
       await raf.writeFrom(utf8.encode(content));
     } finally {
       try {
@@ -114,7 +79,6 @@ class SessionFileStore {
     final raf = await file.open(mode: FileMode.read);
     String fileContent = '';
     try {
-      await _lockFile(raf, FileLock.exclusive);
       final int length = await raf.length();
       final List<int> bytes = await raf.read(length);
       fileContent = utf8.decode(bytes);
@@ -169,7 +133,6 @@ class SessionFileStore {
     if (await file.exists()) {
       final raf = await file.open(mode: FileMode.write);
       try {
-        await _lockFile(raf, FileLock.exclusive);
         int expiration = DateTime.now().toUtc().millisecondsSinceEpoch - 1;
         final String content = VaniaEncryption.encryptString(
           json.encode({"data": {}, "expiration": expiration}),
