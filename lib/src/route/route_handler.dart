@@ -35,6 +35,8 @@ RouteData? httpRouteHandler(HttpRequest req) {
   if (route == null) {
     if (req.method.toLowerCase() ==
         HttpRequestMethod.options.name.toLowerCase()) {
+      req.response.headers.add('Content-Length', 0);
+      req.response.statusCode = HttpStatus.ok;
       req.response.close();
       return null;
     } else {

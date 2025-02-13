@@ -12,7 +12,10 @@ bool setStaticPath(HttpRequest req) {
       ),
     ).path.toLowerCase(),
   );
-  if (!routePath.endsWith("/")) {
+  if (!routePath.endsWith("/") && req.method.toLowerCase() == 'get') {
+    if (req.uri.path == '/') {
+      routePath = 'index.html';
+    }
     File file = File(sanitizeRoutePath("public/$routePath"));
     if (file.existsSync()) {
       Response response = Response.file(

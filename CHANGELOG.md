@@ -1,3 +1,8 @@
+## 0.8.2
+
+- Fix (Session): session file locking issue on Linux.  
+- Fix (Static File): Automatically load `index.html` if the `/` route is not defined in web routes.  
+
 ## 0.8.1
 
 - Fix(Request Validation): Custom validation rule Future
