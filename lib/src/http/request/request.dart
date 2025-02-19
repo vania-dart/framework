@@ -325,24 +325,24 @@ class Request {
     return header(HttpHeaders.refererHeader);
   }
 
-  void validate(
+  Future<void> validate(
     dynamic rules, [
     Map<String, String> messages = const <String, String>{},
-  ]) {
+  ]) async {
     assert(rules is Map<String, String> || rules is List<Validation>,
         'Rules must be either Map<String, String> or List<Validation>.');
     TemplateEngine().sessionErrors.clear();
     if (rules is Map<String, String>) {
-      _validate(rules, messages);
+      await _validate(rules, messages);
     } else {
       _validateChain(rules as List<Validation>);
     }
   }
 
-  void _validate(
+  Future<void> _validate(
     Map<String, String> rules, [
     Map<String, String> messages = const <String, String>{},
-  ]) {
+  ]) async {
     Validator validator = Validator(data: all());
 
     if (_customRules != null) {
@@ -352,16 +352,14 @@ class Request {
     if (messages.isNotEmpty) {
       validator.setNewMessages(messages);
     }
-    validator.validate(rules).then((_) {
-      if (validator.hasError) {
-        bool isHtml =
-            request.headers.value('accept').toString().contains('html');
-        if (isHtml) {
-          TemplateEngine().sessionErrors.addAll(validator.errors);
-        }
-        throw ValidationException(message: validator.errors);
+    await validator.validate(rules);
+    if (validator.hasError) {
+      bool isHtml = request.headers.value('accept').toString().contains('html');
+      if (isHtml) {
+        TemplateEngine().sessionErrors.addAll(validator.errors);
       }
-    }).catchError((_) {});
+      throw ValidationException(message: validator.errors);
+    }
   }
 
   void _validateChain(List<Validation> validations) {
