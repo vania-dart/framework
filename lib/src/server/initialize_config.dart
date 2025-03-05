@@ -1,22 +1,29 @@
-import 'package:eloquent/eloquent.dart';
-import 'package:vania/vania.dart';
-
-/// Initializes the application configuration and sets up the database connection if specified.
-///
-/// This function takes a [config] map, sets it as the application configuration,
-/// and checks for a database connection setup. If a database connection is defined,
-/// it attempts to set up the database client, logging any `InvalidArgumentException` that occurs.
-/// It also iterates through a list of service providers specified in the config,
-/// calling `register` and `boot` methods on each to initialize them.
+import '../database/_database_utils/_db_config.dart';
+import '../config/config.dart';
+import '../database/_connection_manager.dart';
+import '../service/service_provider.dart';
+import '../utils/helper.dart';
 
 Future<void> initializeConfig(config) async {
   Config().setApplicationConfig = config;
 
   if (env('DB_CONNECTION') != null) {
-    try {
-      await DatabaseClient().setup();
-    } on InvalidArgumentException catch (e) {
-      Logger.log(e.cause.toString(), type: Logger.ERROR);
+    final Map<String, dynamic> database = config['database'];
+    ConnectionManager().defaultConnection = database['default'];
+    Map<String, dynamic> connections = database['connections'];
+    await ConnectionManager().connect(
+      _config(connections[ConnectionManager().defaultConnection]),
+      database['default'],
+    );
+    List<String> additionalConnections =
+        database['additional_connections'] ?? <String>[];
+    if (additionalConnections.isNotEmpty) {
+      for (String connection in additionalConnections) {
+        await ConnectionManager().connect(
+          _config(connections[connection]),
+          connection,
+        );
+      }
     }
   }
 
@@ -26,3 +33,16 @@ Future<void> initializeConfig(config) async {
     await provider.boot();
   }
 }
+
+DBConfig _config(database) => DBConfig(
+      driver: database['driver'] ?? '',
+      host: database['host'] ?? '',
+      port: database['port'] ?? '',
+      database: database['database'] ?? '',
+      username: database['username'] ?? '',
+      password: database['password'] ?? '',
+      sslMode: database['sslmode'] ?? '',
+      collation: database['collation'] ?? '',
+      pool: database['pool'] ?? false,
+      poolSize: database['poolsize'] ?? 0,
+    );
