@@ -1,12 +1,12 @@
 part of 'query_builder.dart';
 
 abstract interface class UpdateQueryBuilder {
-   Future<bool> decrement(
+  Future<bool> decrement(
     String column, [
     int amount = 1,
     Map<String, dynamic> extra = const {},
   ]);
-   Future<bool> increment(
+  Future<bool> increment(
     String column, [
     int amount = 1,
     Map<String, dynamic> extra = const {},
@@ -15,16 +15,16 @@ abstract interface class UpdateQueryBuilder {
     Map<String, int> increments, [
     Map<String, dynamic> extra = const {},
   ]);
-   Future<bool> update(
+  Future<bool> update(
     Map<String, dynamic> values,
   );
 
-   Future<bool> updateMany(
+  Future<bool> updateMany(
     List<Map<String, dynamic>> updates,
     String column,
   );
 
-   Future<bool> updateOrInsert(
+  Future<bool> updateOrInsert(
     Map<String, dynamic> search,
     Map<String, dynamic> update,
   );

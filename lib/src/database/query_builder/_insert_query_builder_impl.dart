@@ -1,17 +1,45 @@
 import '../../contract/database/query_builder/query_builder.dart'
     show QueryBuilder;
+import '../../exception/invalid_argument_exception.dart';
 
 abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
+  final Map<String, dynamic> bindings = {};
+  int _paramCounter = 0;
+
+  String _nextParamName() {
+    _paramCounter++;
+    return 'p$_paramCounter';
+  }
+
   @override
   Future<bool> insert(
     Map<String, dynamic> values,
   ) async {
-    var columns = values.keys.toList();
-    String cols = columns.join(", ");
-    String vals = columns.map((col) => formatValue(values[col])).join(", ");
-    String sql = "INSERT INTO $table ($cols) VALUES ($vals)";
-    await dbConnection?.execute(sql);
-    return true;
+    try {
+      if (values.isEmpty) {
+        throw InvalidArgumentException(
+          "Values map cannot be empty for insert operation.",
+        );
+      }
+
+      final conn = getConnection();
+      final columns = values.keys.toList();
+      final paramBindings = <String, dynamic>{};
+
+      // Create parameter placeholders
+      final placeholders = values.keys.map((key) {
+        final paramName = _nextParamName();
+        paramBindings[paramName] = values[key];
+        return ":$paramName";
+      }).join(", ");
+
+      final query =
+          "INSERT INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
+
+      return await conn.insert(query, paramBindings);
+    } catch (e) {
+      throw Exception(e);
+    }
   }
 
   @override
@@ -31,15 +59,57 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   Future<bool> insertMany(
     List<Map<String, dynamic>> valuesList,
   ) async {
-    if (valuesList.isEmpty) return false;
-    var columns = valuesList.first.keys.toList();
-    String cols = columns.join(", ");
-    String vals = valuesList.map((values) {
-      String row = columns.map((col) => formatValue(values[col])).join(", ");
-      return "($row)";
-    }).join(", ");
-    String sql = "INSERT INTO $table ($cols) VALUES $vals";
-    await dbConnection?.execute(sql);
+    try {
+      if (valuesList.isEmpty) {
+        throw InvalidArgumentException(
+          "Values list cannot be empty for insertMany operation.",
+        );
+      }
+
+      // Ensure all maps have the same keys
+      final firstItem = valuesList.first;
+      final columns = firstItem.keys.toList();
+
+      for (var values in valuesList) {
+        if (!_haveSameKeys(values, firstItem)) {
+          throw InvalidArgumentException(
+            "All items in the values list must have the same structure.",
+          );
+        }
+      }
+
+      final conn = getConnection();
+      final paramBindings = <String, dynamic>{};
+      final valueGroups = <String>[];
+
+      // Create parameter placeholders for each row
+      for (var values in valuesList) {
+        final placeholders = columns.map((column) {
+          final paramName = _nextParamName();
+          paramBindings[paramName] = values[column];
+          return ":$paramName";
+        }).join(", ");
+
+        valueGroups.add("($placeholders)");
+      }
+
+      final query =
+          "INSERT INTO $table (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
+
+      final result = await conn.insert(query, paramBindings);
+      return true;
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  bool _haveSameKeys(Map<String, dynamic> map1, Map<String, dynamic> map2) {
+    if (map1.keys.length != map2.keys.length) return false;
+
+    for (var key in map1.keys) {
+      if (!map2.containsKey(key)) return false;
+    }
+
     return true;
   }
 

@@ -15,13 +15,14 @@ abstract mixin class SelectQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder selectRaw(String expression,
-      [List<dynamic> bindings = const []]) {
-    String processed = expression;
-    for (var binding in bindings) {
-      processed = processed.replaceFirst('?', formatValue(binding));
+  QueryBuilder selectRaw(String query, [List bindings = const []]) {
+    for (var i = 0; i < bindings.length; i++) {
+      final paramName = 'raw_${i + 1}';
+      this.bindings[paramName] = bindings[i];
+      query = query.replaceFirst('?', ':$paramName');
     }
-    selectColumns.add(processed);
+
+    selectColumns.add('($query)');
     return this;
   }
 

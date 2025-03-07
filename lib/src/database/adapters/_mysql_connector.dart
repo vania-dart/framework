@@ -28,9 +28,10 @@ class MySqlConnector implements DatabaseConnection {
   }
 
   @override
-  Future<bool> execute(String query) async {
+  Future<bool> execute(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      await _connection.execute(query);
+      await _connection.execute(query, bindings);
       return true;
     } catch (e) {
       throw Exception(e);
@@ -38,9 +39,10 @@ class MySqlConnector implements DatabaseConnection {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> select(String query) async {
+  Future<List<Map<String, dynamic>>> select(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      final results = await _connection.execute(query);
+      final results = await _connection.execute(query, bindings);
       if (results.rows.isEmpty) {
         return [];
       }
@@ -51,9 +53,10 @@ class MySqlConnector implements DatabaseConnection {
   }
 
   @override
-  Future<BigInt> insert(String query) async {
+  Future<BigInt> insert(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      final results = await _connection.execute(query);
+      final results = await _connection.execute(query, bindings);
       return results.lastInsertID;
     } catch (e) {
       throw Exception(e);

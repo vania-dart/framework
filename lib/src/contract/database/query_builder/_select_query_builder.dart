@@ -10,8 +10,8 @@ abstract interface class SelectQueryBuilder {
   ]);
 
   QueryBuilder selectRaw(
-    String expression, [
-    List<dynamic> bindings = const [],
+    String query, [
+    List bindings = const [],
   ]);
   QueryBuilder selectSub(
     QueryBuilder subQuery,

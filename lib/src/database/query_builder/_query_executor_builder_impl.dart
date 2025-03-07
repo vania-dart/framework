@@ -162,7 +162,15 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future<List<Map<String, dynamic>>> get([
     List<String> columns = const ['*'],
   ]) async {
-    return await dbConnection!.select(toSql());
+    try {
+      final conn = getConnection();
+      final sql = toSql();
+      final bindings = getBindings();
+
+      return await conn.select(sql, bindings);
+    } catch (e) {
+      throw Exception(e);
+    }
   }
 
   @override

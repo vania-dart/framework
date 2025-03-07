@@ -23,52 +23,54 @@ class PostgresConnector implements DatabaseConnection {
         database: config.database,
         username: config.username,
         password: config.password,
+        port: config.port,
       ),
       settings: ConnectionSettings(
-          sslMode: config.sslMode ? SslMode.require : SslMode.disable),
+        sslMode: config.sslMode ? SslMode.verifyFull : SslMode.disable,
+      ),
     );
   }
 
   @override
-  Future execute(String query) async {
+  Future<bool> execute(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      await _connection.execute(query);
-      return true;
+      final result = await _connection.execute(
+        Sql.named(query),
+        parameters: bindings,
+      );
+      return result.affectedRows > 0;
     } catch (e) {
       throw Exception(e);
     }
   }
 
   @override
-  Future<List<Map<String, dynamic>>> select(String query) async {
+  Future<List<Map<String, dynamic>>> select(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      return extractColumns(await _connection.execute(query));
+      final result = await _connection.execute(
+        Sql.named(query),
+        parameters: bindings,
+      );
+
+      return result.map((row) => row.toColumnMap()).toList();
     } catch (e) {
       throw Exception(e);
     }
   }
 
   @override
-  Future insert(String query) async {
-    if (query.endsWith(';')) {
-      query = query.substring(0, query.length - 1);
-    }
+  Future<int> insert(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      final result =extractColumns(await _connection.execute('$query RETURNING id'));
-      return result.last['id'];
+      final result = await _connection.execute(
+        Sql.named(query),
+        parameters: bindings,
+      );
+      return result.affectedRows;
     } catch (e) {
       throw Exception(e);
     }
-  }
-
-  List<Map<String, dynamic>> extractColumns(Result res) {
-    final columns = res.schema.columns;
-    return res.map((row) {
-      final rowMap = <String, dynamic>{};
-      for (int i = 0; i < columns.length; i++) {
-        rowMap[columns[i].columnName ?? 'unknow'] = row[i];
-      }
-      return rowMap;
-    }).toList();
   }
 }

@@ -21,6 +21,7 @@ class QueryBuilderImpl extends QueryBuilder
         SelectQueryBuilderImpl,
         JoinClauseBuilderImpl,
         UnionClauseBuilderImpl {
+  String? _connectionName;
   final List<String> _orderBy = [];
   final List<String> _groupBy = [];
   final List<String> _having = [];
@@ -29,6 +30,10 @@ class QueryBuilderImpl extends QueryBuilder
   String? _tableAlias;
   int? _limit;
   int? _offset;
+
+  @override
+  String? get connectionName => _connectionName;
+  set connectionName(String? value) => _connectionName = value;
 
   @override
   String get table {
@@ -206,4 +211,14 @@ class QueryBuilderImpl extends QueryBuilder
 
   @override
   String toSql() => build();
+
+  Map<String, dynamic> getBindings() {
+    Map<String, dynamic> allBindings = {};
+
+    if (this is WhereClausesBuilderImpl) {
+      allBindings.addAll((this as WhereClausesBuilderImpl).bindings);
+    }
+
+    return allBindings;
+  }
 }

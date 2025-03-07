@@ -1,4 +1,4 @@
-import 'package:meta/meta.dart';
+import '../../../exception/invalid_argument_exception.dart';
 
 import '../../../database/_connection_manager.dart';
 import '../_connectors/_database_connection.dart';
@@ -27,23 +27,31 @@ abstract class QueryBuilder
         UnionClauseBuilder,
         JoinClauseBuilder,
         QueryExecutorBuilder {
-  @protected
   final List<String> conditions = [];
-  @protected
-  List<String> selectColumns = [];
-  @protected
-  List<String> joins = [];
-  @protected
-  List<String> unions = [];
-  @protected
-  String? connectionName;
-  @protected
+  final Map<String, dynamic> bindings = {};
+
   DatabaseConnection? get dbConnection =>
       ConnectionManager().connection(connectionName);
-  @protected
   String get table => '';
-  @protected
+  String? get connectionName;
+
+  DatabaseConnection getConnection() {
+    if (dbConnection == null) {
+      throw InvalidArgumentException('Database connection not set');
+    }
+    return dbConnection!;
+  }
+
+  Map<String, dynamic> getBindings() {
+    return bindings;
+  }
+
   String build({String? aggregateFunction, String? aggregateColumn});
+  String toSql();
+
+  List<String> selectColumns = [];
+  List<String> joins = [];
+  List<String> unions = [];
 
   String buildJoins() {
     return joins.isNotEmpty ? " ${joins.join(" ")}" : "";
@@ -59,6 +67,7 @@ abstract class QueryBuilder
     if (value is num) return value.toString();
     return "'$value'";
   }
+
   QueryBuilder groupBy(
     List<String> groups,
   );
@@ -105,6 +114,4 @@ abstract class QueryBuilder
   QueryBuilder skip(int value);
 
   QueryBuilder take(int value);
-
-  String toSql();
 }

@@ -9,63 +9,105 @@ import '../_database_utils/_db_config.dart';
 
 class SQLiteConnector implements DatabaseConnection {
   final DBConfig config;
-  late Database _database;
+  late Database _connection;
 
   SQLiteConnector(this.config);
 
   @override
   Future<void> close() async {
-    _database.dispose();
+    _connection.dispose();
   }
 
   @override
   Future<void> connect() async {
-    try {
-      open.overrideFor(OperatingSystem.linux, _openOnLinux);
-      if (config.openInMemorySqlit) {
-        _database = sqlite3.openInMemory();
-      } else {
-        _database = sqlite3
-            .open(config.filePath ?? '${env<String?>('APP_NAME', 'Vania')}.db');
+    _connection = sqlite3.open(config.database);
+  }
+
+  List<dynamic> _convertBindingsToList(
+      Map<String, dynamic> bindings, String query) {
+    if (bindings.isEmpty) return [];
+
+    final List<dynamic> result = [];
+    final parameterRegex = RegExp(r':(\w+)');
+
+    final matches = parameterRegex.allMatches(query);
+    for (final match in matches) {
+      final paramName = match.group(1)!;
+      if (bindings.containsKey(paramName)) {
+        result.add(bindings[paramName]);
       }
-    } catch (e) {
-      throw Exception(e);
     }
+
+    return result;
   }
 
-  DynamicLibrary _openOnLinux() {
-    final scriptDir = File(Platform.script.toFilePath()).parent;
-    final libraryNextToScript = File(join(scriptDir.path, 'sqlite3.so'));
-    return DynamicLibrary.open(libraryNextToScript.path);
+  String _convertNamedParamsToPositional(String query) {
+    return query.replaceAllMapped(
+      RegExp(r':(\w+)'),
+      (match) => '?',
+    );
   }
 
   @override
-  Future execute(String query) {
+  Future<bool> execute(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      final stmt = _database.prepare(query);
-      stmt.execute();
+      final positionalQuery = _convertNamedParamsToPositional(query);
+      final params = _convertBindingsToList(bindings, query);
+
+      final stmt = _connection.prepare(positionalQuery);
+      stmt.execute(params);
       stmt.dispose();
-      return Future.value(true);
+
+      return true;
     } catch (e) {
       throw Exception(e);
     }
   }
 
   @override
-  Future<List<Map<String, dynamic>>> select(String query) async {
+  Future<List<Map<String, dynamic>>> select(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
     try {
-      final result = _database.select(query);
-      return result;
+      final positionalQuery = _convertNamedParamsToPositional(query);
+      final params = _convertBindingsToList(bindings, query);
+
+      final stmt = _connection.prepare(positionalQuery);
+      final results = stmt.select(params);
+
+      final List<Map<String, dynamic>> rows = [];
+      final columns = results.isEmpty ? [] : results.first.keys.toList();
+
+      for (final row in results) {
+        final map = <String, dynamic>{};
+        for (var i = 0; i < columns.length; i++) {
+          map[columns[i]] = row[i];
+        }
+        rows.add(map);
+      }
+
+      stmt.dispose();
+      return rows;
     } catch (e) {
       throw Exception(e);
     }
   }
 
   @override
-  Future insert(String query) {
-    final stmt = _database.prepare(query);
-    stmt.execute();
-    stmt.dispose();
-    return Future.value(_database.lastInsertRowId);
+  Future<int> insert(String query,
+      [Map<String, dynamic> bindings = const {}]) async {
+    try {
+      final positionalQuery = _convertNamedParamsToPositional(query);
+      final params = _convertBindingsToList(bindings, query);
+
+      final stmt = _connection.prepare(positionalQuery);
+      stmt.execute(params);
+      final id = _connection.lastInsertRowId;
+      stmt.dispose();
+
+      return id;
+    } catch (e) {
+      throw Exception(e);
+    }
   }
 }

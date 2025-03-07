@@ -1,7 +1,6 @@
 part of 'query_builder.dart';
 
 abstract interface class InsertQueryBuilder {
-
   Future<bool> insert(
     Map<String, dynamic> values,
   );

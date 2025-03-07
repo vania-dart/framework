@@ -1,4 +1,5 @@
-import '../../contract/database/query_builder/query_builder.dart' show QueryBuilder;
+import '../../contract/database/query_builder/query_builder.dart'
+    show QueryBuilder;
 
 abstract mixin class UnionClauseBuilderImpl implements QueryBuilder {
   @override
@@ -12,5 +13,4 @@ abstract mixin class UnionClauseBuilderImpl implements QueryBuilder {
     unions.add("UNION ALL ${toSql()}");
     return this;
   }
-  
 }

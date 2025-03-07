@@ -4,6 +4,29 @@ import '../../contract/database/query_builder/query_builder.dart'
 import '_query_builder_impl.dart';
 
 abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
+  int _paramCounter = 0;
+
+  String _nextParamName() {
+    _paramCounter++;
+    return 'p$_paramCounter';
+  }
+
+  @override
+  String buildWhereClause() {
+    return conditions.isNotEmpty ? " WHERE ${conditions.join(" ")}" : "";
+  }
+
+  @override
+  String build({String? aggregateFunction, String? aggregateColumn}) {
+    throw UnimplementedError(
+        'build() should be implemented by the concrete class');
+  }
+
+  @override
+  Map<String, dynamic> getBindings() {
+    return bindings;
+  }
+
   @override
   QueryBuilder orWhere(
     dynamic condition, [
@@ -12,12 +35,14 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   ]) {
     if (condition is String) {
-      value = value is int ? value : "'$value'";
-      _appendCondition("$condition $operator $value", isOr: true);
+      final paramName = _nextParamName();
+      bindings[paramName] = value;
+      _appendCondition("$condition $operator :$paramName", isOr: true);
     } else if (condition is QueryCallback) {
       QueryBuilderImpl nested = QueryBuilderImpl();
       condition(nested);
       _appendCondition("(${nested.toSql()})", isOr: true);
+      bindings.addAll(nested.getBindings());
     } else {
       throw InvalidArgumentException(
         'Invalid argument type for condition. Expected either a String or a QueryBuilder instance',
@@ -89,6 +114,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     callback(subQuery);
     String condition = "${not ? 'NOT EXISTS' : 'EXISTS'} (${subQuery.toSql()})";
     _appendCondition(condition, isOr: true);
+    bindings.addAll(subQuery.getBindings());
     return this;
   }
 
@@ -252,9 +278,9 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   @override
   QueryBuilder orWhereRaw(
     String sql, [
-    List<dynamic> bindings = const [],
+    List<dynamic> rawBindings = const [],
   ]) {
-    String processedSQL = _processRawSQL(sql, bindings);
+    String processedSQL = _processRawSQL(sql, rawBindings);
     _appendCondition(processedSQL, isOr: true);
     return this;
   }
@@ -306,14 +332,16 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   ]) {
     if (condition is String) {
-      value = value is int ? value : "'$value'";
-      _appendCondition("$condition $operator $value",
+      final paramName = _nextParamName();
+      bindings[paramName] = value;
+      _appendCondition("$condition $operator :$paramName",
           isOr: (boolean.toLowerCase() == 'or'));
     } else if (condition is QueryCallback) {
       QueryBuilderImpl nested = QueryBuilderImpl();
       condition(nested);
       _appendCondition("(${nested.toSql()})",
           isOr: (boolean.toLowerCase() == 'or'));
+      bindings.addAll(nested.getBindings());
     } else {
       throw InvalidArgumentException(
         'Invalid argument type for condition. Expected either a String or a QueryBuilder instance',
@@ -345,15 +373,16 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
         "The list of values must not be empty.",
       );
     }
-    String condition;
-    if (values.length == 1) {
-      condition = "$column = ${formatValue(values.first)}";
-    } else {
-      condition =
-          values.map((v) => "$column = ${formatValue(v)}").join(" AND ");
+
+    List<String> conditions = [];
+    for (var value in values) {
+      final paramName = _nextParamName();
+      bindings[paramName] = value;
+      conditions.add("$column = :$paramName");
     }
+
     _appendCondition(
-      condition,
+      conditions.join(" AND "),
       isOr: (boolean.toLowerCase() == 'or'),
     );
     return this;
@@ -370,10 +399,9 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
         "The list of values must not be empty.",
       );
     }
-    String formattedValues = values.map(formatValue).join(", ");
-    String condition = "$column IN ($formattedValues)";
+
     _appendCondition(
-      condition,
+      _createInCondition(column, values, false),
       isOr: (boolean.toLowerCase() == 'or'),
     );
     return this;
@@ -484,6 +512,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
       condition,
       isOr: (boolean.toLowerCase() == 'or'),
     );
+    bindings.addAll(subQuery.getBindings());
     return this;
   }
 
@@ -651,10 +680,9 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
         "The list of values must not be empty.",
       );
     }
-    String formattedValues = values.map(formatValue).join(", ");
-    String condition = "$column NOT IN ($formattedValues)";
+
     _appendCondition(
-      condition,
+      _createInCondition(column, values, true),
       isOr: (boolean.toLowerCase() == 'or'),
     );
     return this;
@@ -794,10 +822,10 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   @override
   QueryBuilder whereRaw(
     String sql, [
-    List<dynamic> bindings = const [],
+    List<dynamic> rawBindings = const [],
     String boolean = 'and',
   ]) {
-    String processedSQL = _processRawSQL(sql, bindings);
+    String processedSQL = _processRawSQL(sql, rawBindings);
     _appendCondition(
       processedSQL,
       isOr: (boolean.toLowerCase() == 'or'),
@@ -913,7 +941,13 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
         'The list of values must contain at least two items.',
       );
     }
-    return "$column ${not ? 'NOT BETWEEN' : 'BETWEEN'} '${values[0]}' AND '${values[1]}'";
+
+    final paramName1 = _nextParamName();
+    final paramName2 = _nextParamName();
+    bindings[paramName1] = values[0];
+    bindings[paramName2] = values[1];
+
+    return "$column ${not ? 'NOT BETWEEN' : 'BETWEEN'} :$paramName1 AND :$paramName2";
   }
 
   String _createDateCondition(
@@ -927,7 +961,11 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
         'The value for the function $function must not be null.',
       );
     }
-    return "$function($column) $operator ${formatValue(value)}";
+
+    final paramName = _nextParamName();
+    bindings[paramName] = value;
+
+    return "$function($column) $operator :$paramName";
   }
 
   String _createFullTextCondition(
@@ -941,11 +979,16 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     } else {
       colStr = columns.toString();
     }
+
+    final paramName = _nextParamName();
+    bindings[paramName] = query;
+
     String mode = "";
     if (options.containsKey('mode')) {
       mode = " ${options['mode']}";
     }
-    return "MATCH($colStr) AGAINST(${formatValue(query)}$mode)";
+
+    return "MATCH($colStr) AGAINST(:$paramName$mode)";
   }
 
   String _createHourCondition(
@@ -958,7 +1001,11 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
         'The value for whereHour must not be null.',
       );
     }
-    return "HOUR($column) $operator ${formatValue(value)}";
+
+    final paramName = _nextParamName();
+    bindings[paramName] = value;
+
+    return "HOUR($column) $operator :$paramName";
   }
 
   String _createInCondition(
@@ -967,22 +1014,31 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     bool not,
   ) {
     String clause = not ? "NOT IN" : "IN";
-    String inClause;
+
     if (values is List) {
       if (values.isEmpty) {
         throw InvalidArgumentException(
           "The list of values for IN must not be empty.",
         );
       }
-      inClause = values.map((v) => formatValue(v)).join(", ");
+
+      List<String> paramNames = [];
+      for (var i = 0; i < values.length; i++) {
+        final paramName = _nextParamName();
+        bindings[paramName] = values[i];
+        paramNames.add(":$paramName");
+      }
+
+      return "$column $clause (${paramNames.join(", ")})";
     } else if (values is QueryBuilder) {
-      inClause = values.toSql();
+      final subQuery = values.toSql();
+      bindings.addAll((values as dynamic).getBindings());
+      return "$column $clause ($subQuery)";
     } else {
       throw InvalidArgumentException(
         "The value for 'values' must be of type List or QueryBuilder.",
       );
     }
-    return "$column $clause ($inClause)";
   }
 
   String _createJsonContainsCondition(
@@ -990,7 +1046,10 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     dynamic value,
     bool not,
   ) {
-    String condition = "JSON_CONTAINS($column, ${formatValue(value)})";
+    final paramName = _nextParamName();
+    bindings[paramName] = value;
+
+    String condition = "JSON_CONTAINS($column, :$paramName)";
     if (not) {
       condition = "NOT $condition";
     }
@@ -1002,17 +1061,22 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String operator,
     dynamic value,
   ) {
-    return "JSON_LENGTH($column) $operator ${formatValue(value)}";
+    final paramName = _nextParamName();
+    bindings[paramName] = value;
+
+    return "JSON_LENGTH($column) $operator :$paramName";
   }
 
   String _createLikeCondition(String column, dynamic value,
       {bool not = false, bool caseSensitive = false}) {
-    String formattedValue = formatValue(value);
+    final paramName = _nextParamName();
+    bindings[paramName] = value;
+
     String operator = not ? "NOT LIKE" : "LIKE";
     if (!caseSensitive) {
-      return "LOWER($column) $operator LOWER($formattedValue)";
+      return "LOWER($column) $operator LOWER(:$paramName)";
     }
-    return "$column $operator $formattedValue";
+    return "$column $operator :$paramName";
   }
 
   String _createNullCondition(String column, bool not) {
@@ -1029,16 +1093,30 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
         "The number of columns and values must be equal.",
       );
     }
+
+    List<String> paramNames = [];
+    for (var i = 0; i < values.length; i++) {
+      final paramName = _nextParamName();
+      bindings[paramName] = values[i];
+      paramNames.add(":$paramName");
+    }
+
     String cols = "(${columns.join(", ")})";
-    String vals = "(${values.map((v) => formatValue(v)).join(", ")})";
+    String vals = "(${paramNames.join(", ")})";
+
     return "$cols $operator $vals";
   }
 
-  String _processRawSQL(String sql, List<dynamic> bindings) {
+  String _processRawSQL(String sql, List<dynamic> rawBindings) {
     String processed = sql;
-    for (var binding in bindings) {
-      processed = processed.replaceFirst('?', formatValue(binding));
+
+    // Replace ? placeholders with named parameters
+    for (var binding in rawBindings) {
+      final paramName = _nextParamName();
+      bindings[paramName] = binding;
+      processed = processed.replaceFirst('?', ':$paramName');
     }
+
     return processed;
   }
 }
