@@ -17,7 +17,6 @@ environment:
 dependencies:
   crypto: ^3.0.6
   dart_jsonwebtoken: ^2.14.2
-  eloquent: ^3.2.1
   encrypt: ^5.0.3
   mailer: ^6.4.1
   meta: ^1.16.0
