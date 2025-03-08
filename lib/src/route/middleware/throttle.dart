@@ -8,31 +8,69 @@ import '../throttle_requests.dart';
 class Throttle extends Middleware {
   final int maxAttempts;
   final Duration duration;
+  final bool includeUserIdentifier;
+  final String? customMessage;
+  final Map<String, String>? headers;
+  final bool bypassInDevelopment;
+
+  late final ThrottleRequests _throttle;
 
   Throttle({
-    this.maxAttempts = 6,
-    this.duration = const Duration(seconds: 60),
+    this.maxAttempts = 60,
+    this.duration = const Duration(minutes: 1),
+    this.includeUserIdentifier = false,
+    this.customMessage,
+    this.headers,
+    this.bypassInDevelopment = true,
   }) {
-    throttle = ThrottleRequests(maxAttempts: maxAttempts, duration: duration);
+    _throttle = ThrottleRequests(
+      maxAttempts: maxAttempts,
+      duration: duration,
+    );
   }
 
-  late ThrottleRequests throttle;
-
   @override
-  Future handle(Request req) async {
-    final clientIp = req.ip;
-    if (clientIp == null) {
-      req.response.statusCode = HttpStatus.internalServerError;
-      req.response.write('Error determining client IP');
-      await req.response.close();
+  Future<void> handle(Request req) async {
+    if (bypassInDevelopment &&
+        env<String>('APP_ENV', 'development') == 'development') {
       return;
     }
 
-    if (!throttle.request(clientIp)) {
+    final String identifier = await _getRequestIdentifier(req);
+    final remaining = _throttle.remainingAttempts(identifier);
+
+    _addRateLimitHeaders(req.response, remaining);
+
+    if (!_throttle.request(identifier)) {
+      final retryAfter = _throttle.retryAfter(identifier);
       throw ThrottleException(
-        message: 'Too Many Requests.',
+        message: customMessage ?? 'Too Many Requests. Please try again later.',
         code: HttpStatus.tooManyRequests,
+        headers: {
+          'Retry-After': retryAfter.inSeconds.toString(),
+          ...?headers,
+        },
       );
     }
+  }
+
+  Future<String> _getRequestIdentifier(Request req) async {
+    final List<String> parts = [req.ip ?? 'unknown'];
+
+    if (includeUserIdentifier) {
+      final userMap = req.user;
+      if (userMap != null && userMap['id'] != null) {
+        parts.add(userMap['id'].toString());
+      }
+    }
+
+    return parts.join(':');
+  }
+
+  void _addRateLimitHeaders(HttpResponse response, int remaining) {
+    response.headers.add('X-RateLimit-Limit', maxAttempts.toString());
+    response.headers.add('X-RateLimit-Remaining', remaining.toString());
+    response.headers
+        .add('X-RateLimit-Reset', _throttle.resetTime().toIso8601String());
   }
 }
