@@ -45,4 +45,6 @@ DBConfig _config(database) => DBConfig(
       collation: database['collation'] ?? '',
       pool: database['pool'] ?? false,
       poolSize: database['poolsize'] ?? 0,
+      filePath: database['file_path'] ?? '',
+      openInMemorySQLite: database['openInMemorySQLite'] ?? false,
     );
