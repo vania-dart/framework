@@ -1,112 +1,119 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:crypto/crypto.dart';
-import 'package:vania/vania.dart';
+import 'package:path/path.dart' as path;
+import '../performance/_task_manager.dart';
+import '../utils/helper.dart';
+import 'cache_driver.dart';
 
 class FileCacheDriver implements CacheDriver {
-  final String _secretKey = env('APP_KEY');
+  static final FileCacheDriver _instance = FileCacheDriver._internal();
+  factory FileCacheDriver() => _instance;
+  FileCacheDriver._internal();
 
-  final String cachePath = 'storage/framework/cache/data';
-
-  @override
-  Future<void> delete(String key) async {
-    File? file = await _cacheFile(key);
-    file?.deleteSync();
-  }
+  final TaskManager _taskManager = TaskManager();
+  final String _cacheDir = storagePath('framework/cache');
+  static const Duration _defaultTimeout = Duration(seconds: 30);
 
   @override
   Future<dynamic> get(String key, [dynamic defaultValue]) async {
-    Map<String, dynamic>? data = await _getData(key);
+    final file = _getCacheFile(key);
+    if (!await file.exists()) return defaultValue;
 
-    if (data?['expiration'] != null) {
-      int expiration = data?['expiration'].toString().toInt() ?? 0;
-      if (!DateTime.now()
-          .toUtc()
-          .isBefore(DateTime.fromMillisecondsSinceEpoch(expiration))) {
-        return Future.value(null);
-      }
+    try {
+      final content = await _taskManager.runInIsolate(
+        () async {
+          final data = await file.readAsString();
+          final cache = jsonDecode(data);
+
+          if (cache['expiration'] != null) {
+            final expiration = DateTime.parse(cache['expiration']);
+            if (DateTime.now().isAfter(expiration)) {
+              await file.delete();
+              return defaultValue;
+            }
+          }
+
+          return cache['value'] ?? defaultValue;
+        },
+        timeout: _defaultTimeout,
+      );
+
+      return content;
+    } catch (e) {
+      await file.delete();
+      return defaultValue;
+    }
+  }
+
+  @override
+  Future<void> put(String key, dynamic value,
+      {Duration duration = const Duration(hours: 1)}) async {
+    final file = _getCacheFile(key);
+    await _ensureCacheDirectory();
+
+    await _taskManager.runInIsolate(
+      () async {
+        final cache = {
+          'value': value,
+          'expiration': DateTime.now().add(duration).toIso8601String(),
+        };
+
+        await file.writeAsString(jsonEncode(cache));
+      },
+      timeout: _defaultTimeout,
+    );
+  }
+
+  @override
+  Future<void> forever(String key, dynamic value) async {
+    if (value == null) {
+      throw Exception("Value can't be null");
     }
 
-    if (data?['data'] == null && defaultValue != null) {
-      return Future.value(defaultValue);
-    }
+    final file = _getCacheFile(key);
+    await _ensureCacheDirectory();
 
-    return Future.value(data?['data']);
+    await _taskManager.runInIsolate(
+      () async {
+        final cache = {
+          'value': value,
+          'expiration': null,
+        };
+
+        await file.writeAsString(jsonEncode(cache));
+      },
+      timeout: _defaultTimeout,
+    );
   }
 
   @override
   Future<bool> has(String key) async {
-    dynamic data = await get(key);
-
-    if (data == null) {
-      return Future.value(false);
-    }
-
-    return Future.value(true);
+    final value = await get(key);
+    return value != null;
   }
 
   @override
-  Future<void> put(
-    String key,
-    dynamic value, {
-    Duration duration = const Duration(hours: 1),
-  }) async {
-    int expiration =
-        DateTime.now().toUtc().millisecondsSinceEpoch + duration.inMilliseconds;
-    Map<String, dynamic> data = {'data': value, 'expiration': expiration};
-    _writeData(key, json.encode(data));
-  }
+  Future<bool> delete(String key) async {
+    final file = _getCacheFile(key);
+    if (!await file.exists()) return false;
 
-  @override
-  Future<void> forever(
-    String key,
-    dynamic value,
-  ) async {
-    if (value == null) {
-      throw Exception("Value can't be null");
+    try {
+      await file.delete();
+      return true;
+    } catch (e) {
+      return false;
     }
-    Map<String, dynamic> data = {'data': value};
-    _writeData(key, json.encode(data));
   }
 
-  Future<void> _writeData(String key, String data) async {
-    File? file = await _cacheFile(key, true);
-    file?.writeAsStringSync(data);
+  File _getCacheFile(String key) {
+    final fileName = base64Url.encode(utf8.encode(key));
+    return File(path.join(_cacheDir, fileName));
   }
 
-  Future<Map<String, dynamic>?> _getData(String key) async {
-    File? file = await _cacheFile(key);
-    return Future.value(
-        file == null ? null : json.decode(file.readAsStringSync()));
-  }
-
-  Future<File?> _cacheFile(String key, [bool create = false]) async {
-    Digest hash = _makeHash(key);
-    String path =
-        '$cachePath/${twoDigest(hash.bytes[0].toString())}/${twoDigest(hash.bytes[1].toString())}';
-
-    Directory directory = Directory(path);
-    File file = File('${directory.path}/${hash.toString()}');
-    if (!file.existsSync()) {
-      if (!create) {
-        return Future.value(null);
-      } else {
-        file.createSync(recursive: true);
-      }
+  Future<void> _ensureCacheDirectory() async {
+    final dir = Directory(_cacheDir);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
     }
-
-    return Future.value(file);
-  }
-
-  Digest _makeHash(String key) {
-    var secKey = utf8.encode(_secretKey);
-    var bytes = utf8.encode(key);
-    var hmacSha256 = Hmac(sha256, secKey);
-    return hmacSha256.convert(bytes);
-  }
-
-  String twoDigest(String str) {
-    return str.length == 1 ? '0$str' : str;
   }
 }
