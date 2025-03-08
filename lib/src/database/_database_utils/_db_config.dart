@@ -7,10 +7,10 @@ class DBConfig {
   final String database;
   final String collation;
   final bool sslMode;
-  final bool openInMemorySqlit;
+  final bool openInMemorySQLite;
   final String? filePath;
   final bool? pool;
-  final int? poolSize;
+  int? poolSize;
 
   DBConfig({
     required this.driver,
@@ -21,7 +21,7 @@ class DBConfig {
     this.database = '',
     this.filePath,
     this.sslMode = false,
-    this.openInMemorySqlit = false,
+    this.openInMemorySQLite = false,
     this.collation = 'utf8mb4_general_ci',
     this.pool = false,
     this.poolSize = 0,

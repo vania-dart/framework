@@ -53,7 +53,7 @@ class MySqlConnector implements DatabaseConnection {
   }
 
   @override
-  Future<BigInt> insert(String query,
+  Future insert(String query,
       [Map<String, dynamic> bindings = const {}]) async {
     try {
       final results = await _connection.execute(query, bindings);

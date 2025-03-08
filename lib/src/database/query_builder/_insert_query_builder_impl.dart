@@ -35,8 +35,8 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
 
       final query =
           "INSERT INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
-
-      return await conn.insert(query, paramBindings);
+      await conn.insert(query, paramBindings);
+      return true;
     } catch (e) {
       throw Exception(e);
     }
@@ -96,7 +96,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       final query =
           "INSERT INTO $table (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
 
-      final result = await conn.insert(query, paramBindings);
+      await conn.execute(query, paramBindings);
       return true;
     } catch (e) {
       throw Exception(e);

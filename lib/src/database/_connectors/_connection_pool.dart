@@ -3,15 +3,37 @@ import 'dart:async';
 import 'package:vania/src/contract/database/_connectors/_database_connection.dart';
 import '_database_connection_factory.dart';
 import '../_database_utils/_db_config.dart';
+import '../monitoring/database_monitor.dart';
+import '_database_connection_proxy.dart';
 
 class ConnectionPool {
   final DBConfig config;
+  final Future<bool> Function(DatabaseConnection) validator;
+  final void Function(Object, StackTrace) onError;
   final List<DatabaseConnection> _availableConnections = [];
   final List<DatabaseConnection> _usedConnections = [];
   final List<Completer<DatabaseConnection>> _waitQueue = [];
+  final DatabaseMonitor _monitor = DatabaseMonitor();
+  final String _poolId;
+  final List<Duration> _queryTimes = [];
+  final int _maxQueryTimeHistory = 100;
+  DateTime _lastMetricsUpdate = DateTime.now();
+
+  int get activeConnections => _usedConnections.length;
+  int get totalConnections =>
+      _availableConnections.length + _usedConnections.length;
+  int get maxSize => config.poolSize ?? 10;
+  int get minSize => 2;
 
   Future<void> _lock = Future.value();
-  ConnectionPool({required this.config});
+
+  ConnectionPool({
+    required this.config,
+    required this.validator,
+    required this.onError,
+  }) : _poolId =
+            '${config.driver}://${config.host}:${config.port}/${config.database}';
+
   Future<T> _synchronized<T>(Future<T> Function() action) async {
     final previousLock = _lock;
     final completer = Completer<void>();
@@ -29,18 +51,22 @@ class ConnectionPool {
       while (_availableConnections.isNotEmpty) {
         final connection = _availableConnections.removeLast();
         if (await _validateConnection(connection)) {
-          _usedConnections.add(connection);
-          return connection;
+          final proxy = DatabaseConnectionProxy(connection, _poolId, _monitor);
+          _usedConnections.add(proxy);
+          _updateMetrics();
+          return proxy;
         } else {
           await connection.close();
         }
       }
-      int poolSize = config.poolSize ?? 0;
-      if (_usedConnections.length < poolSize) {
+
+      if (_usedConnections.length < maxSize) {
         final connection = DatabaseConnectionFactory.createConnection(config);
         await connection.connect();
-        _usedConnections.add(connection);
-        return connection;
+        final proxy = DatabaseConnectionProxy(connection, _poolId, _monitor);
+        _usedConnections.add(proxy);
+        _updateMetrics();
+        return proxy;
       } else {
         final completer = Completer<DatabaseConnection>();
         _waitQueue.add(completer);
@@ -50,27 +76,41 @@ class ConnectionPool {
   }
 
   Future<bool> _validateConnection(DatabaseConnection connection) async {
-    try {
-      await connection.execute("SELECT 1;");
-      return true;
-    } catch (e) {
-      return false;
-    }
+    return validator(connection);
+  }
+
+  Future<void> validateConnections() async {
+    await _synchronized(() async {
+      final invalidConnections = <DatabaseConnection>[];
+
+      for (final connection in _availableConnections) {
+        if (!await _validateConnection(connection)) {
+          invalidConnections.add(connection);
+        }
+      }
+
+      for (final connection in invalidConnections) {
+        _availableConnections.remove(connection);
+        await connection.close();
+      }
+    });
   }
 
   void release(DatabaseConnection connection) {
-    if (_usedConnections.remove(connection)) {
-      if (_waitQueue.isNotEmpty) {
-        final completer = _waitQueue.removeAt(0);
-        _usedConnections.add(connection);
-        completer.complete(connection);
-      } else {
-        _availableConnections.add(connection);
+    _synchronized(() async {
+      if (_usedConnections.remove(connection)) {
+        if (_waitQueue.isNotEmpty) {
+          final completer = _waitQueue.removeAt(0);
+          _usedConnections.add(connection);
+          completer.complete(connection);
+        } else {
+          _availableConnections.add(connection);
+        }
       }
-    }
+    });
   }
 
-  Future<void> closeAll() async {
+  Future<void> close() async {
     await _synchronized(() async {
       for (final connection in [
         ..._availableConnections,
@@ -87,5 +127,38 @@ class ConnectionPool {
       }
       _waitQueue.clear();
     });
+  }
+
+  void increaseSize() {
+    config.poolSize = (config.poolSize ?? 10) + 5;
+  }
+
+  void decreaseSize() {
+    config.poolSize = ((config.poolSize ?? 10) - 5).clamp(minSize, maxSize);
+  }
+
+  void recordQueryExecution(String query, Duration duration) {
+    _queryTimes.add(duration);
+    if (_queryTimes.length > _maxQueryTimeHistory) {
+      _queryTimes.removeAt(0);
+    }
+    _monitor.recordQuery(_poolId, query, duration);
+  }
+
+  void _updateMetrics() {
+    final now = DateTime.now();
+    final timeDiff = now.difference(_lastMetricsUpdate);
+    final queryCount = _queryTimes.length;
+
+    _monitor.updateConnectionMetrics(
+      _poolId,
+      ConnectionMetrics(
+        activeConnections: activeConnections,
+        maxConnections: maxSize,
+        usagePercentage: (activeConnections * 100 ~/ maxSize),
+      ),
+    );
+
+    _lastMetricsUpdate = now;
   }
 }

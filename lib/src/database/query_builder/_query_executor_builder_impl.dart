@@ -14,7 +14,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       aggregateFunction: "AVG",
       aggregateColumn: column,
     );
-    var result = await dbConnection?.select(sql);
+    final bindings = getBindings();
+    var result = await dbConnection?.select(sql, bindings);
     return num.tryParse(result?.first.values.first) ?? 0;
   }
 
@@ -55,7 +56,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<int> count([String columns = '*']) async {
     String sql = build(aggregateFunction: "COUNT", aggregateColumn: columns);
-    var result = await dbConnection?.select(sql);
+    final bindings = getBindings();
+    var result = await dbConnection?.select(sql, bindings);
     return int.tryParse(result?.first.values.first) ?? 0;
   }
 
@@ -97,7 +99,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     List<String> columns = const ['*'],
   ]) async {
     String sql = whereEqualTo('id', id).limit(1).toSql();
-    final result = await dbConnection!.select(sql);
+    final bindings = getBindings();
+    final result = await dbConnection!.select(sql, bindings);
     if (result.isEmpty) {
       return null;
     }
@@ -121,7 +124,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     List<String> columns = const ['*'],
   ]) async {
     String sql = limit(1).toSql();
-    final result = await dbConnection!.select(sql);
+    final bindings = getBindings();
+
+    final result = await dbConnection!.select(sql, bindings);
     if (result.isEmpty) {
       return null;
     }
@@ -186,14 +191,18 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future max(String column) async {
     String sql = build(aggregateFunction: "MAX", aggregateColumn: column);
-    var result = await dbConnection?.select(sql);
+
+    final bindings = getBindings();
+    var result = await dbConnection?.select(sql, bindings);
     return result?.first.values.first;
   }
 
   @override
   Future min(String column) async {
     String sql = build(aggregateFunction: "MIN", aggregateColumn: column);
-    var result = await dbConnection?.select(sql);
+
+    final bindings = getBindings();
+    var result = await dbConnection?.select(sql, bindings);
     return result?.first.values.first;
   }
 
@@ -267,7 +276,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<num> sum(String column) async {
     String sql = build(aggregateFunction: "SUM", aggregateColumn: column);
-    var result = await dbConnection?.select(sql);
+
+    final bindings = getBindings();
+    var result = await dbConnection?.select(sql, bindings);
     return num.tryParse(result?.first.values.first) ?? 0;
   }
 

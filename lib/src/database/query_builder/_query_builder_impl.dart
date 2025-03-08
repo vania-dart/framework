@@ -212,13 +212,12 @@ class QueryBuilderImpl extends QueryBuilder
   @override
   String toSql() => build();
 
+  @override
   Map<String, dynamic> getBindings() {
     Map<String, dynamic> allBindings = {};
 
-    if (this is WhereClausesBuilderImpl) {
-      allBindings.addAll((this as WhereClausesBuilderImpl).bindings);
-    }
-
+    allBindings.addAll((this as WhereClausesBuilderImpl).bindings);
+  
     return allBindings;
   }
 }

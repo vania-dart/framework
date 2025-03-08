@@ -20,7 +20,26 @@ class SQLiteConnector implements DatabaseConnection {
 
   @override
   Future<void> connect() async {
-    _connection = sqlite3.open(config.database);
+    try {
+      open.overrideFor(OperatingSystem.linux, _openOnLinux);
+
+      if (config.openInMemorySQLite) {
+        _connection = sqlite3.openInMemory();
+      } else {
+        _connection = sqlite3
+            .open(config.filePath ?? '${env<String?>('APP_NAME', 'Vania')}.db');
+      }
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  DynamicLibrary _openOnLinux() {
+    final scriptDir = File(Platform.script.toFilePath()).parent;
+
+    final libraryNextToScript = File(join(scriptDir.path, 'sqlite3.so'));
+
+    return DynamicLibrary.open(libraryNextToScript.path);
   }
 
   List<dynamic> _convertBindingsToList(
@@ -94,7 +113,7 @@ class SQLiteConnector implements DatabaseConnection {
   }
 
   @override
-  Future<int> insert(String query,
+  Future insert(String query,
       [Map<String, dynamic> bindings = const {}]) async {
     try {
       final positionalQuery = _convertNamedParamsToPositional(query);

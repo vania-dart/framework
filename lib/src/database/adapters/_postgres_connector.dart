@@ -61,7 +61,7 @@ class PostgresConnector implements DatabaseConnection {
   }
 
   @override
-  Future<int> insert(String query,
+  Future insert(String query,
       [Map<String, dynamic> bindings = const {}]) async {
     try {
       final result = await _connection.execute(
