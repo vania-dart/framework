@@ -147,7 +147,6 @@ class ConnectionPool {
 
   void _updateMetrics() {
     final now = DateTime.now();
-    final timeDiff = now.difference(_lastMetricsUpdate);
     final queryCount = _queryTimes.length;
 
     _monitor.updateConnectionMetrics(

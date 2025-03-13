@@ -224,7 +224,7 @@ class Migration {
 
       // Check for PostgreSQL driver - handle case-insensitive comparison
       final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
-      if ( driverName == 'pgsql') {
+      if (driverName == 'pgsql') {
         query = _mysqlToPosgresqlMapper(query.toString());
       } else {
         query =

@@ -56,7 +56,6 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<int> count([String columns = '*']) async {
     String sql = build(aggregateFunction: "COUNT", aggregateColumn: columns);
-    final bindings = getBindings();
     var result = await dbConnection?.select(sql, bindings);
     return int.tryParse(result?.first.values.first) ?? 0;
   }
@@ -98,7 +97,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     dynamic id, [
     List<String> columns = const ['*'],
   ]) async {
-    String sql = whereEqualTo('id', id).limit(1).toSql();
+    String sql = whereEqualTo('$table.id', id).limit(1).toSql();
     final bindings = getBindings();
     final result = await dbConnection!.select(sql, bindings);
     if (result.isEmpty) {
@@ -214,11 +213,14 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     int? page,
   }) async {
     int currentPage = page ?? 1;
+
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
     String sql = take(perPage).skip(offset).toSql();
-    final pageData = await dbConnection?.select(sql);
+    final bindings = getBindings();
+
+    final pageData = await dbConnection?.select(sql, bindings);
 
     final isFirst = currentPage == 1;
     final isLast = currentPage == lastPage;

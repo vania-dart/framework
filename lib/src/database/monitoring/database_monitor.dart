@@ -60,7 +60,7 @@ class DatabaseMonitor {
 
   // Performance thresholds
   static const Duration slowQueryThreshold = Duration(milliseconds: 100);
-  static const int highConnectionUsageThreshold = 80; 
+  static const int highConnectionUsageThreshold = 80;
 
   void recordQuery(String connectionId, String sql, Duration executionTime) {
     final metrics = QueryMetrics(

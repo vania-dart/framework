@@ -132,7 +132,6 @@ class ConnectionManager {
     );
   }
 
-
   Stream<DatabaseAlert> get alerts => _monitor.alerts;
   Map<String, PerformanceStats> getPerformanceStats() =>
       _monitor.getPerformanceStats();
