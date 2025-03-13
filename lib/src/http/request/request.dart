@@ -118,19 +118,19 @@ class Request {
     return ret;
   }
 
-  bool has(dynamic key) {
-    if (key is String) {
-      String? val = _all[key];
+  bool has(dynamic keys) {
+    if (keys is String) {
+      String? val = _all[keys];
       if (val == null) {
         return false;
       }
       return val.toString().isNotEmpty ? true : false;
     }
 
-    if (key is List<String>) {
+    if (keys is List<String>) {
       bool hasKey = true;
-      for (String vkey in key) {
-        if (_all[vkey] == null) {
+      for (String key in keys) {
+        if (_all[key] == null) {
           hasKey = false;
         }
       }
@@ -303,12 +303,10 @@ class Request {
     return RequestBody.isFormData(contentType);
   }
 
-  /// http request data is json
   bool isJson() {
     return RequestBody.isJson(contentType);
   }
 
-  /// http request data is json
   bool isUrlencoded() {
     return RequestBody.isUrlencoded(contentType);
   }
@@ -343,7 +341,7 @@ class Request {
     Map<String, String> rules, [
     Map<String, String> messages = const <String, String>{},
   ]) async {
-    Validator validator = Validator(data: all());
+    Validator validator = Validator(data: body);
 
     if (_customRules != null) {
       validator.customRule(_customRules!);

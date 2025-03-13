@@ -61,27 +61,6 @@ class RequestBody {
     return <String, dynamic>{};
   }
 
-/*
-  static Map<String, dynamic> _extractUrlEncodedData(String inputString) {
-    Map<String, dynamic> resultMap = {};
-    List<String> keyValuePairs = inputString.split('&');
-    for (String pair in keyValuePairs) {
-      List<String> keyValue = pair.split('=');
-      if (keyValue.length == 2) {
-        resultMap[keyValue[0]] =
-            int.tryParse(keyValue[1].toString()) ?? keyValue[1];
-      }
-    }
-
-    return resultMap;
-  }
-*/
-
-  // static bool _extractUrlEncodedData(String encodedData) {
-  //   List data = encodedData.split("&");
-
-  // }
-
   static bool isUrlencoded(ContentType? contentType) {
     return contentType?.mimeType.toLowerCase().contains('urlencoded') == true;
   }

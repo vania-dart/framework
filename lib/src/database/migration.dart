@@ -1,42 +1,76 @@
 import 'dart:io';
 
-import 'package:eloquent/eloquent.dart';
 import 'package:meta/meta.dart';
 import 'package:vania/vania.dart';
+import '../contract/database/_connectors/_database_connection.dart';
+import '../exception/invalid_argument_exception.dart';
+import '../database/_database_utils/_db_config.dart';
+import '_connection_manager.dart';
 
 class MigrationConnection {
   static final MigrationConnection _singleton = MigrationConnection._internal();
+
+  DatabaseConnection? dbConnection;
+  String? driver;
 
   factory MigrationConnection() => _singleton;
 
   MigrationConnection._internal();
 
-  Connection? dbConnection;
-  DatabaseDriver? database;
-
-  Future<void> setup() async {
-    Env().load();
+  Future<void> setup(Map<String, dynamic> databaseConfig) async {
     try {
-      await DatabaseClient().setup();
-      database = DatabaseClient().database;
-      if (database == null) {
-        print('A database must be specified.');
+      final connectionManager = ConnectionManager();
+
+      final Map<String, dynamic> database = databaseConfig['database'];
+
+      connectionManager.defaultConnection = database['default'];
+
+      Map<String, dynamic> connections = database['connections'];
+
+      final defaultConnName = database['default'];
+      await connectionManager.connect(
+        _createDBConfig(connections[defaultConnName]),
+        defaultConnName,
+      );
+
+      driver = connections[defaultConnName]['driver'];
+
+      dbConnection = connectionManager.connection(defaultConnName);
+
+      if (dbConnection == null) {
+        stderr.writeln('A database must be specified.');
         exit(0);
       }
-      dbConnection = database?.connection;
     } on InvalidArgumentException catch (e) {
-      print('Database connection error');
-      Logger.log(e.cause.toString(), type: Logger.ERROR);
+      stderr.writeln('Database connection error');
+      Logger.log(e.message, type: Logger.ERROR);
       exit(0);
     } catch (e) {
       Logger.log(e.toString(), type: Logger.ERROR);
-      print(e);
+      stderr.writeln(e);
       exit(0);
     }
   }
 
+  DBConfig _createDBConfig(Map<String, dynamic> config) {
+    return DBConfig(
+      driver: config['driver'] ?? '',
+      host: config['host'] ?? '',
+      port: config['port'] ?? 0,
+      database: config['database'] ?? '',
+      username: config['username'] ?? '',
+      password: config['password'] ?? '',
+      sslMode: config['sslmode'] ?? false,
+      collation: config['collation'] ?? '',
+      pool: config['pool'] ?? false,
+      poolSize: config['poolsize'] ?? 0,
+      filePath: config['file_path'] ?? '',
+      openInMemorySQLite: config['openInMemorySQLite'] ?? '',
+    );
+  }
+
   Future<void> closeConnection() async {
-    await dbConnection?.disconnect();
+    await dbConnection?.close();
   }
 }
 
@@ -52,8 +86,8 @@ class Migration {
   @mustCallSuper
   Future<void> up() async {
     if (MigrationConnection().dbConnection == null) {
-      print('A database must be specified.');
-      throw 'A database must be specified.';
+      stderr.writeln('A database must be specified.');
+      exit(0);
     }
   }
 
@@ -61,8 +95,8 @@ class Migration {
   @mustCallSuper
   Future<void> down() async {
     if (MigrationConnection().dbConnection == null) {
-      print('A database must be specified.');
-      throw 'A database must be specified.';
+      stderr.writeln('A database must be specified.');
+      exit(0);
     }
   }
 
@@ -81,19 +115,21 @@ class Migration {
           '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${_queries.join(',')}$primary$index$foreig)''');
       String sqlQuery = query.toString();
 
-      if (MigrationConnection().database?.driver == 'Postgresql') {
+      // Check for PostgreSQL driver - handle case-insensitive comparison
+      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+      if (driverName == 'pgsql') {
         sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
       }
 
       await MigrationConnection()
           .dbConnection
-          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'));
+          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'), {});
 
       stopwatch.stop();
-      print(
+      stderr.writeln(
           ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
-      print(e);
+      stderr.writeln(e);
       exit(0);
     }
   }
@@ -113,18 +149,20 @@ class Migration {
           '''CREATE TABLE IF NOT EXISTS `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
       String sqlQuery = query.toString();
-      if (MigrationConnection().database?.driver == 'Postgresql') {
+      // Check for PostgreSQL driver - handle case-insensitive comparison
+      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+      if (driverName == 'pgsql') {
         sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
       }
       await MigrationConnection()
           .dbConnection
-          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'));
+          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'), {});
 
       stopwatch.stop();
-      print(
+      stderr.writeln(
           ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
-      print(e);
+      stderr.writeln(e);
       exit(0);
     }
   }
@@ -163,15 +201,18 @@ class Migration {
     try {
       String query = 'ALTER TABLE `$table` $alterQuery$index$foreig;';
 
-      if (MigrationConnection().database?.driver == 'Postgresql') {
+      // Check for PostgreSQL driver - handle case-insensitive comparison
+      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+      if (driverName == 'pgsql') {
         query = _mysqlToPosgresqlMapper(query.toString());
       }
 
-      await MigrationConnection().dbConnection?.execute(query);
-      print('ALTER column to $_tableName table... \x1B[32mDONE\x1B[0m');
+      await MigrationConnection().dbConnection?.execute(query, {});
+      stderr
+          .writeln('ALTER column to $_tableName table... \x1B[32mDONE\x1B[0m');
     } catch (e) {
       if (!e.toString().contains("write; duplicate key in table")) {
-        print('Error adding column: $e');
+        stderr.writeln('Error adding column: $e');
         exit(0);
       }
     }
@@ -181,19 +222,21 @@ class Migration {
     try {
       String query = 'DROP TABLE IF EXISTS `$name`;';
 
-      if (MigrationConnection().database?.driver == 'Postgresql') {
+      // Check for PostgreSQL driver - handle case-insensitive comparison
+      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+      if (driverName == 'pgsql') {
         query = _mysqlToPosgresqlMapper(query.toString());
       } else {
         query =
             'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${query}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
       }
 
-      await MigrationConnection().dbConnection?.execute(query.toString());
+      await MigrationConnection().dbConnection?.execute(query.toString(), {});
 
-      print(
+      stderr.writeln(
           ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
     } catch (e) {
-      print(e);
+      stderr.writeln(e);
       exit(0);
     }
   }
@@ -201,15 +244,17 @@ class Migration {
   Future<void> drop(String name) async {
     String query = 'DROP TABLE `$name`;';
 
-    if (MigrationConnection().database?.driver == 'Postgresql') {
+    // Check for PostgreSQL driver - handle case-insensitive comparison
+    final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+    if (driverName == 'pgsql') {
       query = _mysqlToPosgresqlMapper(query.toString());
     } else {
       query =
           'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${query}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
     }
 
-    await MigrationConnection().dbConnection?.execute(query.toString());
-    print(
+    await MigrationConnection().dbConnection?.execute(query.toString(), {});
+    stderr.writeln(
         ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
@@ -289,8 +334,11 @@ class Migration {
   }
 
   void index(ColumnIndex type, String name, List<String> columns) {
-    if (MigrationConnection().database?.driver == 'pgsql' ||
-        MigrationConnection().database?.driver == 'postgresql') {
+    // Check for PostgreSQL driver - handle case-insensitive comparison
+    final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+    if (driverName == 'postgresql' ||
+        driverName == 'postgres' ||
+        driverName == 'pgsql') {
       _indexes.add('INDEX `$name` (${columns.join(',')})');
     } else {
       if (type == ColumnIndex.indexKey) {
