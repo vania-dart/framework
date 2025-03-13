@@ -67,17 +67,20 @@ class QueryBuilderImpl extends QueryBuilder
         sql += " ${unions.join(" ")}";
       }
 
-      if (_groupBy.isNotEmpty) {
-        sql += " GROUP BY ${_groupBy.join(", ")}";
+      if (aggregateFunction == null && aggregateColumn == null) {
+        if (_groupBy.isNotEmpty) {
+          sql += " GROUP BY ${_groupBy.join(", ")}";
+        }
+        if (_having.isNotEmpty) {
+          sql += " HAVING ${_having.join(" ")}";
+        }
+        if (_orderBy.isNotEmpty) {
+          sql += " ORDER BY ${_orderBy.join(", ")}";
+        }
+
+        sql += (_limit != null) ? " LIMIT $_limit" : "";
+        sql += (_offset != null) ? " OFFSET $_offset" : "";
       }
-      if (_having.isNotEmpty) {
-        sql += " HAVING ${_having.join(" ")}";
-      }
-      if (_orderBy.isNotEmpty) {
-        sql += " ORDER BY ${_orderBy.join(", ")}";
-      }
-      sql += (_limit != null) ? " LIMIT $_limit" : "";
-      sql += (_offset != null) ? " OFFSET $_offset" : "";
     } else if (conditions.isNotEmpty) {
       sql = conditions.join(" ");
     } else {
@@ -197,7 +200,7 @@ class QueryBuilderImpl extends QueryBuilder
     return this;
   }
 
-  QueryBuilderImpl setTable(String table, [String? as]) {
+  QueryBuilderImpl from(String table, [String? as]) {
     _table = table;
     _tableAlias = as;
     return this;
@@ -217,7 +220,7 @@ class QueryBuilderImpl extends QueryBuilder
     Map<String, dynamic> allBindings = {};
 
     allBindings.addAll((this as WhereClausesBuilderImpl).bindings);
-  
+
     return allBindings;
   }
 }

@@ -6,7 +6,7 @@ import 'query_builder/_query_builder_impl.dart' show QueryBuilderImpl;
 import 'monitoring/database_monitor.dart';
 
 QueryBuilder DB(String table, {String? as, String? connection}) =>
-    QueryBuilderImpl().connection(connection).setTable(
+    QueryBuilderImpl().connection(connection).from(
           table,
           as,
         );
