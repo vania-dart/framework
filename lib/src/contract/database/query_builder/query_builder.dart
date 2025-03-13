@@ -11,7 +11,6 @@ part '_join_clause_builder.dart';
 part '_where_clauses_builder.dart';
 part '_query_executor_builder.dart';
 part '_select_query_builder.dart';
-part '_table_selector_builder.dart';
 part '_union_clause_builder.dart';
 part '_update_query_builder.dart';
 
