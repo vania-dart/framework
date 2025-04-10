@@ -1,3 +1,6 @@
+import 'package:meta/meta.dart';
+
+import '../../../database/monitoring/database_monitor.dart';
 import '../../../exception/invalid_argument_exception.dart';
 
 import '../../../database/_connection_manager.dart';
@@ -26,11 +29,25 @@ abstract class QueryBuilder
         UnionClauseBuilder,
         JoinClauseBuilder,
         QueryExecutorBuilder {
+  @protected
   final List<String> conditions = [];
+  @protected
   final Map<String, dynamic> bindings = {};
+  @protected
+  List<String> selectColumns = [];
+  @protected
+  List<String> joins = [];
+  @protected
+  List<String> unions = [];
 
+  @protected
+  String build({String? aggregateFunction, String? aggregateColumn});
+  String toSql();
+
+  @protected
   DatabaseConnection? get dbConnection =>
       ConnectionManager().connection(connectionName);
+
   String get table => '';
   String? get connectionName;
 
@@ -41,25 +58,36 @@ abstract class QueryBuilder
     return dbConnection!;
   }
 
+  QueryBuilder connection([String? connection]);
+
+  QueryBuilder from(String table, [String? as]);
+
+  String raw(value);
+
+  Future<bool> transaction(
+    Future<dynamic> Function() queries, [
+    String? conditionName,
+  ]);
+
+  Stream<DatabaseAlert> alerts();
+  Map<String, PerformanceStats> getPerformanceStats();
+
+  @protected
   Map<String, dynamic> getBindings() {
     return bindings;
   }
 
-  String build({String? aggregateFunction, String? aggregateColumn});
-  String toSql();
-
-  List<String> selectColumns = [];
-  List<String> joins = [];
-  List<String> unions = [];
-
+  @protected
   String buildJoins() {
     return joins.isNotEmpty ? " ${joins.join(" ")}" : "";
   }
 
+  @protected
   String buildWhereClause() {
     return conditions.isNotEmpty ? "WHERE ${conditions.join(" ")}" : "";
   }
 
+  @protected
   String formatValue(
     dynamic value,
   ) {
