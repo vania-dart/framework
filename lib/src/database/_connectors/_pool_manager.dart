@@ -14,7 +14,7 @@ class PoolManager {
   final Map<String, DateTime> _lastHealthCheck = {};
 
   // Pool health check interval
-  static const Duration healthCheckInterval = Duration(minutes: 5);
+  static const Duration healthCheckInterval = Duration(minutes: 3);
 
   // Maximum idle time for a connection before it's removed
   static const Duration maxIdleTime = Duration(minutes: 30);

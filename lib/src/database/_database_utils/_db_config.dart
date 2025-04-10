@@ -14,16 +14,16 @@ class DBConfig {
 
   DBConfig({
     required this.driver,
-    this.host = '',
-    this.port = 0,
-    this.username = '',
+    this.host = 'mysql',
+    this.port = 3306,
+    this.username = 'root',
     this.password = '',
-    this.database = '',
+    this.database = 'vania',
     this.filePath,
     this.sslMode = false,
     this.openInMemorySQLite = false,
     this.collation = 'utf8mb4_general_ci',
-    this.pool = false,
-    this.poolSize = 0,
+    this.pool = true,
+    this.poolSize = 1,
   });
 }

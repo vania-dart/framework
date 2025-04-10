@@ -17,7 +17,6 @@ class ConnectionPool {
   final String _poolId;
   final List<Duration> _queryTimes = [];
   final int _maxQueryTimeHistory = 100;
-  //DateTime _lastMetricsUpdate = DateTime.now();
 
   int get activeConnections => _usedConnections.length;
   int get totalConnections =>
@@ -146,9 +145,6 @@ class ConnectionPool {
   }
 
   void _updateMetrics() {
-    // final now = DateTime.now();
-    //final queryCount = _queryTimes.length;
-
     _monitor.updateConnectionMetrics(
       _poolId,
       ConnectionMetrics(
@@ -157,7 +153,5 @@ class ConnectionPool {
         usagePercentage: (activeConnections * 100 ~/ maxSize),
       ),
     );
-
-    // _lastMetricsUpdate = now;
   }
 }
