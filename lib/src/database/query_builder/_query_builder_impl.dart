@@ -2,6 +2,8 @@ import 'package:meta/meta.dart';
 
 import '../../contract/database/query_builder/query_builder.dart';
 import '../../exception/invalid_argument_exception.dart';
+import '../_connection_manager.dart';
+import '../monitoring/database_monitor.dart';
 import '_delete_query_builder_impl.dart';
 import '_insert_query_builder_impl.dart';
 import '_join_clause_builder_impl.dart';
@@ -21,7 +23,7 @@ class QueryBuilderImpl extends QueryBuilder
         SelectQueryBuilderImpl,
         JoinClauseBuilderImpl,
         UnionClauseBuilderImpl {
-  String? _connectionName;
+  String _connectionName = 'mysql';
   final List<String> _orderBy = [];
   final List<String> _groupBy = [];
   final List<String> _having = [];
@@ -32,8 +34,8 @@ class QueryBuilderImpl extends QueryBuilder
   int? _offset;
 
   @override
-  String? get connectionName => _connectionName;
-  set connectionName(String? value) => _connectionName = value;
+  String get connectionName => _connectionName;
+  set connectionName(String value) => _connectionName = value;
 
   @override
   String get table {
@@ -43,6 +45,23 @@ class QueryBuilderImpl extends QueryBuilder
     }
     return tableClause;
   }
+
+  @override
+  String raw(value) => RawExpression(value).toString();
+
+  @override
+  Future<bool> transaction(
+    Future<dynamic> Function() queries, [
+    String? conditionName,
+  ]) =>
+      ConnectionManager().transaction(queries, conditionName);
+
+  @override
+  Stream<DatabaseAlert> alerts() => ConnectionManager().alerts;
+
+  @override
+  Map<String, PerformanceStats> getPerformanceStats() =>
+      ConnectionManager().getPerformanceStats();
 
   @protected
   @override
@@ -59,23 +78,29 @@ class QueryBuilderImpl extends QueryBuilder
 
       if (joins.isNotEmpty) {
         sql += " ${joins.join(" ")}";
+        joins.clear();
       }
 
       sql += conditions.isNotEmpty ? " WHERE ${conditions.join(" ")}" : "";
+      conditions.clear();
 
       if (unions.isNotEmpty) {
         sql += " ${unions.join(" ")}";
+        unions.clear();
       }
 
       if (aggregateFunction == null && aggregateColumn == null) {
         if (_groupBy.isNotEmpty) {
           sql += " GROUP BY ${_groupBy.join(", ")}";
+          _groupBy.clear();
         }
         if (_having.isNotEmpty) {
           sql += " HAVING ${_having.join(" ")}";
+          _having.clear();
         }
         if (_orderBy.isNotEmpty) {
           sql += " ORDER BY ${_orderBy.join(", ")}";
+          _orderBy.clear();
         }
 
         sql += (_limit != null) ? " LIMIT $_limit" : "";
@@ -83,6 +108,7 @@ class QueryBuilderImpl extends QueryBuilder
       }
     } else if (conditions.isNotEmpty) {
       sql = conditions.join(" ");
+      conditions.clear();
     } else {
       sql = '';
     }
@@ -90,8 +116,9 @@ class QueryBuilderImpl extends QueryBuilder
     return sql;
   }
 
-  QueryBuilderImpl connection([String? connection]) {
-    connectionName = connection;
+  @override
+  QueryBuilder connection([String? connection]) {
+    connectionName = connection ?? 'mysql';
     return this;
   }
 
@@ -200,7 +227,8 @@ class QueryBuilderImpl extends QueryBuilder
     return this;
   }
 
-  QueryBuilderImpl from(String table, [String? as]) {
+  @override
+  QueryBuilder from(String table, [String? as]) {
     _table = table;
     _tableAlias = as;
     return this;
@@ -216,6 +244,7 @@ class QueryBuilderImpl extends QueryBuilder
   String toSql() => build();
 
   @override
+  @protected
   Map<String, dynamic> getBindings() {
     Map<String, dynamic> allBindings = {};
 

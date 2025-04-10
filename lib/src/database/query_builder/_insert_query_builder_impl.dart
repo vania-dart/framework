@@ -1,9 +1,14 @@
+import 'package:meta/meta.dart';
+
 import '../../contract/database/query_builder/query_builder.dart'
     show QueryBuilder;
 import '../../exception/invalid_argument_exception.dart';
 
 abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
+  @protected
+  @override
   final Map<String, dynamic> bindings = {};
+
   int _paramCounter = 0;
 
   String _nextParamName() {

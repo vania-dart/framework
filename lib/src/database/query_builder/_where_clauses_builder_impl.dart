@@ -39,7 +39,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
       bindings[paramName] = value;
       _appendCondition("$condition $operator :$paramName", isOr: true);
     } else if (condition is QueryCallback) {
-      QueryBuilderImpl nested = QueryBuilderImpl();
+      QueryBuilder nested = QueryBuilderImpl();
       condition(nested);
       _appendCondition("(${nested.toSql()})", isOr: true);
       bindings.addAll(nested.getBindings());
@@ -110,7 +110,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     QueryCallback callback, {
     bool not = false,
   }) {
-    QueryBuilderImpl subQuery = QueryBuilderImpl();
+    QueryBuilder subQuery = QueryBuilderImpl();
     callback(subQuery);
     String condition = "${not ? 'NOT EXISTS' : 'EXISTS'} (${subQuery.toSql()})";
     _appendCondition(condition, isOr: true);
@@ -337,7 +337,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
       _appendCondition("$condition $operator :$paramName",
           isOr: (boolean.toLowerCase() == 'or'));
     } else if (condition is QueryCallback) {
-      QueryBuilderImpl nested = QueryBuilderImpl();
+      QueryBuilder nested = QueryBuilderImpl();
       condition(nested);
       _appendCondition("(${nested.toSql()})",
           isOr: (boolean.toLowerCase() == 'or'));
@@ -505,7 +505,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
     bool not = false,
   }) {
-    QueryBuilderImpl subQuery = QueryBuilderImpl();
+    QueryBuilder subQuery = QueryBuilderImpl();
     callback(subQuery);
     String condition = "${not ? 'NOT EXISTS' : 'EXISTS'} (${subQuery.toSql()})";
     _appendCondition(
@@ -1109,8 +1109,6 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
 
   String _processRawSQL(String sql, List<dynamic> rawBindings) {
     String processed = sql;
-
-    // Replace ? placeholders with named parameters
     for (var binding in rawBindings) {
       final paramName = _nextParamName();
       bindings[paramName] = binding;

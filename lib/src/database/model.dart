@@ -16,6 +16,6 @@ class Model {
     if (_table == null) {
       abort(500, 'Table name not specified');
     }
-    return DB(_table!, connection: _connection);
+    return DB.connection(_connection).from(_table!);
   }
 }

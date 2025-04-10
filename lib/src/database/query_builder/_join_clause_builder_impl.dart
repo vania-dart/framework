@@ -18,7 +18,7 @@ abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
     String firstColumn, [
     String? operator,
     String? secondColumn,
-    String type = 'inner',
+    String type = 'INNER',
     bool where = false,
   ]) {
     String clause = "$type JOIN $table";
@@ -60,7 +60,7 @@ abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
       firstColumn,
       operator,
       secondColumn,
-      "left",
+      "LEFT",
       where,
     );
   }
@@ -79,7 +79,7 @@ abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
       firstColumn,
       operator,
       secondColumn,
-      "left",
+      "LEFT",
     );
   }
 
@@ -90,11 +90,12 @@ abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
     String? operator,
     String? secondColumn,
   ]) {
-    String clause = "RIGHT JOIN $table";
-    if (operator != null && secondColumn != null) {
-      clause += " ON $firstColumn $operator $secondColumn";
-    }
-    joins.add(clause);
-    return this;
+    return join(
+      table,
+      firstColumn,
+      operator,
+      secondColumn,
+      "RIGHT",
+    );
   }
 }
