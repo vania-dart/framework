@@ -3,12 +3,12 @@ part of 'query_builder.dart';
 abstract class QueryExecutorBuilder {
   Future<num> avg(String column);
   Future<void> chunk(
-    int count,
-    void Function(List<Map<String, dynamic>> chunk) callback,
+    int chunk,
+    void Function(List<Map<String, dynamic>> data) callback,
   );
   Future<void> chunkById(
-    int count,
-    void Function(List<Map<String, dynamic>> chunk) callback, [
+    int chunk,
+    void Function(List<Map<String, dynamic>> data) callback, [
     String column,
   ]);
   Future<int> count([String columns = '*']);
@@ -44,7 +44,9 @@ abstract class QueryExecutorBuilder {
 
   Stream<Iterable<Map<String, dynamic>>> lazy([
     int chunk = 1000,
+    String column,
   ]);
+  Stream<Map<String, dynamic>> cursor();
   Future<dynamic> max(String column);
   Future<dynamic> min(String column);
   Future<Map<String, dynamic>> paginate({

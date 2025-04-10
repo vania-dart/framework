@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import '../../exception/invalid_argument_exception.dart';
 
 import '../../contract/database/query_builder/query_builder.dart'
@@ -21,35 +19,52 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<void> chunk(
-    int count,
-    void Function(List<Map<String, dynamic>> chunk) callback,
+    int chunk,
+    void Function(List<Map<String, dynamic>> data) callback,
   ) async {
-    var results = await get();
-    for (int i = 0; i < results.length; i += count) {
-      int end = (i + count < results.length) ? i + count : results.length;
-      var chunkData = results.sublist(i, end);
-      callback(chunkData);
+    int offset = 0;
+    while (true) {
+      limit(chunk).offset(offset);
+      final result = await get();
+
+      if (result.isEmpty) {
+        break;
+      }
+
+      callback(result);
+
+      offset += chunk;
+
+      if (result.length < chunk) {
+        break;
+      }
     }
   }
 
   @override
   Future<void> chunkById(
-    int count,
-    void Function(List<Map<String, dynamic>> chunk) callback, [
-    String? column = 'id',
+    int chunk,
+    void Function(List<Map<String, dynamic>> data) callback, [
+    String column = 'id',
   ]) async {
-    var results = await get();
-    results.sort((a, b) {
-      var valA = a[column];
-      var valB = b[column];
-      if (valA is Comparable && valB is Comparable) {
-        return valA.compareTo(valB);
+    int lastId = 0;
+
+    while (true) {
+      whereGreaterThan(column, lastId).orderByAsc(column).limit(chunk);
+      final result = await get();
+      if (result.first[column] == null) {
+        throw ();
       }
-      return 0;
-    });
-    for (int i = 0; i < results.length; i += count) {
-      int end = (i + count > results.length) ? results.length : i + count;
-      callback(results.sublist(i, end));
+      if (result.isEmpty) {
+        break;
+      }
+
+      callback(result);
+      lastId += result.last[column] as int;
+
+      if (result.length < chunk) {
+        break;
+      }
     }
   }
 
@@ -97,8 +112,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     dynamic id, [
     List<String> columns = const ['*'],
   ]) async {
-    String sql = whereEqualTo('$table.id', id).limit(1).toSql();
     final bindings = getBindings();
+    String sql = whereEqualTo('$table.id', id).limit(1).toSql();
     final result = await dbConnection!.select(sql, bindings);
     if (result.isEmpty) {
       return null;
@@ -122,8 +137,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future<Map<String, dynamic>?> first([
     List<String> columns = const ['*'],
   ]) async {
-    String sql = limit(1).toSql();
     final bindings = getBindings();
+    String sql = limit(1).toSql();
 
     final result = await dbConnection!.select(sql, bindings);
     if (result.isEmpty) {
@@ -168,8 +183,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   ]) async {
     try {
       final conn = getConnection();
-      final sql = toSql();
       final bindings = getBindings();
+      final sql = toSql();
+      print(sql);
 
       return await conn.select(sql, bindings);
     } catch (e) {
@@ -179,28 +195,54 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Stream<Iterable<Map<String, dynamic>>> lazy([
-    int chunk = 1000,
+    int chunk = 100,
+    String column ='id',
   ]) async* {
-    final results = await get();
-    for (int i = 0; i < results.length; i += chunk) {
-      yield results.sublist(i, math.min(i + chunk, results.length));
+    int offset = 0;
+    while (true) {
+     orderByAsc(column).limit(chunk).offset(offset);
+      final result = await get();
+
+      if (result.isEmpty) {
+        break;
+      }
+
+      yield result;
+
+      offset += chunk;
+
+      if (result.length < chunk) {
+        break;
+      }
     }
   }
 
   @override
+  Stream<Map<String, dynamic>> cursor() async* {
+
+      final result = await get();
+      for(Map<String,dynamic> row in result){
+        yield row;
+      }
+
+  }
+
+  @override
   Future max(String column) async {
+    final bindings = getBindings();
     String sql = build(aggregateFunction: "MAX", aggregateColumn: column);
 
-    final bindings = getBindings();
+    
     var result = await dbConnection?.select(sql, bindings);
     return result?.first.values.first;
   }
 
   @override
   Future min(String column) async {
+    final bindings = getBindings();
     String sql = build(aggregateFunction: "MIN", aggregateColumn: column);
 
-    final bindings = getBindings();
+    
     var result = await dbConnection?.select(sql, bindings);
     return result?.first.values.first;
   }
@@ -217,8 +259,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
-    String sql = take(perPage).skip(offset).toSql();
     final bindings = getBindings();
+    String sql = take(perPage).skip(offset).toSql();
 
     final pageData = await dbConnection?.select(sql, bindings);
 
@@ -277,9 +319,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<num> sum(String column) async {
+    final bindings = getBindings();
     String sql = build(aggregateFunction: "SUM", aggregateColumn: column);
 
-    final bindings = getBindings();
     var result = await dbConnection?.select(sql, bindings);
     return num.tryParse(result?.first.values.first) ?? 0;
   }
