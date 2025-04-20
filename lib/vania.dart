@@ -30,7 +30,7 @@ export 'src/service/service_provider.dart';
 
 export 'src/http/controller/controller.dart';
 
-export 'src/database/model.dart';
+export 'src/database/orm/model.dart';
 export 'src/database/migration.dart';
 export 'src/database/seeder/seeder.dart';
 export 'src/enum/column_index.dart';
