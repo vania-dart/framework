@@ -1,11 +1,11 @@
-import 'package:vania/src/container.dart';
-import 'package:vania/src/ioc_container.dart';
-import 'package:vania/src/localization_handler/localization.dart';
-import 'package:vania/src/server/base_http_server.dart';
-import 'package:vania/vania.dart';
-
-import 'http/request/request_handler.dart';
-import 'http/session/session_manager.dart';
+import 'src/container.dart';
+import 'src/ioc_container.dart';
+import 'src/localization_handler/localization.dart';
+import 'src/server/base_http_server.dart';
+import 'src/env_handler/env.dart';
+import 'src/http/request/request_handler.dart';
+import 'src/http/session/session_manager.dart';
+import 'src/utils/helper.dart' show env;
 
 class Application extends Container {
   static Application? _singleton;

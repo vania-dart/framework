@@ -1,12 +1,9 @@
 import 'dart:math';
 
-
 String toSnakeCase(String input) {
   if (input.isEmpty) return input;
-  final result = input.replaceAllMapped(
-    RegExp(r'[A-Z]'),
-    (match) => (match.start > 0 ? '_' : '') + match.group(0)!.toLowerCase()
-  );
+  final result = input.replaceAllMapped(RegExp(r'[A-Z]'),
+      (match) => (match.start > 0 ? '_' : '') + match.group(0)!.toLowerCase());
   return result.toLowerCase();
 }
 

@@ -44,7 +44,8 @@ abstract class Model extends QueryBuilderImpl {
   @protected
   bool get softDeletes => false;
   @override
-  String get table => toSnakeCase(Pluralize().make(runtimeType.toString().toLowerCase()));
+  String get table =>
+      toSnakeCase(Pluralize().make(runtimeType.toString().toLowerCase()));
   @protected
   bool get timestamps => true;
 

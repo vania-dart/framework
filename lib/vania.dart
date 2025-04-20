@@ -1,4 +1,4 @@
-export 'src/application.dart';
+export 'application.dart';
 
 export 'src/config/config.dart';
 
