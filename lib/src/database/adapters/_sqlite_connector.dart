@@ -100,7 +100,7 @@ class SQLiteConnector implements DatabaseConnection {
       for (final row in results) {
         final map = <String, dynamic>{};
         for (var i = 0; i < columns.length; i++) {
-          map[columns[i]] = row[i];
+          map[columns[i]] = row[i.toString()];
         }
         rows.add(map);
       }

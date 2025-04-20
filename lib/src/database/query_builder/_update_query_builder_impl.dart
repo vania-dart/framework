@@ -23,16 +23,15 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
 
   @override
   Future<bool> updateMany(
-      List<Map<String, dynamic>> updates, String column) async {
+    List<Map<String, dynamic>> updates,
+    String column,
+  ) async {
     if (updates.isEmpty) return false;
 
     Set<String> columns = {};
     for (var row in updates) {
-      row.forEach((key, value) {
-        if (key != column) columns.add(key);
-      });
+      columns.addAll(row.keys.where((key) => key != column));
     }
-
     List<String> setClauses = [];
     var caseCounter = 0;
 
@@ -65,7 +64,9 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
 
   @override
   Future<bool> updateOrInsert(
-      Map<String, dynamic> search, Map<String, dynamic> update) async {
+    Map<String, dynamic> search,
+    Map<String, dynamic> update,
+  ) async {
     Map<String, dynamic> data = {}
       ..addAll(search)
       ..addAll(update);
@@ -74,8 +75,11 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<bool> increment(String column,
-      [int amount = 1, Map<String, dynamic> extra = const {}]) async {
+  Future<bool> increment(
+    String column, [
+    int amount = 1,
+    Map<String, dynamic> extra = const {},
+  ]) async {
     final paramName = 'inc_amount';
     bindings[paramName] = amount;
 
@@ -98,8 +102,11 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<bool> decrement(String column,
-      [int amount = 1, Map<String, dynamic> extra = const {}]) async {
+  Future<bool> decrement(
+    String column, [
+    int amount = 1,
+    Map<String, dynamic> extra = const {},
+  ]) async {
     final paramName = 'dec_amount';
     bindings[paramName] = amount;
 
@@ -122,8 +129,10 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<bool> incrementEach(Map<String, int> increments,
-      [Map<String, dynamic> extra = const {}]) async {
+  Future<bool> incrementEach(
+    Map<String, int> increments, [
+    Map<String, dynamic> extra = const {},
+  ]) async {
     List<String> setClauses = [];
     var counter = 0;
 

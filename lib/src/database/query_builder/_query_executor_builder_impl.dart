@@ -26,15 +26,11 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     while (true) {
       limit(chunk).offset(offset);
       final result = await get();
-
       if (result.isEmpty) {
         break;
       }
-
       callback(result);
-
       offset += chunk;
-
       if (result.length < chunk) {
         break;
       }
@@ -161,12 +157,10 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<Map<String, dynamic>?> firstWhere(
     String column, [
-    String? operator,
+    String? operator = '=',
     value,
     List<String> columns = const ['*'],
   ]) async {
-    operator ??= "=";
-
     if (value == null) {
       throw InvalidArgumentException(
         "Invalid input: Value cannot be null. A valid value must be provided for the firstWhere method.",
@@ -182,12 +176,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     List<String> columns = const ['*'],
   ]) async {
     try {
-      final conn = getConnection();
       final bindings = getBindings();
       final sql = toSql();
-      print(sql);
-
-      return await conn.select(sql, bindings);
+      return await dbConnection!.select(sql, bindings);
     } catch (e) {
       throw Exception(e);
     }
@@ -196,21 +187,17 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Stream<Iterable<Map<String, dynamic>>> lazy([
     int chunk = 100,
-    String column ='id',
+    String column = 'id',
   ]) async* {
     int offset = 0;
     while (true) {
-     orderByAsc(column).limit(chunk).offset(offset);
+      orderByAsc(column).limit(chunk).offset(offset);
       final result = await get();
-
       if (result.isEmpty) {
         break;
       }
-
       yield result;
-
       offset += chunk;
-
       if (result.length < chunk) {
         break;
       }
@@ -219,20 +206,16 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Stream<Map<String, dynamic>> cursor() async* {
-
-      final result = await get();
-      for(Map<String,dynamic> row in result){
-        yield row;
-      }
-
+    final result = await get();
+    for (Map<String, dynamic> row in result) {
+      yield row;
+    }
   }
 
   @override
   Future max(String column) async {
     final bindings = getBindings();
     String sql = build(aggregateFunction: "MAX", aggregateColumn: column);
-
-    
     var result = await dbConnection?.select(sql, bindings);
     return result?.first.values.first;
   }
@@ -241,8 +224,6 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future min(String column) async {
     final bindings = getBindings();
     String sql = build(aggregateFunction: "MIN", aggregateColumn: column);
-
-    
     var result = await dbConnection?.select(sql, bindings);
     return result?.first.values.first;
   }
@@ -255,21 +236,16 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     int? page,
   }) async {
     int currentPage = page ?? 1;
-
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
-    final bindings = getBindings();
-    String sql = take(perPage).skip(offset).toSql();
-
-    final pageData = await dbConnection?.select(sql, bindings);
-
+    final pageData = await take(perPage).skip(offset).get();
     final isFirst = currentPage == 1;
     final isLast = currentPage == lastPage;
     final hasMore = currentPage < lastPage;
 
     return PaginatedResult(
-            data: pageData ?? [],
+            data: pageData,
             currentPage: currentPage,
             perPage: perPage,
             total: total,
@@ -305,11 +281,10 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
-    String sql = take(perPage).skip(offset).toSql();
-    final pageData = await dbConnection?.select(sql);
+    final pageData = await take(perPage).skip(offset).get();
 
     return {
-      'data': pageData ?? [],
+      'data': pageData,
       'current_page': currentPage,
       'per_page': perPage,
       'total': total,
