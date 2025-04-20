@@ -76,7 +76,7 @@ class RequestHandler {
             var requestedPath = requestUri.isNotEmpty
                 ? requestUri.padRight(118 - requestUri.length, '.')
                 : ''.padRight(118, '.');
-            print('$starteRequest $requestedPath ~ ${duration}ms');
+            stderr.writeln('$starteRequest $requestedPath ~ ${duration}ms');
           }
         }
       } on BaseHttpResponseException catch (error) {

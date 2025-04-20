@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:meta/meta.dart';
 import '../_database_utils/_db_config.dart';
 import '_connection_pool.dart';
@@ -59,8 +60,8 @@ class PoolManager {
 
   // Handles pool errors
   void _handlePoolError(Object error, StackTrace stackTrace) {
-    print('Pool error: $error');
-    print('Stack trace: $stackTrace');
+    stderr.writeln('Pool error: $error');
+    stderr.writeln('Stack trace: $stackTrace');
   }
 
   // Monitors pool health and usage
@@ -93,15 +94,15 @@ class PoolManager {
       final activeConnections = pool.activeConnections;
       final totalConnections = pool.totalConnections;
 
-      print('Pool $poolKey stats:');
-      print('Active connections: $activeConnections');
-      print('Total connections: $totalConnections');
+      stderr.writeln('Pool $poolKey stats:');
+      stderr.writeln('Active connections: $activeConnections');
+      stderr.writeln('Total connections: $totalConnections');
 
       await pool.validateConnections();
 
       _lastHealthCheck[poolKey] = DateTime.now();
     } catch (e) {
-      print('Health check failed for pool $poolKey: $e');
+      stderr.writeln('Health check failed for pool $poolKey: $e');
     }
   }
 
