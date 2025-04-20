@@ -1,7 +1,3 @@
-import 'package:vania/src/database/model.dart';
+import 'package:vania/src/database/orm/model.dart';
 
-class PersonalAccessTokens extends Model {
-  PersonalAccessTokens() {
-    super.table('personal_access_tokens');
-  }
-}
+class PersonalAccessTokens extends Model {}

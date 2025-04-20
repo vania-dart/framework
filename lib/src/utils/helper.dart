@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:vania/src/ioc_container.dart';
 import 'package:vania/src/localization_handler/localization.dart';
 import 'package:vania/vania.dart';
@@ -31,26 +30,6 @@ String trans(
 
 abort(int code, String message) {
   throw HttpResponseException(message: message, code: code);
-}
-
-Connection? get connection => DatabaseClient().database?.connection;
-
-// DB Transaction
-void dbTransaction(
-  Future<void> Function(Connection connection) callback, [
-  int? timeoutInSeconds,
-]) {
-  connection?.transaction(
-    (con) async {
-      callback(con);
-    },
-    timeoutInSeconds,
-  ).onError((e, _) {
-    throw HttpResponseException(
-      message: "DbTransaction error: ${e.toString()}",
-      code: HttpStatus.internalServerError,
-    );
-  });
 }
 
 Response view(String template, [Map<String, dynamic>? context]) =>

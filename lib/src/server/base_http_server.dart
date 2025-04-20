@@ -61,15 +61,11 @@ class BaseHttpServer {
       httpServer?.listen(IoCContainer().resolve<RequestHandler>().handle);
 
       if (env<bool>('APP_DEBUG')) {
-        if (env<bool>('APP_SECURE')) {
-          print("Server started on https://127.0.0.1:${env('APP_PORT')}");
-        } else {
-          print("Server started on http://127.0.0.1:${env('APP_PORT')}");
-        }
+        stderr.writeln('Server started on http://127.0.0.1:${env('APP_PORT')}');
       }
       return httpServer!;
     } catch (e) {
-      print('Error starting server : $e');
+      stderr.writeln('${DateTime.now().toUtc()} ERROR: $e');
       rethrow;
     }
   }

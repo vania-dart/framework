@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:vania/src/config/config.dart';
+import 'package:vania/src/database/orm/model.dart';
 import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/exception/unauthenticated.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/src/utils/helper.dart';
 
+import 'has_api_tokens.dart';
 import 'model/personal_access_token.dart';
 
 class Auth {
@@ -117,7 +120,7 @@ class Auth {
         .createToken(_userGuard, expiresIn, withRefreshToken);
 
     if (!customToken) {
-      await PersonalAccessTokens().query().insert({
+      await PersonalAccessTokens().query.insert({
         'name': _userGuard,
         'tokenable_id': _user[_userGuard]['id'],
         'token': md5.convert(utf8.encode(token['access_token'])).toString(),
@@ -167,14 +170,14 @@ class Auth {
       }
 
       Map? user =
-          await authenticatable.query().where('id', '=', payload['id']).first();
+          await authenticatable.query.where('id', '=', payload['id']).first();
 
       if (user == null) {
         throw Unauthenticated(message: 'Invalid token');
       }
 
       _user[_userGuard] = user;
-      await PersonalAccessTokens().query().insert({
+      await PersonalAccessTokens().query.insert({
         'name': _userGuard,
         'tokenable_id': user['id'],
         'token': md5.convert(utf8.encode(newToken['access_token'])),
@@ -193,7 +196,7 @@ class Auth {
   /// Returns true if the operation was successful.
   Future<bool> deleteTokens() async {
     await PersonalAccessTokens()
-        .query()
+        .query
         .where('tokenable_id', '=', _user[_userGuard]['id'])
         .update({'deleted_at': DateTime.now()});
 
@@ -210,7 +213,7 @@ class Auth {
   ///
   Future<bool> deleteCurrentToken() async {
     await PersonalAccessTokens()
-        .query()
+        .query
         .where('token', '=', md5.convert(utf8.encode(_currentToken)))
         .update({'deleted_at': DateTime.now()});
     return true;
@@ -248,7 +251,7 @@ class Auth {
       return true;
     } else {
       Map<String, dynamic>? exists = await PersonalAccessTokens()
-          .query()
+          .query
           .where('token', '=', md5.convert(utf8.encode(token)))
           .whereNull('deleted_at')
           .first(['id']);
@@ -258,7 +261,7 @@ class Auth {
       }
 
       await PersonalAccessTokens()
-          .query()
+          .query
           .where('token', '=', md5.convert(utf8.encode(token)))
           .update({'last_used_at': DateTime.now()});
 
@@ -269,10 +272,8 @@ class Auth {
         if (authenticatable == null) {
           throw InvalidArgumentException('Authenticatable class not found');
         }
-        user = await authenticatable
-            .query()
-            .where('id', '=', payload['id'])
-            .first();
+        user =
+            await authenticatable.query.where('id', '=', payload['id']).first();
       }
 
       if (user != null) {

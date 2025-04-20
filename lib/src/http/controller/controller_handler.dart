@@ -3,6 +3,8 @@ import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/route_history.dart';
 import 'package:vania/vania.dart';
 
+import '../../exception/invalid_argument_exception.dart';
+
 class ControllerHandler {
   void create({
     required RouteData route,
@@ -37,6 +39,8 @@ class ControllerHandler {
       } else {
         error.response(false).makeResponse(request.response);
       }
+    } on InvalidArgumentException catch (error) {
+      _response(request, error.message);
     } catch (error) {
       _response(request, error.toString());
     }

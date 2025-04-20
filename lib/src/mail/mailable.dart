@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:mailer/mailer.dart' as mailer;
 import 'package:mailer/smtp_server.dart';
 import 'package:meta/meta.dart';
@@ -92,7 +94,7 @@ class Mailable implements Mail {
           await mailer.send(message, _setupSmtpServer());
       return sendReport;
     } catch (e) {
-      print('Failed to send email: $e');
+      stderr.writeln('Failed to send email: $e');
       rethrow;
     }
   }

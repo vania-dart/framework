@@ -5,103 +5,121 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:mime/mime.dart';
 import 'package:vania/src/aws/s3_client.dart';
-
+import '../performance/_task_manager.dart';
 import 'storage_driver.dart';
 
 class S3Storage implements StorageDriver {
+  static final S3Storage _instance = S3Storage._internal();
+  factory S3Storage() => _instance;
+  S3Storage._internal();
+
+  final TaskManager _taskManager = TaskManager();
+  final S3Client _s3Client = S3Client();
+  static const Duration _defaultTimeout = Duration(seconds: 30);
+  final Map<String, _CachedMetadata> _metadataCache = {};
+  static const Duration _metadataCacheDuration = Duration(minutes: 5);
+
   String removeLeadingSlash(String file) {
     return file.startsWith('/') ? file.replaceFirst('/', '') : file;
   }
 
   @override
   String fullPath(String file) {
-    return S3Client().buildUri(file).toString();
+    return _s3Client.buildUri(file).toString();
   }
 
   @override
   Future<String> put(String filePath, dynamic content) async {
-    final HttpClient client = HttpClient();
     filePath = removeLeadingSlash(filePath);
-    var uri = S3Client().buildUri(filePath);
-    final request = await client.putUrl(uri);
-    request.headers.set(
-      'Content-Type',
-      lookupMimeType(filePath) ?? 'application/octet-stream',
-    );
-    request.headers.set(
-      'Content-Length',
-      content.length.toString(),
-    );
-    final payloadHash = sha256.convert(content).toString();
-    S3Client()
-        .generateS3Headers('PUT', filePath, hash: payloadHash)
-        .forEach((key, value) {
-      request.headers.set(key, value);
-    });
+    final uri = _s3Client.buildUri(filePath);
 
-    request.add(content);
+    return await _taskManager.runInIsolate(() async {
+      final client = HttpClient();
+      try {
+        final request = await client.putUrl(uri);
+        final contentType =
+            lookupMimeType(filePath) ?? 'application/octet-stream';
+        request.headers.set('Content-Type', contentType);
+        request.headers.set('Content-Length', content.length.toString());
 
-    var response = await request.close();
-    //String reply = await response.transform(utf8.decoder).join();
+        final payloadHash = sha256.convert(content).toString();
+        _s3Client
+            .generateS3Headers('PUT', filePath, hash: payloadHash)
+            .forEach((key, value) => request.headers.set(key, value));
 
-    client.close();
-    if (response.statusCode == 200) {
-      return uri.toString();
-    } else {
-      throw Exception('Failed to upload file: ${response.statusCode}');
-    }
+        request.add(content);
+        final response = await request.close();
+
+        if (response.statusCode == 200) {
+          _invalidateMetadataCache(filePath);
+          return uri.toString();
+        }
+        throw Exception('Failed to upload file: ${response.statusCode}');
+      } finally {
+        client.close();
+      }
+    }, timeout: _defaultTimeout);
   }
 
   @override
   Future<String?> get(String file) async {
-    final HttpClient client = HttpClient();
     file = removeLeadingSlash(file);
-    var uri = S3Client().buildUri(file);
-    var request = await client.getUrl(uri);
-    S3Client().generateS3Headers('GET', file).forEach((key, value) {
-      request.headers.set(key, value);
-    });
-    var response = await request.close();
-    client.close();
-    if (response.statusCode == 200) {
-      return await response.transform(utf8.decoder).join();
-    } else {
-      return null;
-    }
+    return await _taskManager.runInIsolate(() async {
+      final client = HttpClient();
+      try {
+        final response = await _executeRequest(client, 'GET', file);
+        if (response.statusCode == 200) {
+          return await response.transform(utf8.decoder).join();
+        }
+        return null;
+      } finally {
+        client.close();
+      }
+    }, timeout: _defaultTimeout);
   }
 
   @override
   Future<Uint8List?> getAsBytes(String file) async {
-    final HttpClient client = HttpClient();
     file = removeLeadingSlash(file);
-    var uri = S3Client().buildUri(file);
-    var request = await client.getUrl(uri);
-    S3Client().generateS3Headers('GET', file).forEach((key, value) {
-      request.headers.set(key, value);
-    });
-    var response = await request.close();
-    client.close();
-    if (response.statusCode == 200) {
-      var bytes = await response
-          .fold<BytesBuilder>(BytesBuilder(), (b, d) => b..add(d))
-          .then((b) => b.takeBytes());
-      return Uint8List.fromList(bytes);
-    } else {
+    return await _taskManager.runInIsolate(() async {
+      final client = HttpClient();
+      try {
+        final response = await _executeRequest(client, 'GET', file);
+        if (response.statusCode == 200) {
+          return await response
+              .fold<BytesBuilder>(BytesBuilder(), (b, d) => b..add(d))
+              .then((b) => b.takeBytes());
+        }
+        return null;
+      } finally {
+        client.close();
+      }
+    }, timeout: _defaultTimeout);
+  }
+
+  @override
+  Future<Map<String, dynamic>?> json(String file) async {
+    final content = await get(removeLeadingSlash(file));
+    if (content == null) return null;
+
+    try {
+      return await _taskManager.runInIsolate(
+        () async => jsonDecode(content) as Map<String, dynamic>,
+        timeout: _defaultTimeout,
+      );
+    } catch (e) {
       return null;
     }
   }
 
   @override
-  Future<Map<String, dynamic>?> json(String file) async {
-    file = removeLeadingSlash(file);
-    var str = await get(file);
-    return str == null ? null : jsonDecode(str);
-  }
-
-  @override
   Future<String?> mimeType(String file) async {
-    file = removeLeadingSlash(file);
-    var bytes = await getAsBytes(file);
+    final metadata = await _getMetadata(file);
+    if (metadata?.contentType != null) {
+      return metadata!.contentType;
+    }
+
+    final bytes = await getAsBytes(file);
     if (bytes != null) {
       return lookupMimeType(file,
           headerBytes: bytes.sublist(0, min(4096, bytes.length)));
@@ -111,45 +129,115 @@ class S3Storage implements StorageDriver {
 
   @override
   Future<num?> size(String file) async {
-    final HttpClient client = HttpClient();
-    file = removeLeadingSlash(file);
-    var uri = S3Client().buildUri(file);
-    var request = await client.headUrl(uri);
-    S3Client().generateS3Headers('HEAD', file).forEach((key, value) {
-      request.headers.set(key, value);
-    });
-    var response = await request.close();
-    client.close();
-    if (response.statusCode == 200) {
-      return int.tryParse(response.headers.value('content-length') ?? '');
-    } else {
-      return null;
-    }
+    final metadata = await _getMetadata(file);
+    return metadata?.contentLength;
   }
 
   @override
   Future<bool> exists(String file) async {
-    final HttpClient client = HttpClient();
-    var uri = S3Client().buildUri(file);
-    var request = await client.headUrl(uri);
-    S3Client().generateS3Headers('HEAD', file).forEach((key, value) {
-      request.headers.set(key, value);
-    });
-    var response = await request.close();
-    client.close();
-    return response.statusCode == 200;
+    final metadata = await _getMetadata(file);
+    return metadata != null;
   }
 
   @override
   Future<bool> delete(String file) async {
-    final HttpClient client = HttpClient();
-    var uri = S3Client().buildUri(file);
-    var request = await client.deleteUrl(uri);
-    S3Client().generateS3Headers('DELETE', file).forEach((key, value) {
-      request.headers.set(key, value);
-    });
-    var response = await request.close();
-    client.close();
-    return response.statusCode == 204;
+    file = removeLeadingSlash(file);
+    return await _taskManager.runInIsolate(() async {
+      final client = HttpClient();
+      try {
+        final response = await _executeRequest(client, 'DELETE', file);
+        final success = response.statusCode == 204;
+        if (success) {
+          _invalidateMetadataCache(file);
+        }
+        return success;
+      } finally {
+        client.close();
+      }
+    }, timeout: _defaultTimeout);
   }
+
+  Future<HttpClientResponse> _executeRequest(
+    HttpClient client,
+    String method,
+    String file,
+  ) async {
+    final uri = _s3Client.buildUri(file);
+    final request = await _getRequestForMethod(client, method, uri);
+
+    _s3Client
+        .generateS3Headers(method, file)
+        .forEach((key, value) => request.headers.set(key, value));
+
+    return await request.close();
+  }
+
+  Future<HttpClientRequest> _getRequestForMethod(
+    HttpClient client,
+    String method,
+    Uri uri,
+  ) async {
+    switch (method) {
+      case 'GET':
+        return await client.getUrl(uri);
+      case 'PUT':
+        return await client.putUrl(uri);
+      case 'DELETE':
+        return await client.deleteUrl(uri);
+      case 'HEAD':
+        return await client.headUrl(uri);
+      default:
+        throw UnsupportedError('Unsupported HTTP method: $method');
+    }
+  }
+
+  Future<_CachedMetadata?> _getMetadata(String file) async {
+    file = removeLeadingSlash(file);
+
+    // Check cache first
+    final cached = _metadataCache[file];
+    if (cached != null && !cached.isExpired) {
+      return cached;
+    }
+
+    return await _taskManager.runInIsolate(() async {
+      final client = HttpClient();
+      try {
+        final response = await _executeRequest(client, 'HEAD', file);
+        if (response.statusCode != 200) return null;
+
+        final metadata = _CachedMetadata(
+          contentLength:
+              int.tryParse(response.headers.value('content-length') ?? ''),
+          contentType: response.headers.value('content-type'),
+          lastModified: response.headers.value('last-modified'),
+        );
+
+        _metadataCache[file] = metadata;
+        return metadata;
+      } finally {
+        client.close();
+      }
+    }, timeout: _defaultTimeout);
+  }
+
+  void _invalidateMetadataCache(String file) {
+    _metadataCache.remove(file);
+  }
+}
+
+class _CachedMetadata {
+  final num? contentLength;
+  final String? contentType;
+  final String? lastModified;
+  final DateTime cacheTime;
+
+  _CachedMetadata({
+    this.contentLength,
+    this.contentType,
+    this.lastModified,
+  }) : cacheTime = DateTime.now();
+
+  bool get isExpired =>
+      DateTime.now().difference(cacheTime) > S3Storage._metadataCacheDuration;
 }
