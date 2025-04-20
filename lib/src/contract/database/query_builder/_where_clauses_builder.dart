@@ -366,4 +366,6 @@ abstract interface class WhereClausesBuilder {
     dynamic value, {
     String boolean = 'and',
   });
+
+  QueryBuilder withSoftDeletes([String column = 'deleted_at']);
 }

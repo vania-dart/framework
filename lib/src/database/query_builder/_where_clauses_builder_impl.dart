@@ -911,6 +911,10 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     return this;
   }
 
+  @override
+  QueryBuilder withSoftDeletes([String column = 'deleted_at']) =>
+      whereNull(column);
+
   void _appendCondition(String condition, {bool isOr = false}) {
     if (conditions.isEmpty) {
       conditions.add(condition);
