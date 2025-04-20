@@ -1,5 +1,15 @@
 import 'dart:math';
 
+
+String toSnakeCase(String input) {
+  if (input.isEmpty) return input;
+  final result = input.replaceAllMapped(
+    RegExp(r'[A-Z]'),
+    (match) => (match.start > 0 ? '_' : '') + match.group(0)!.toLowerCase()
+  );
+  return result.toLowerCase();
+}
+
 /// Sanitizes a route path by replacing multiple slashes with a single slash and
 /// removing leading and trailing slashes.
 String sanitizeRoutePath(String path) {
