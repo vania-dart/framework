@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:crypto/crypto.dart';
-import 'package:vania/vania.dart';
+
 import '../../cryptographic/vania_encryption.dart';
+
+import 'package:vania/src/utils/helper.dart' show env;
 
 class SessionFileStore {
   static final SessionFileStore _singleton = SessionFileStore._internal();

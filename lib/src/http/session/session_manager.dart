@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:vania/src/utils/functions.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/src/utils/helper.dart' show env;
 import 'session_file_store.dart';
 
 class SessionManager {

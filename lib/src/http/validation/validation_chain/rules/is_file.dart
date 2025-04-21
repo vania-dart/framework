@@ -1,4 +1,5 @@
-import 'package:vania/vania.dart';
+import 'package:vania/src/http/request/request_file.dart';
+import 'package:vania/src/http/validation/validation_chain/validation_rule.dart';
 
 class IsFile extends ValidationRule {
   final String args;

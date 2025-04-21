@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:vania/vania.dart';
+import 'package:vania/src/http/request/request.dart';
 
 abstract class Middleware {
   Future handle(Request req);

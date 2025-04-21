@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:meta/meta.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/src/enum/column_index.dart';
+import 'package:vania/src/logger/logger.dart';
 import '../contract/database/_connectors/_database_connection.dart';
 import '../exception/invalid_argument_exception.dart';
 import '../database/_database_utils/_db_config.dart';
