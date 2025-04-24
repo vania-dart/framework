@@ -103,9 +103,6 @@ class Mailable implements Mail {
       message.html = contentData.html;
     }
 
-    print(message.text);
-    print(message.html);
-
     if (attachments() != null) {
       message.attachments.addAll(attachments()!);
     }
