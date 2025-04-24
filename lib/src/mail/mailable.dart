@@ -9,6 +9,9 @@ import 'package:vania/src/mail/envelope.dart';
 import 'package:vania/src/mail/mail.dart';
 
 import 'package:vania/src/utils/helper.dart' show env;
+import 'package:vania/src/view_engine/template_engine.dart';
+
+import 'mail_view.dart';
 
 @immutable
 class Mailable implements Mail {
@@ -87,16 +90,39 @@ class Mailable implements Mail {
     }
 
     message.subject = envelope().subject;
-    message.text = content().text;
-    message.html = content().html;
+    MailView? mailView = view();
+    Content? contentData = content();
+
+    if (mailView != null) {
+      message.html = TemplateEngine().render(
+        mailView.view,
+        mailView.data ?? {},
+      );
+    } else if (contentData != null) {
+      message.text = contentData.text;
+      message.html = contentData.html;
+    }
+
+    print(message.text);
+    print(message.html);
 
     if (attachments() != null) {
       message.attachments.addAll(attachments()!);
     }
     try {
-      mailer.SendReport sendReport =
-          await mailer.send(message, _setupSmtpServer());
+      mailer.SendReport sendReport = await mailer.send(
+        message,
+        _setupSmtpServer(),
+      );
       return sendReport;
+    } on SmtpMessageValidationException catch (e) {
+      stderr.writeln('Failed to send email:${e.problems.map((error) => {
+            message: error.msg,
+            error: error.code
+          }).toList()}');
+      throw Exception(e.problems
+          .map((error) => {message: error.msg, error: error.code})
+          .toList());
     } catch (e) {
       stderr.writeln('Failed to send email: $e');
       rethrow;
@@ -111,7 +137,13 @@ class Mailable implements Mail {
 
   @mustBeOverridden
   @override
-  Content content() {
+  MailView? view() {
+    throw UnimplementedError();
+  }
+
+  @mustBeOverridden
+  @override
+  Content? content() {
     throw UnimplementedError();
   }
 
