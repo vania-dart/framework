@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:vania/src/enum/column_index.dart';
+import 'package:vania/src/env_handler/env.dart';
 import 'package:vania/src/logger/logger.dart';
 import '../contract/database/_connectors/_database_connection.dart';
 import '../exception/invalid_argument_exception.dart';
@@ -14,29 +15,30 @@ class MigrationConnection {
   DatabaseConnection? dbConnection;
   String? driver;
 
-  factory MigrationConnection() => _singleton;
+  factory MigrationConnection() {
+    Env().load();
+    return _singleton;
+  }
 
   MigrationConnection._internal();
 
   Future<void> setup(Map<String, dynamic> databaseConfig) async {
+    
     try {
       final connectionManager = ConnectionManager();
 
-      final Map<String, dynamic> database = databaseConfig['database'];
+      connectionManager.defaultConnection = databaseConfig['default'];
 
-      connectionManager.defaultConnection = database['default'];
+      Map<String, dynamic> connections = databaseConfig['connections'];
 
-      Map<String, dynamic> connections = database['connections'];
+      driver = databaseConfig['default'];
 
-      final defaultConnName = database['default'];
       await connectionManager.connect(
-        _createDBConfig(connections[defaultConnName]),
-        defaultConnName,
+        _createDBConfig(connections[driver]),
+        driver!,
       );
 
-      driver = connections[defaultConnName]['driver'];
-
-      dbConnection = connectionManager.connection(defaultConnName);
+      dbConnection = connectionManager.connection(driver);
 
       if (dbConnection == null) {
         stderr.writeln('A database must be specified.');
@@ -63,10 +65,10 @@ class MigrationConnection {
       password: config['password'] ?? '',
       sslMode: config['sslmode'] ?? false,
       collation: config['collation'] ?? '',
-      pool: config['pool'] ?? false,
-      poolSize: config['poolsize'] ?? 0,
+      pool: false,
+      poolSize: 0,
       filePath: config['file_path'] ?? '',
-      openInMemorySQLite: config['openInMemorySQLite'] ?? '',
+      openInMemorySQLite: config['openInMemorySQLite'] ?? false,
     );
   }
 
@@ -83,9 +85,13 @@ class Migration {
   String _primaryAlgorithm = '';
   final List<String> _indexes = [];
 
+  //String _migrationName = '';
+
   @mustBeOverridden
   @mustCallSuper
   Future<void> up() async {
+    //_migrationName = runtimeType.toString();
+    
     if (MigrationConnection().dbConnection == null) {
       stderr.writeln('A database must be specified.');
       exit(0);
@@ -102,8 +108,9 @@ class Migration {
   }
 
   Future<void> createTable(String name, Function callback) async {
-    try {
       Stopwatch stopwatch = Stopwatch()..start();
+     
+    try {
       final query = StringBuffer();
       _tableName = name;
       callback();
@@ -136,8 +143,9 @@ class Migration {
   }
 
   Future<void> createTableNotExists(String name, Function callback) async {
+     Stopwatch stopwatch = Stopwatch()..start();
     try {
-      Stopwatch stopwatch = Stopwatch()..start();
+     
       final query = StringBuffer();
       _tableName = name;
       callback();
@@ -155,6 +163,7 @@ class Migration {
       if (driverName == 'pgsql') {
         sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
       }
+
       await MigrationConnection()
           .dbConnection
           ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'), {});
