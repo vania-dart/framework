@@ -21,7 +21,7 @@ class ConnectionPool {
   int get activeConnections => _usedConnections.length;
   int get totalConnections =>
       _availableConnections.length + _usedConnections.length;
-  int get maxSize => config.poolSize ?? 10;
+  int get maxSize => config.poolSize;
   int get minSize => 2;
 
   Future<void> _lock = Future.value();
@@ -129,11 +129,11 @@ class ConnectionPool {
   }
 
   void increaseSize() {
-    config.poolSize = (config.poolSize ?? 10) + 5;
+    config.poolSize = config.poolSize + 5;
   }
 
   void decreaseSize() {
-    config.poolSize = ((config.poolSize ?? 10) - 5).clamp(minSize, maxSize);
+    config.poolSize = (config.poolSize - 5).clamp(minSize, maxSize);
   }
 
   void recordQueryExecution(String query, Duration duration) {

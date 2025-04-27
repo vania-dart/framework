@@ -9,8 +9,8 @@ class DBConfig {
   final bool sslMode;
   final bool openInMemorySQLite;
   final String? filePath;
-  final bool? pool;
-  int? poolSize;
+  final bool pool;
+  int poolSize;
 
   DBConfig({
     required this.driver,

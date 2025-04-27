@@ -41,7 +41,7 @@ class ConnectionManager {
   Future<void> connect(DBConfig config, String connectionName) async {
     try {
       DatabaseConnection connection;
-      if (config.pool!) {
+      if (config.pool) {
         final poolManager = PoolManager();
         final pool = poolManager.getPool(config);
         connection = await pool.acquire();
