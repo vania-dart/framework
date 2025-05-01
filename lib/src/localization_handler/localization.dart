@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:vania/src/logger/logger.dart';
-import 'package:vania/src/utils/helper.dart';
+import 'package:vania/src/utils/helper.dart' show env;
 
 class Localization {
   static final Localization _singleton = Localization._internal();
@@ -11,46 +9,49 @@ class Localization {
   }
   Localization._internal();
 
+  String? _locale = env('APP_LOCALE');
+
   final Map<String, dynamic> _language = {};
+
+  void setLocale(String locale) => _locale = locale;
+
+  bool isLocale(String locale) => _locale == locale;
 
   /// Initializes the language data by loading all `.json` language files from `lib/lang` directory.
   /// - `LANG_PATH` specifies the directory where the language files are stored (defaults to `lib/lang/` if not set).
   /// - `LOCALE` specifies the language/locale to load (defaults to `en` if not set).
   void init() async {
-    String? locale = env('APP_LOCALE');
-    if (locale != null) {
-      String languagePath = env('APP_LANG_PATH', 'lib/lang/');
-      String separator = Platform.pathSeparator;
-      String directoryPath = '$languagePath$separator$locale';
-
-      Directory directory = Directory(directoryPath);
-
-      if (!directory.existsSync()) {
-        Logger.log('Directory does not exist: ${directory.path}',
-            type: Logger.ALERT);
-        return;
-      }
-      List<FileSystemEntity> pathList =
-          directory.listSync(recursive: true, followLinks: false);
-
-      for (FileSystemEntity item in pathList) {
-        if (item is File && item.path.endsWith('.json')) {
-          String data = item.readAsStringSync();
+    Directory languagePath = Directory(env('APP_LANG_PATH', 'lib/lang/'));
+    for (var entity
+        in languagePath.listSync(recursive: true, followLinks: false)) {
+      if (entity is Directory) {
+        final segments = entity.uri.pathSegments.where((s) => s.isNotEmpty);
+        final subdirName = segments.last.toLowerCase();
+        final fileMap = <String, dynamic>{};
+        for (var file in entity
+            .listSync(recursive: false)
+            .whereType<File>()
+            .where((f) => f.path.toLowerCase().endsWith('.json'))) {
           try {
-            _language.addAll(jsonDecode(data));
-          } catch (_) {}
+            final content = file.readAsStringSync();
+            final decoded = json.decode(content);
+            fileMap.addAll(decoded);
+          } catch (e) {
+            stderr.writeln('⚠️ Failed to parse ${file.path}: $e');
+          }
         }
+        _language[subdirName] = fileMap;
       }
     }
   }
 
   /// Translates a string based on the provided key and optional arguments.
-  String trans(String key, [Map<String, dynamic>? args]) {
-    if (!_language.containsKey(key)) {
+  String trans(String key, [Map<String, dynamic>? args, String? locale]) {
+    if (!_language[locale ?? _locale].containsKey(key)) {
       return 'Translation not found for key: $key';
     }
 
-    String tmp = _language[key];
+    String tmp = _language[locale ?? _locale][key];
 
     if (args == null || args.isEmpty) {
       return tmp;

@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:vania/src/enum/http_request_method.dart';
 import 'package:vania/src/exception/not_found_exception.dart';
+import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/route/route_data.dart';
+import 'package:vania/src/route/router.dart';
 import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
-import 'package:vania/vania.dart';
 
 /// Find the matched route from the given request and return the
 /// [RouteData] for the matched route.
@@ -27,7 +28,7 @@ RouteData? httpRouteHandler(HttpRequest req) {
         sanitizeRoutePath(
           req.uri.toString(),
         ),
-      ).path.toLowerCase(),
+      ).path,
     ),
     req.method,
     req.headers.value(HttpHeaders.hostHeader),
@@ -85,7 +86,7 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
         .replaceAll('//', '/')
         .replaceAll(RegExp(r'/$'), '')
         .replaceFirst(RegExp(r'/$'), '/');
-    inputRoute = inputRoute
+    String iRoute = inputRoute
         .toLowerCase()
         .replaceFirst(RegExp(r'^/'), '')
         .replaceAll('//', '/')
@@ -97,11 +98,11 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
           "${route.prefix!.replaceFirst(RegExp(r'^/'), '').replaceFirst(RegExp(r'/$'), '')}/$routePath";
     }
 
-    if (routePath.split('/').length != inputRoute.split('/').length) {
+    if (routePath.split('/').length != iRoute.split('/').length) {
       return false;
     }
     return route.method.toLowerCase() == method.toLowerCase() &&
-        inputRoute.contains(
+        iRoute.contains(
           routePath.replaceAll(RegExp(r'/\{[^}]*\}'), '').split('/').last,
         );
   }).toList();
@@ -121,9 +122,8 @@ RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
       domainPlaceholder = _extractDomainPlaceholder(route.domain!);
       domainParameter = subDomain.split('.').first.toLowerCase();
     }
-
-    String routePath = sanitizeRoutePath(route.path.trim().toLowerCase());
-    inputRoute = sanitizeRoutePath(inputRoute.toLowerCase());
+    String routePath = sanitizeRoutePath(route.path.trim());
+    inputRoute = sanitizeRoutePath(inputRoute);
 
     /// When route is the same route exactly same route.
     /// route without params, eg. /api/example

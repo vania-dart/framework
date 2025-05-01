@@ -1,5 +1,8 @@
 import 'package:vania/src/cache/file_cache_driver.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/src/utils/helper.dart' show env;
+
+import 'cache_driver.dart';
+import 'redis_cache_driver.dart';
 
 class Cache {
   static final Cache _singleton = Cache._internal();

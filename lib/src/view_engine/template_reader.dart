@@ -13,17 +13,20 @@ class FileTemplateReader implements TemplateReader {
 
   /// Reads the html template from the given [template] path.
   ///
-  /// The template path is relative to the `lib/view/template/` directory.
+  /// The template path is relative to the `lib/resources/view/` directory.
   /// The template file must end with `.html`.
   ///
   /// Throws a [FileSystemException] if the file does not exist.
   ///
   @override
   String read(String template) {
-    final filePath = 'lib/view/template/$template.html';
-    final file = File(filePath);
+    final filePath = 'lib/resources/view/$template.html';
+    File file = File(filePath);
     if (!file.existsSync()) {
-      throw FileSystemException('Html template not found', filePath);
+      file = File('$template.html');
+      if (!file.existsSync()) {
+        throw FileSystemException('Html template not found', filePath);
+      }
     }
     return file.readAsStringSync();
   }

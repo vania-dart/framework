@@ -1,7 +1,10 @@
 import 'dart:io';
 
 import 'package:meta/meta.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/src/enum/column_index.dart';
+import 'package:vania/src/env_handler/env.dart';
+import 'package:vania/src/logger/logger.dart';
+import 'package:vania/src/utils/functions.dart';
 import '../contract/database/_connectors/_database_connection.dart';
 import '../exception/invalid_argument_exception.dart';
 import '../database/_database_utils/_db_config.dart';
@@ -13,7 +16,10 @@ class MigrationConnection {
   DatabaseConnection? dbConnection;
   String? driver;
 
-  factory MigrationConnection() => _singleton;
+  factory MigrationConnection() {
+    Env().load();
+    return _singleton;
+  }
 
   MigrationConnection._internal();
 
@@ -21,26 +27,40 @@ class MigrationConnection {
     try {
       final connectionManager = ConnectionManager();
 
-      final Map<String, dynamic> database = databaseConfig['database'];
+      connectionManager.defaultConnection = databaseConfig['default'];
 
-      connectionManager.defaultConnection = database['default'];
+      Map<String, dynamic> connections = databaseConfig['connections'];
 
-      Map<String, dynamic> connections = database['connections'];
+      driver = databaseConfig['default'];
 
-      final defaultConnName = database['default'];
       await connectionManager.connect(
-        _createDBConfig(connections[defaultConnName]),
-        defaultConnName,
+        _createDBConfig(connections[driver]),
+        driver!,
       );
 
-      driver = connections[defaultConnName]['driver'];
-
-      dbConnection = connectionManager.connection(defaultConnName);
+      dbConnection = connectionManager.connection(driver);
 
       if (dbConnection == null) {
         stderr.writeln('A database must be specified.');
         exit(0);
       }
+
+      String migrationSql = '''
+CREATE TABLE IF NOT EXISTS `migrations` (
+	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`migration` VARCHAR(255) NOT NULL COLLATE 'utf8mb4_unicode_ci',
+	PRIMARY KEY (`id`) USING BTREE
+)
+COLLATE='utf8mb4_unicode_ci'
+ENGINE=InnoDB
+;
+''';
+
+      if (driver == 'pgsql') {
+        migrationSql = _mysqlToPosgresqlMapper(migrationSql);
+      }
+
+      dbConnection?.execute(migrationSql);
     } on InvalidArgumentException catch (e) {
       stderr.writeln('Database connection error');
       Logger.log(e.message, type: Logger.ERROR);
@@ -50,6 +70,10 @@ class MigrationConnection {
       stderr.writeln(e);
       exit(0);
     }
+  }
+
+  Future<void> truncateMigration() async {
+    await dbConnection?.execute('TRUNCATE `migrations`');
   }
 
   DBConfig _createDBConfig(Map<String, dynamic> config) {
@@ -62,10 +86,10 @@ class MigrationConnection {
       password: config['password'] ?? '',
       sslMode: config['sslmode'] ?? false,
       collation: config['collation'] ?? '',
-      pool: config['pool'] ?? false,
-      poolSize: config['poolsize'] ?? 0,
+      pool: false,
+      poolSize: 0,
       filePath: config['file_path'] ?? '',
-      openInMemorySQLite: config['openInMemorySQLite'] ?? '',
+      openInMemorySQLite: config['openInMemorySQLite'] ?? false,
     );
   }
 
@@ -82,9 +106,12 @@ class Migration {
   String _primaryAlgorithm = '';
   final List<String> _indexes = [];
 
+  String _migrationName = '';
+
   @mustBeOverridden
   @mustCallSuper
   Future<void> up() async {
+    _migrationName = runtimeType.toString();
     if (MigrationConnection().dbConnection == null) {
       stderr.writeln('A database must be specified.');
       exit(0);
@@ -94,76 +121,109 @@ class Migration {
   @mustBeOverridden
   @mustCallSuper
   Future<void> down() async {
+    _migrationName = runtimeType.toString();
     if (MigrationConnection().dbConnection == null) {
       stderr.writeln('A database must be specified.');
       exit(0);
     }
   }
 
+  Future<bool> _checkMigrationTable() async {
+    List<Map<String, dynamic>> result = await MigrationConnection()
+            .dbConnection
+            ?.select(
+                "SELECT id FROM migrations WHERE migration='${toSnakeCase(_migrationName)}'") ??
+        [];
+
+    if (result.isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _insertMigration() async {
+    await MigrationConnection().dbConnection?.insert(
+        "INSERT INTO migrations (migration) VALUES ('${toSnakeCase(_migrationName)}')");
+  }
+
+  Future<void> _deleteMigration() async {
+    await MigrationConnection().dbConnection?.execute(
+        "DELETE FROM migrations WHERE migration='${toSnakeCase(_migrationName)}'");
+  }
+
   Future<void> createTable(String name, Function callback) async {
-    try {
+    bool existsMigration = await _checkMigrationTable();
+    if (!existsMigration) {
       Stopwatch stopwatch = Stopwatch()..start();
-      final query = StringBuffer();
-      _tableName = name;
-      callback();
-      String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
-      String foreig = _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
-      String primary = _primaryField.isNotEmpty
-          ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
-          : '';
-      query.write(
-          '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${_queries.join(',')}$primary$index$foreig)''');
-      String sqlQuery = query.toString();
 
-      // Check for PostgreSQL driver - handle case-insensitive comparison
-      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
-      if (driverName == 'pgsql') {
-        sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
+      try {
+        final query = StringBuffer();
+        _tableName = name;
+        callback();
+        String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
+        String foreig =
+            _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
+        String primary = _primaryField.isNotEmpty
+            ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
+            : '';
+        query.write(
+            '''DROP TABLE IF EXISTS `$name`; CREATE TABLE `$name` (${_queries.join(',')}$primary$index$foreig)''');
+        String sqlQuery = query.toString();
+
+        // Check for PostgreSQL driver - handle case-insensitive comparison
+        final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+        if (driverName == 'pgsql') {
+          sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
+        }
+
+        await MigrationConnection()
+            .dbConnection
+            ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'), {});
+        await _insertMigration();
+        stopwatch.stop();
+        stderr.writeln(
+            ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
+      } catch (e) {
+        stderr.writeln('Migration  $_migrationName Error :  $e');
+        exit(0);
       }
-
-      await MigrationConnection()
-          .dbConnection
-          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'), {});
-
-      stopwatch.stop();
-      stderr.writeln(
-          ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
-    } catch (e) {
-      stderr.writeln(e);
-      exit(0);
     }
   }
 
   Future<void> createTableNotExists(String name, Function callback) async {
-    try {
+    bool existsMigration = await _checkMigrationTable();
+    if (!existsMigration) {
       Stopwatch stopwatch = Stopwatch()..start();
-      final query = StringBuffer();
-      _tableName = name;
-      callback();
-      String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
-      String foreig = _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
-      String primary = _primaryField.isNotEmpty
-          ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
-          : '';
-      query.write(
-          '''CREATE TABLE IF NOT EXISTS `$name` (${_queries.join(',')}$primary$index$foreig)''');
+      try {
+        final query = StringBuffer();
+        _tableName = name;
+        callback();
+        String index = _indexes.isNotEmpty ? ',${_indexes.join(',')}' : '';
+        String foreig =
+            _foreignKey.isNotEmpty ? ',${_foreignKey.join(',')}' : '';
+        String primary = _primaryField.isNotEmpty
+            ? ',PRIMARY KEY (`$_primaryField`) USING $_primaryAlgorithm'
+            : '';
+        query.write(
+            '''CREATE TABLE IF NOT EXISTS `$name` (${_queries.join(',')}$primary$index$foreig)''');
 
-      String sqlQuery = query.toString();
-      // Check for PostgreSQL driver - handle case-insensitive comparison
-      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
-      if (driverName == 'pgsql') {
-        sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
+        String sqlQuery = query.toString();
+        // Check for PostgreSQL driver - handle case-insensitive comparison
+        final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+        if (driverName == 'pgsql') {
+          sqlQuery = _mysqlToPosgresqlMapper(sqlQuery);
+        }
+        await MigrationConnection()
+            .dbConnection
+            ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'), {});
+        await _insertMigration();
+        stopwatch.stop();
+        stderr.writeln(
+            ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
+      } catch (e) {
+        stderr.writeln('Migration  $_migrationName Error :  $e');
+        exit(0);
       }
-      await MigrationConnection()
-          .dbConnection
-          ?.execute(sqlQuery.replaceAll(RegExp(r',\s?\)'), ')'), {});
-
-      stopwatch.stop();
-      stderr.writeln(
-          ' Create $name table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
-    } catch (e) {
-      stderr.writeln(e);
-      exit(0);
     }
   }
 
@@ -199,22 +259,30 @@ class Migration {
     }
 
     try {
-      String query = 'ALTER TABLE `$table` $alterQuery$index$foreig;';
+      bool existsMigration = await _checkMigrationTable();
+      if (!existsMigration) {
+        Stopwatch stopwatch = Stopwatch()..start();
+        String query = 'ALTER TABLE `$table` $alterQuery$index$foreig;';
 
-      // Check for PostgreSQL driver - handle case-insensitive comparison
-      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
-      if (driverName == 'pgsql') {
-        query = _mysqlToPosgresqlMapper(query.toString());
+        // Check for PostgreSQL driver - handle case-insensitive comparison
+        final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+        if (driverName == 'pgsql') {
+          query = _mysqlToPosgresqlMapper(query.toString());
+        }
+
+        await MigrationConnection().dbConnection?.execute(query, {});
+        await _insertMigration();
+        stderr.writeln(
+            'ALTER column to $_tableName table....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
       }
-
-      await MigrationConnection().dbConnection?.execute(query, {});
-      stderr
-          .writeln('ALTER column to $_tableName table... \x1B[32mDONE\x1B[0m');
     } catch (e) {
       if (!e.toString().contains("write; duplicate key in table")) {
-        stderr.writeln('Error adding column: $e');
+        stderr.writeln('Migration  $_migrationName Error :  $e');
         exit(0);
       }
+
+      stderr.writeln('Migration  $_migrationName Error :  $e');
+      exit(0);
     }
   }
 
@@ -230,9 +298,8 @@ class Migration {
         query =
             'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${query}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
       }
-
-      await MigrationConnection().dbConnection?.execute(query.toString(), {});
-
+      await MigrationConnection().dbConnection?.execute(query);
+      await _deleteMigration();
       stderr.writeln(
           ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
     } catch (e) {
@@ -242,20 +309,26 @@ class Migration {
   }
 
   Future<void> drop(String name) async {
-    String query = 'DROP TABLE `$name`;';
+    try {
+      String query = 'DROP TABLE `$name`;';
 
-    // Check for PostgreSQL driver - handle case-insensitive comparison
-    final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
-    if (driverName == 'pgsql') {
-      query = _mysqlToPosgresqlMapper(query.toString());
-    } else {
-      query =
-          'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${query}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
+      // Check for PostgreSQL driver - handle case-insensitive comparison
+      final driverName = MigrationConnection().driver?.toLowerCase() ?? '';
+      if (driverName == 'pgsql') {
+        query = _mysqlToPosgresqlMapper(query.toString());
+      } else {
+        query =
+            'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${query}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
+      }
+
+      await MigrationConnection().dbConnection?.execute(query);
+      await _deleteMigration();
+      stderr.writeln(
+          ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
+    } catch (e) {
+      stderr.writeln(e);
+      exit(0);
     }
-
-    await MigrationConnection().dbConnection?.execute(query.toString(), {});
-    stderr.writeln(
-        ' Dropping $name table....................................\x1B[32mDONE\x1B[0m');
   }
 
   void addColumn(
@@ -355,8 +428,8 @@ class Migration {
     String referencesTable,
     String referencesColumn, {
     bool constrained = true,
-    String onUpdate = 'NO ACTION',
-    String onDelete = 'NO ACTION',
+    String onUpdate = 'CASCADE',
+    String onDelete = 'CASCADE',
   }) {
     String constraint = '';
     if (constrained) {
@@ -1373,78 +1446,74 @@ class Migration {
       unique: unique,
     );
   }
+}
 
-  /// Mapper for mysql to postgresql query
-  String _mysqlToPosgresqlMapper(String queryStr) {
-    queryStr = queryStr.replaceAllMapped(
-        RegExp(
-            r'`(\w+)`\s+BIGINT\(\d+\)\s+UNSIGNED\s+NOT\s+NULL\s+AUTO_INCREMENT',
-            caseSensitive: false),
-        (match) => '"${match[1]}" SERIAL NOT NULL PRIMARY KEY');
+/// Mapper for MySQL to PostgreSQL query
+String _mysqlToPosgresqlMapper(String queryStr) {
+  queryStr = queryStr.replaceAllMapped(
+      RegExp(
+          r'`(\w+)`\s+BIGINT\(\d+\)\s+UNSIGNED\s+NOT\s+NULL\s+AUTO_INCREMENT',
+          caseSensitive: false),
+      (match) => '"${match[1]}" SERIAL NOT NULL PRIMARY KEY');
 
-    if (RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE").hasMatch(queryStr)) {
-      queryStr = queryStr.replaceAll(
-          RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE", caseSensitive: false),
-          "");
-    }
-
-    if (RegExp(r"PRIMARY KEY \(`.*?`\)").hasMatch(queryStr)) {
-      queryStr = queryStr.replaceAll(
-          RegExp(r"PRIMARY KEY \(`.*?`\)", caseSensitive: false), "");
-    }
-
-    String query = queryStr
-        .replaceAll(RegExp(r"BIGINT\((\d+)\)"), "BIGINT")
-        .replaceAll(
-            RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " INTEGER")
-        .replaceAll(RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false),
-            " INTEGER")
-        .replaceAll(
-            RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "INTEGER")
-        .replaceAll(
-            RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLINT")
-        .replaceAll(
-            RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLINT")
-        .replaceAll(RegExp(r"BINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"BIT\((\d+)\)", caseSensitive: false), "BOOLEAN")
-        .replaceAllMapped(
-            RegExp(r"VARCHAR\((\d+)\)"), (match) => "VARCHAR(${match[1]})")
-        .replaceAllMapped(RegExp(r"VARCHARACTER\((\d+)\)"),
-            (match) => "CHARACTER(${match[1]})")
-        .replaceAllMapped(RegExp(r"FLOAT\((\d+)\)"), (match) => "REAL")
-        .replaceAll(
-            RegExp(r"DATETIME\((\d+)\)", caseSensitive: false), "TIMESTAMP")
-        .replaceAll(RegExp(r"DOUBLE\((\d+)\)", caseSensitive: false),
-            "DOUBLE PRECISION")
-        .replaceAll(RegExp(r"TINYBLOB", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"VARBYTEA", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"BLOB", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"MEDIUMBLOB", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"LONGBLOB", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"MEDIUMBYTEA", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"LONGBYTEA", caseSensitive: false), "BYTEA")
-        .replaceAll(RegExp(r"TINYTEXT", caseSensitive: false), "TEXT")
-        .replaceAll(RegExp(r"MEDIUMTEXT", caseSensitive: false), "TEXT")
-        .replaceAll(RegExp(r"LONGTEXT\((\d+)\)", caseSensitive: false), "TEXT")
-        .replaceAll(RegExp(r"LINESTRING", caseSensitive: false), "LINE")
-        .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
-        .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
-        .replaceAll(
-            RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-        .replaceAll(
-            RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
-        .replaceAll(
-            RegExp(r"ENUM\((?:'[^']*'(?:\s*,\s*'[^']*')*)\)",
-                caseSensitive: false),
-            "VARCHAR")
-        .replaceAll(RegExp(r"COLLATE '[\w\d_-]+'", caseSensitive: false), "")
-        .replaceAll(
-            RegExp(r"DEFAULT\s+(CURRENT_TIMESTAMP\(\))", caseSensitive: false),
-            "")
-        .replaceAll('`', '"')
-        .replaceAll('UNSIGNED', '')
-        .replaceAll(',,', ',');
-
-    return query.replaceAll(RegExp(r',\s?\)'), ')');
+  if (RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE").hasMatch(queryStr)) {
+    queryStr = queryStr.replaceAll(
+        RegExp(r"PRIMARY KEY \(`.*?`\) USING BTREE", caseSensitive: false), "");
   }
+
+  if (RegExp(r"PRIMARY KEY \(`.*?`\)").hasMatch(queryStr)) {
+    queryStr = queryStr.replaceAll(
+        RegExp(r"PRIMARY KEY \(`.*?`\)", caseSensitive: false), "");
+  }
+
+  String query = queryStr
+      .replaceAll(RegExp(r"BIGINT\((\d+)\)"), "BIGINT")
+      .replaceAll(
+          RegExp(r"(^|\s|,)INT\((\d+)\)", caseSensitive: false), " INTEGER")
+      .replaceAll(
+          RegExp(r"(^|\s|,)INTEGER\((\d+)\)", caseSensitive: false), " INTEGER")
+      .replaceAll(
+          RegExp(r"MEDIUMINT\((\d+)\)", caseSensitive: false), "INTEGER")
+      .replaceAll(
+          RegExp(r"SMALLINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+      .replaceAll(RegExp(r"TINYINT\((\d+)\)", caseSensitive: false), "SMALLINT")
+      .replaceAll(RegExp(r"BINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"BIT\((\d+)\)", caseSensitive: false), "BOOLEAN")
+      .replaceAllMapped(
+          RegExp(r"VARCHAR\((\d+)\)"), (match) => "VARCHAR(${match[1]})")
+      .replaceAllMapped(
+          RegExp(r"VARCHARACTER\((\d+)\)"), (match) => "CHARACTER(${match[1]})")
+      .replaceAllMapped(RegExp(r"FLOAT\((\d+)\)"), (match) => "REAL")
+      .replaceAll(
+          RegExp(r"DATETIME\((\d+)\)", caseSensitive: false), "TIMESTAMP")
+      .replaceAll(
+          RegExp(r"DOUBLE\((\d+)\)", caseSensitive: false), "DOUBLE PRECISION")
+      .replaceAll(RegExp(r"TINYBLOB", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"VARBYTEA", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"BLOB", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"MEDIUMBLOB", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"LONGBLOB", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"MEDIUMBYTEA", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"LONGBYTEA", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"TINYTEXT", caseSensitive: false), "TEXT")
+      .replaceAll(RegExp(r"MEDIUMTEXT", caseSensitive: false), "TEXT")
+      .replaceAll(RegExp(r"LONGTEXT\((\d+)\)", caseSensitive: false), "TEXT")
+      .replaceAll(RegExp(r"LINESTRING", caseSensitive: false), "LINE")
+      .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
+      .replaceAll(RegExp(r"TIME\((\d+)\)", caseSensitive: false), "TIME")
+      .replaceAll(RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+      .replaceAll(RegExp(r"VARBINARY\((\d+)\)", caseSensitive: false), "BYTEA")
+      .replaceAll(
+          RegExp(r"ENUM\((?:'[^']*'(?:\s*,\s*'[^']*')*)\)",
+              caseSensitive: false),
+          "VARCHAR")
+      .replaceAll(RegExp(r"COLLATE '[\w\d_-]+'", caseSensitive: false), "")
+      .replaceAll(
+          RegExp(r"DEFAULT\s+(CURRENT_TIMESTAMP\(\))", caseSensitive: false),
+          "")
+      .replaceAll('`', '"')
+      .replaceAll('UNSIGNED', '')
+      .replaceAll(',,', ',');
+
+  return query.replaceAll(RegExp(r',\s?\)'), ')');
 }

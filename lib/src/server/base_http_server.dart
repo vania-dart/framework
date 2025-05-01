@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:vania/src/http/request/request_handler.dart';
-import 'package:vania/vania.dart';
 
+import 'package:vania/src/utils/helper.dart' show env;
 import '../ioc_container.dart';
 import 'initialize_config.dart';
 

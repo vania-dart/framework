@@ -41,7 +41,7 @@ class ConnectionManager {
   Future<void> connect(DBConfig config, String connectionName) async {
     try {
       DatabaseConnection connection;
-      if (config.pool!) {
+      if (config.pool) {
         final poolManager = PoolManager();
         final pool = poolManager.getPool(config);
         connection = await pool.acquire();
@@ -50,7 +50,6 @@ class ConnectionManager {
         await connection.connect();
       }
 
-      // Wrap the connection with a proxy for monitoring
       final monitoredConnection = DatabaseConnectionProxy(
         connection,
         connectionName,
@@ -59,7 +58,6 @@ class ConnectionManager {
 
       connectionMap[connectionName] = monitoredConnection;
 
-      // Create QueryExecutor for this connection
       _queryExecutors[connectionName] = QueryExecutor(monitoredConnection);
     } on InvalidArgumentException catch (e) {
       Logger.log(e.message, type: Logger.ERROR);
@@ -90,7 +88,6 @@ class ConnectionManager {
     }
   }
 
-  // Helper methods for heavy operations
   Future<List<Map<String, dynamic>>> executeHeavyQuery(
     String query,
     Map<String, dynamic> bindings, {

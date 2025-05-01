@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:vania/src/http/session/session_manager.dart';
 import 'package:vania/src/ioc_container.dart';
 import 'package:vania/src/route/route_data.dart';
-import 'package:vania/vania.dart';
+import 'package:vania/route.dart';
 
 void main() {
   group('Route Test', () {
