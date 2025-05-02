@@ -23,7 +23,9 @@ class Application extends Container {
 
   late BaseHttpServer _server;
 
-  Future<void> initialize({required Map<String, dynamic> config}) async {
+  Future<void> initialize(
+      {required Map<String, dynamic> config,
+      List<String> args = const []}) async {
     IoCContainer().register<RequestHandler>(() => RequestHandler());
     IoCContainer()
         .register<SessionManager>(() => SessionManager(), singleton: true);
@@ -31,7 +33,7 @@ class Application extends Container {
       throw Exception('Key not found');
     }
 
-    _server = BaseHttpServer(config: config);
+    _server = BaseHttpServer(config: config, args: args);
     _server.startServer();
   }
 

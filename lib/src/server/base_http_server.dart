@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:args/args.dart';
 import 'package:vania/src/http/request/request_handler.dart';
 
 import 'package:vania/src/utils/helper.dart' show env;
@@ -8,8 +8,9 @@ import 'initialize_config.dart';
 
 class BaseHttpServer {
   final Map<String, dynamic> config;
+  final List<String> args;
 
-  BaseHttpServer({required this.config});
+  BaseHttpServer({required this.config, this.args = const []});
 
   HttpServer? httpServer;
 
@@ -33,6 +34,31 @@ class BaseHttpServer {
   Future<HttpServer> startServer({
     Function? onError,
   }) async {
+    String host = env<String>('APP_HOST', InternetAddress.anyIPv6.host);
+    int port = env<int>('APP_PORT', 8000);
+
+    if (args.isNotEmpty) {
+      final parser = ArgParser()
+        ..addOption('host', abbr: 'h')
+        ..addOption('port', abbr: 'p');
+
+      ArgResults results;
+      try {
+        results = parser.parse(args);
+      } on ArgParserException catch (e) {
+        stderr.writeln('Error: ${e.message}\n');
+        stderr.writeln(parser.usage);
+        exit(64);
+      }
+
+      if (results['host'] != null) {
+        host = results['host'];
+      }
+
+      if (results['port'] != null) {
+        port = int.tryParse(results['port']) ?? 8000;
+      }
+    }
     try {
       await initializeConfig(config);
       if (env<bool>('APP_SECURE', false)) {
@@ -45,15 +71,15 @@ class BaseHttpServer {
           ..usePrivateKey(serverKey, password: password);
 
         httpServer = await HttpServer.bindSecure(
-          env<String>('APP_HOST', '127.0.0.1'),
-          env<int>('APP_PORT', 8000),
+          host,
+          port,
           context,
           shared: env<bool>('APP_SHARED', false),
         );
       } else {
         httpServer = await HttpServer.bind(
-          env<String>('APP_HOST', '127.0.0.1'),
-          env<int>('APP_PORT', 8000),
+          host,
+          port,
           shared: env<bool>('APP_SHARED', false),
         );
       }
@@ -61,7 +87,7 @@ class BaseHttpServer {
       httpServer?.listen(IoCContainer().resolve<RequestHandler>().handle);
 
       if (env<bool>('APP_DEBUG')) {
-        stderr.writeln('Server started on http://127.0.0.1:${env('APP_PORT')}');
+        stderr.writeln('Server started on http://127.0.0.1:$port');
       }
       return httpServer!;
     } catch (e) {
