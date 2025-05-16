@@ -28,4 +28,9 @@ class RouteData {
     this.name,
     this.regex,
   });
+
+  @override
+  String toString() {
+    return 'RouteData{method: $method, path: $path, name: $name}';
+  }
 }
