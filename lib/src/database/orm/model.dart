@@ -116,7 +116,13 @@ abstract class Model extends QueryBuilderImpl {
     if (softDeletes) {
       whereNull(deletedAt);
     }
-    super.chunk(chunk, callback);
+    super.chunk(chunk, (List<Map<String, dynamic>> data) async {
+      for (Map<String, dynamic> map in data) {
+        map.removeWhere((key, _) => hidden.contains(key));
+      }
+      final result = await _loadRelations(data);
+      callback(result);
+    });
   }
 
   @override
@@ -128,8 +134,13 @@ abstract class Model extends QueryBuilderImpl {
     if (softDeletes) {
       whereNull(deletedAt);
     }
-
-    super.chunkById(chunk, callback, column);
+    super.chunkById(chunk, (List<Map<String, dynamic>> data) async {
+      for (Map<String, dynamic> map in data) {
+        map.removeWhere((key, _) => hidden.contains(key));
+      }
+      final result = await _loadRelations(data);
+      callback(result);
+    }, column);
   }
 
   @override
@@ -149,9 +160,6 @@ abstract class Model extends QueryBuilderImpl {
   Future<Map<String, dynamic>> create(Map<String, dynamic> values) async {
     final id = await insertGetId(values);
     final result = await find(id);
-    for (String key in hidden) {
-      result?.remove(key);
-    }
     return result!;
   }
 
@@ -190,7 +198,7 @@ abstract class Model extends QueryBuilderImpl {
       whereNull(deletedAt);
     }
     Map<String, dynamic>? result = await super.find(id, columns);
-    attributes = result ?? {};
+    attributes = Map.from(result ?? {});
     result?.removeWhere((key, _) => hidden.contains(key));
 
     if (result != null) {
@@ -220,13 +228,16 @@ abstract class Model extends QueryBuilderImpl {
     if (softDeletes) {
       whereNull(deletedAt);
     }
-    final bindings = getBindings();
-    String sql = limit(1).toSql();
-    final result = await dbConnection!.select(sql, bindings);
-    if (result.isEmpty) {
+
+    super.limit(1).toSql();
+    final result = await super.first(columns);
+    attributes = Map.from(result ?? {});
+    result?.removeWhere((key, _) => hidden.contains(key));
+
+    if (result == null) {
       return null;
     }
-    return (await _loadRelations(result)).first;
+    return (await _loadRelations([result])).first;
   }
 
   @override
@@ -632,7 +643,7 @@ abstract class Model extends QueryBuilderImpl {
     return super.value(column);
   }
 
-  Model with_(String relation, {Function(Model qb)? callback}) {
+  Model include(String relation, {Function(Model qb)? callback}) {
     _withRelation.add(_RelationQuery(relation, callback));
     return this;
   }
@@ -676,7 +687,7 @@ abstract class Model extends QueryBuilderImpl {
 
       if (wr.length > 1) {
         wr.removeAt(0);
-        var results = await qb.with_(wr.join('.')).get();
+        var results = await qb.include(wr.join('.')).get();
         callBack(rela.match(models, results, primaryRelation));
       } else {
         var results = await qb.get();
