@@ -30,11 +30,10 @@ class ControllerHandler {
     required Request request,
   }) async {
     List<dynamic> positionalArguments = [];
-    print("param -> ${route.params!.values}");
     if (route.params != null) {
       try {
         positionalArguments =
-            route.params!.values.map((param) => _getParamValue(param)).toList();
+            route.params!.values.map((param) => _getParamValue(param.toString())).toList();
       } on FormatException catch (e) {
         _response(request, e.message, 500);
       }
