@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:vania/src/exception/database_exception.dart';
+import 'package:vania/src/exception/query_exception.dart';
 import 'package:vania/src/extensions/extensions.dart';
 import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/http/session/session_manager.dart';
@@ -47,6 +49,7 @@ class RequestHandler {
         DateTime startTime = DateTime.now();
         String requestUri = req.uri.path;
         String starteRequest = startTime.format();
+        String requestMethod = req.method.toUpperCase();
 
         if (route != null) {
           Request request = Request.from(request: req, route: route);
@@ -77,7 +80,8 @@ class RequestHandler {
             var requestedPath = requestUri.isNotEmpty
                 ? requestUri.padRight(118 - requestUri.length, '.')
                 : ''.padRight(118, '.');
-            stderr.writeln('$starteRequest $requestedPath ~ ${duration}ms');
+            stderr.writeln(
+                '$starteRequest $requestMethod $requestedPath ~ ${duration}ms');
           }
         }
       } on BaseHttpResponseException catch (error) {
@@ -115,6 +119,10 @@ class RequestHandler {
       } on InvalidArgumentException catch (e) {
         Logger.log(e.message, type: Logger.ERROR);
         _response(req, e.message);
+      } on DatabaseException catch (error) {
+        _response(req, error.message);
+      } on QueryException catch (error) {
+        _response(req, error.cause);
       } catch (e) {
         Logger.log(e.toString(), type: Logger.ERROR);
         _response(req, e.toString());
@@ -122,7 +130,7 @@ class RequestHandler {
     }
   }
 
-  void _response(req, message) {
+  void _response(req, message, {int statusCode = 500}) {
     if (req.headers.value('accept').toString().contains('html')) {
       Response.html(message).makeResponse(req.response);
     } else {
@@ -130,7 +138,7 @@ class RequestHandler {
         {
           "message": message,
         },
-        400,
+        statusCode,
       ).makeResponse(req.response);
     }
   }
