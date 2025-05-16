@@ -8,10 +8,7 @@ class ThrottleException extends BaseHttpResponseException {
     required String super.message,
     required super.code,
     this.headers,
-  }) : super(
-          responseType: ResponseType.json,
-          errorCode: 'Rate limiting',
-        );
+  });
 
   @override
   Response response(bool isHtml) {
