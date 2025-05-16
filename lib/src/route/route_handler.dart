@@ -7,32 +7,18 @@ import 'package:vania/src/route/router.dart';
 import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
 
-/// Find the matched route from the given request and return the
-/// [RouteData] for the matched route.
-///
-/// The function first checks if the request is an OPTIONS request. If it is,
-/// the request is closed and null is returned. If the request is not an
-/// OPTIONS request, the function checks if the request path matches a static
-/// file. If it does, the function returns null. If it doesn't, the function
-/// throws a [NotFoundException].
-///
-/// If the request is not an OPTIONS request and the request path doesn't match
-/// a static file, the function returns the matched [RouteData].
-///
-/// Throws a [NotFoundException] if the request is not an OPTIONS request and
-/// the request path doesn't match a static file.
+final Map<String, RegExp> _patternCache = {};
+
 RouteData? httpRouteHandler(HttpRequest req) {
-  final route = _getMatchRoute(
-    Uri.decodeComponent(
-      Uri.parse(
-        sanitizeRoutePath(
-          req.uri.toString(),
-        ),
-      ).path,
-    ),
+  final sanitizedPath = sanitizeRoutePath(req.uri.toString());
+  final decodedPath = Uri.decodeComponent(Uri.parse(sanitizedPath).path);
+
+  final route = _findMatchingRoute(
+    decodedPath,
     req.method,
     req.headers.value(HttpHeaders.hostHeader),
   );
+
   if (route == null) {
     if (req.method.toLowerCase() ==
         HttpRequestMethod.options.name.toLowerCase()) {
@@ -53,182 +39,204 @@ RouteData? httpRouteHandler(HttpRequest req) {
   return route;
 }
 
-String _extractDomain(String domain, String path) {
-  String firstPart = domain.split('.').first.toLowerCase();
-  final RegExp domainRegex = RegExp(r'\{[^}]*\}');
-  bool containsPlaceholder = domainRegex.hasMatch(path);
-  String domainUri = path;
-  if (containsPlaceholder) {
-    domainUri = path.replaceAll(domainRegex, firstPart).toLowerCase();
-  }
-  return domainUri;
+String _extractDomain(String domain, String pattern) {
+  final domainParts = domain.toLowerCase().split('.');
+  final firstPart = domainParts.isNotEmpty ? domainParts.first : '';
+
+  final RegExp domainRegex = RegExp(r'{[^}]*}');
+
+  bool containsPlaceholder = domainRegex.hasMatch(pattern);
+
+  if (!containsPlaceholder) return pattern;
+
+  return pattern.replaceAll(domainRegex, firstPart).toLowerCase();
 }
 
 String? _extractDomainPlaceholder(String input) {
-  final RegExp regex = RegExp(r'\{([^}]*)\}');
+  final RegExp regex = RegExp(r'{([^}]*)}');
   final match = regex.firstMatch(input);
-  if (match != null) {
-    return match.group(1)!;
-  } else {
+  return match?.group(1);
+}
+
+bool _isDomainMatch(String requestDomain, String routeDomain) {
+  if (!routeDomain.contains('{')) {
+    return requestDomain.toLowerCase() == routeDomain.toLowerCase();
+  }
+
+  String domainUri = _extractDomain(requestDomain, routeDomain);
+  return domainUri.toLowerCase() == requestDomain.toLowerCase();
+}
+
+RouteData? _findMatchingRoute(
+    String requestPath, String method, String? domain) {
+  final routes = Router()
+      .routes
+      .where((r) => r.method.toLowerCase() == method.toLowerCase())
+      .toList();
+
+  final normalizedRequestPath = _normalizePath(requestPath);
+
+  for (final route in routes) {
+    String routePath = _normalizePath(route.path);
+    if (route.prefix != null) {
+      routePath = _normalizePath("${route.prefix}/$routePath");
+    }
+
+    if (route.domain != null && domain != null) {
+      if (!_isDomainMatch(domain, route.domain!)) {
+        continue;
+      }
+    }
+
+    if (!routePath.contains("{")) {
+      if (routePath == normalizedRequestPath) {
+        final matchedRoute = _createRouteWithDomainParams(route, domain);
+        return matchedRoute;
+      }
+      continue;
+    }
+
+    final pathMatch =
+        _matchPathWithParams(normalizedRequestPath, routePath, route, domain);
+    if (pathMatch != null) {
+      return pathMatch;
+    }
+  }
+
+  return null;
+}
+
+RouteData _createRouteWithDomainParams(RouteData route, String? domain) {
+  final matchedRoute = RouteData(
+    method: route.method,
+    path: route.path,
+    action: route.action,
+    corsEnabled: route.corsEnabled,
+    params: route.params != null ? Map.from(route.params!) : {},
+    preMiddleware: List.from(route.preMiddleware),
+    domain: route.domain,
+    prefix: route.prefix,
+    hasRequest: route.hasRequest,
+    paramTypes: route.paramTypes != null ? Map.from(route.paramTypes!) : null,
+    name: route.name,
+    regex: route.regex != null ? Map.from(route.regex!) : null,
+  );
+
+  if (route.domain != null && domain != null && route.domain!.contains('{')) {
+    final placeholder = _extractDomainPlaceholder(route.domain!);
+    if (placeholder != null) {
+      final domainParts = domain.split('.');
+      if (domainParts.isNotEmpty) {
+        matchedRoute.params ??= {};
+        matchedRoute.params![placeholder] = domainParts.first;
+      }
+    }
+  }
+
+  return matchedRoute;
+}
+
+RouteData? _matchPathWithParams(
+    String requestPath, String routePath, RouteData route, String? domain) {
+  final routeParts = routePath.split('/');
+  final requestParts = requestPath.split('/');
+
+  if (routeParts.length != requestParts.length) {
     return null;
   }
-}
 
-RouteData? _getMatchRoute(String inputRoute, String method, String? domain) {
-  String? domainParameter;
-  String? domainPlaceholder;
+  final params = <String, dynamic>{};
+  for (int i = 0; i < routeParts.length; i++) {
+    final routePart = routeParts[i];
+    final requestPart = requestParts[i];
 
-  List<RouteData> routesList = Router().routes.where((route) {
-    String routePath = route.path
-        .trim()
-        .toLowerCase()
-        .replaceFirst(RegExp(r'^/'), '')
-        .replaceAll('//', '/')
-        .replaceAll(RegExp(r'/$'), '')
-        .replaceFirst(RegExp(r'/$'), '/');
-    String iRoute = inputRoute
-        .toLowerCase()
-        .replaceFirst(RegExp(r'^/'), '')
-        .replaceAll('//', '/')
-        .replaceAll(RegExp(r'/$'), '')
-        .replaceFirst(RegExp(r'/$'), '');
-
-    if (route.prefix != null) {
-      routePath =
-          "${route.prefix!.replaceFirst(RegExp(r'^/'), '').replaceFirst(RegExp(r'/$'), '')}/$routePath";
-    }
-
-    if (routePath.split('/').length != iRoute.split('/').length) {
-      return false;
-    }
-    return route.method.toLowerCase() == method.toLowerCase() &&
-        iRoute.contains(
-          routePath.replaceAll(RegExp(r'/\{[^}]*\}'), '').split('/').last,
-        );
-  }).toList();
-
-  RouteData? matchRoute;
-  for (RouteData route in routesList) {
-    if (route.domain != null && domain != null) {
-      String subDomain = _extractDomain(
-        domain,
-        route.domain!,
-      );
-
-      if (subDomain.toLowerCase() != domain.toLowerCase()) {
-        matchRoute = null;
-        break;
-      }
-      domainPlaceholder = _extractDomainPlaceholder(route.domain!);
-      domainParameter = subDomain.split('.').first.toLowerCase();
-    }
-    String routePath = sanitizeRoutePath(route.path.trim());
-    inputRoute = sanitizeRoutePath(inputRoute);
-
-    /// When route is the same route exactly same route.
-    /// route without params, eg. /api/example
-    if (routePath == inputRoute.trim() && route.domain == null) {
-      matchRoute = route;
-      break;
-    }
-
-    if (route.prefix != null) {
-      routePath = "${route.prefix}/$routePath";
-    }
-
-    /// when route have params
-    /// eg. /api/admin/{adminId}
-    Iterable<String> parameterNames = _getParameterNameFromRoute(route);
-    Iterable<RegExpMatch> matches = _getPatternMatches(
-      inputRoute,
-      routePath,
-    );
-
-    if (matches.isNotEmpty) {
-      final params = _getParameterAsMap(matches, parameterNames);
-      if (route.paramTypes != null) {
-        if (!checkParamType(params, route.paramTypes!)) {
-          continue;
-        }
-      }
-
-      if (route.regex != null) {
-        if (!checkParamWithRegex(params, route.regex!)) {
-          continue;
-        }
-      }
-
-      matchRoute = route;
-      matchRoute.params = params;
-      if (domainPlaceholder != null && domainParameter != null) {
-        matchRoute.params?.addAll({
-          domainPlaceholder: domainParameter,
-        });
-      }
-      break;
+    if (routePart.startsWith('{') && routePart.endsWith('}')) {
+      final paramName = routePart.substring(1, routePart.length - 1);
+      params[paramName] = requestPart;
+    } else if (routePart != requestPart) {
+      return null;
     }
   }
-  return matchRoute;
-}
 
-bool checkParamWithRegex(
-    Map<String, dynamic> param, Map<String, String> regexPatterns) {
-  for (var key in regexPatterns.keys) {
-    var value = param[key];
-    var pattern = regexPatterns[key]!;
-    if (value is String && !RegExp(pattern).hasMatch(value)) {
-      return false;
-    } else if (value is int && !RegExp(pattern).hasMatch(value.toString())) {
-      return false;
+  if (route.paramTypes != null || route.regex != null) {
+    if (!_validateParams(params, route)) {
+      return null;
     }
   }
+
+  final matchedRoute = RouteData(
+    method: route.method,
+    path: route.path,
+    action: route.action,
+    corsEnabled: route.corsEnabled,
+    params: params,
+    preMiddleware: List.from(route.preMiddleware),
+    domain: route.domain,
+    prefix: route.prefix,
+    hasRequest: route.hasRequest,
+    paramTypes: route.paramTypes != null ? Map.from(route.paramTypes!) : null,
+    name: route.name,
+    regex: route.regex != null ? Map.from(route.regex!) : null,
+  );
+
+  if (route.domain != null && domain != null && route.domain!.contains('{')) {
+    final placeholder = _extractDomainPlaceholder(route.domain!);
+    if (placeholder != null) {
+      final domainParts = domain.split('.');
+      if (domainParts.isNotEmpty) {
+        matchedRoute.params![placeholder] = domainParts.first;
+      }
+    }
+  }
+
+  return matchedRoute;
+}
+
+bool _validateParams(Map<String, dynamic> params, RouteData route) {
+  if (route.paramTypes != null) {
+    for (final entry in route.paramTypes!.entries) {
+      final paramName = entry.key;
+      final paramType = entry.value;
+
+      if (!params.containsKey(paramName)) {
+        return false;
+      }
+
+      final value = params[paramName];
+      if (paramType == int) {
+        final intValue = int.tryParse(value.toString());
+        if (intValue == null) {
+          return false;
+        }
+        params[paramName] = intValue;
+      }
+    }
+  }
+
+  if (route.regex != null) {
+    for (final entry in route.regex!.entries) {
+      final paramName = entry.key;
+      final pattern = entry.value;
+
+      if (!params.containsKey(paramName)) {
+        return false;
+      }
+
+      final value = params[paramName].toString();
+      final regex = _patternCache.putIfAbsent(pattern, () => RegExp(pattern));
+      if (!regex.hasMatch(value)) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
-bool checkParamType(Map<String, dynamic> param, Map<String, Type> paramType) {
-  bool isValidType(dynamic value, String type) {
-    value = int.tryParse(value.toString()) ?? value;
-    if (type == 'String') return value is String;
-    if (type == 'int') return value is int;
-    return false;
-  }
-
-  for (var key in paramType.keys) {
-    if (!param.containsKey(key) ||
-        !isValidType(param[key], paramType[key]!.toString())) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/// Get parameter name from named route eg. /blog/{id}
-/// eg ('id')
-Iterable<String> _getParameterNameFromRoute(RouteData route) {
-  return route.path
-      .split('/')
-      .where((String part) => part.startsWith('{') && part.endsWith('}'))
-      .map((String part) => part.substring(1, part.length - 1));
-}
-
-/// Get  pattern matched routes from the list
-Iterable<RegExpMatch> _getPatternMatches(
-  String input,
-  String route,
-) {
-  RegExp pattern = RegExp(
-      '^${route.replaceAllMapped(RegExp(r'{[^/]+}'), (Match match) => '([^/]+)').replaceAll('/', '\\/')}\$');
-  return pattern.allMatches(input);
-}
-
-/// Get  the param from the named route as Map response
-/// eg {'id' : 1}
-Map<String, dynamic> _getParameterAsMap(
-  Iterable<RegExpMatch> matches,
-  Iterable<String> parameterNames,
-) {
-  RegExpMatch match = matches.first;
-  List<String?> parameterValues =
-      match.groups(List<int>.generate(parameterNames.length, (int i) => i + 1));
-  return Map<String, dynamic>.fromIterables(parameterNames, parameterValues);
+String _normalizePath(String path) {
+  return path
+      .trim()
+      .replaceAll('//', '/')
+      .replaceAll(RegExp(r'/$'), '')
+      .replaceAll(RegExp(r'^/'), '');
 }

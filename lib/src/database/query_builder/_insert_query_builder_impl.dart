@@ -43,7 +43,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       await conn.insert(query, paramBindings);
       return true;
     } catch (e) {
-      throw Exception(e);
+      rethrow;
     }
   }
 
@@ -104,7 +104,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       await conn.execute(query, paramBindings);
       return true;
     } catch (e) {
-      throw Exception(e);
+      rethrow;
     }
   }
 
@@ -122,12 +122,16 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   Future<bool> insertOrIgnore(
     Map<String, dynamic> values,
   ) async {
-    var columns = values.keys.toList();
-    String cols = columns.join(", ");
-    String vals = columns.map((col) => formatValue(values[col])).join(", ");
-    String sql = "INSERT IGNORE INTO $table ($cols) VALUES ($vals)";
-    await dbConnection?.execute(sql);
-    return true;
+    try {
+      var columns = values.keys.toList();
+      String cols = columns.join(", ");
+      String vals = columns.map((col) => formatValue(values[col])).join(", ");
+      String sql = "INSERT IGNORE INTO $table ($cols) VALUES ($vals)";
+      await dbConnection?.execute(sql);
+      return true;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
@@ -135,11 +139,15 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
     List<String> columns,
     QueryBuilder subQuery,
   ) async {
-    String cols = columns.join(", ");
-    String subSql = subQuery.toSql();
-    String sql = "INSERT INTO $table ($cols) $subSql";
-    await dbConnection?.execute(sql);
-    return true;
+    try {
+      String cols = columns.join(", ");
+      String subSql = subQuery.toSql();
+      String sql = "INSERT INTO $table ($cols) $subSql";
+      await dbConnection?.execute(sql);
+      return true;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
@@ -148,27 +156,31 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
     List<String> uniqueBy, [
     Map<String, dynamic>? update,
   ]) async {
-    var columns = values.keys.toList();
-    String cols = columns.join(", ");
-    String vals = columns.map((col) => formatValue(values[col])).join(", ");
+    try {
+      var columns = values.keys.toList();
+      String cols = columns.join(", ");
+      String vals = columns.map((col) => formatValue(values[col])).join(", ");
 
-    String sql = "INSERT INTO $table ($cols) VALUES ($vals)";
+      String sql = "INSERT INTO $table ($cols) VALUES ($vals)";
 
-    if (update == null) {
-      update = Map.from(values);
-      for (var col in uniqueBy) {
-        update.remove(col);
+      if (update == null) {
+        update = Map.from(values);
+        for (var col in uniqueBy) {
+          update.remove(col);
+        }
       }
-    }
 
-    if (update.isNotEmpty) {
-      String updates = update.entries
-          .map((e) => "${e.key} = ${formatValue(e.value)}")
-          .join(", ");
-      sql += " ON DUPLICATE KEY UPDATE $updates";
-    }
+      if (update.isNotEmpty) {
+        String updates = update.entries
+            .map((e) => "${e.key} = ${formatValue(e.value)}")
+            .join(", ");
+        sql += " ON DUPLICATE KEY UPDATE $updates";
+      }
 
-    await dbConnection?.execute(sql);
-    return true;
+      await dbConnection?.execute(sql);
+      return true;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

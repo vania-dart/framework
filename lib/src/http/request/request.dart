@@ -219,6 +219,8 @@ class Request {
     return _all[key];
   }
 
+  bool hasFile(String key) => (file(key) != null || files(key) != null);
+
   List<RequestFile>? files(String key) {
     if (_all[key] == null) {
       return null;

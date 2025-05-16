@@ -8,13 +8,17 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future<num> avg(
     String column,
   ) async {
-    String sql = build(
-      aggregateFunction: "AVG",
-      aggregateColumn: column,
-    );
-    final bindings = getBindings();
-    var result = await dbConnection?.select(sql, bindings);
-    return num.tryParse(result?.first.values.first) ?? 0;
+    try {
+      String sql = build(
+        aggregateFunction: "AVG",
+        aggregateColumn: column,
+      );
+      final bindings = getBindings();
+      var result = await dbConnection?.select(sql, bindings);
+      return num.tryParse(result?.first.values.first) ?? 0;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
@@ -22,18 +26,22 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     int chunk,
     void Function(List<Map<String, dynamic>> data) callback,
   ) async {
-    int offset = 0;
-    while (true) {
-      limit(chunk).offset(offset);
-      final result = await get();
-      if (result.isEmpty) {
-        break;
+    try {
+      int offset = 0;
+      while (true) {
+        limit(chunk).offset(offset);
+        final result = await get();
+        if (result.isEmpty) {
+          break;
+        }
+        callback(result);
+        offset += chunk;
+        if (result.length < chunk) {
+          break;
+        }
       }
-      callback(result);
-      offset += chunk;
-      if (result.length < chunk) {
-        break;
-      }
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -43,43 +51,55 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     void Function(List<Map<String, dynamic>> data) callback, [
     String column = 'id',
   ]) async {
-    int lastId = 0;
+    try {
+      int lastId = 0;
 
-    while (true) {
-      whereGreaterThan(column, lastId).orderByAsc(column).limit(chunk);
-      final result = await get();
-      if (result.first[column] == null) {
-        throw ();
-      }
-      if (result.isEmpty) {
-        break;
-      }
+      while (true) {
+        whereGreaterThan(column, lastId).orderByAsc(column).limit(chunk);
+        final result = await get();
+        if (result.first[column] == null) {
+          throw ();
+        }
+        if (result.isEmpty) {
+          break;
+        }
 
-      callback(result);
-      lastId += result.last[column] as int;
+        callback(result);
+        lastId += result.last[column] as int;
 
-      if (result.length < chunk) {
-        break;
+        if (result.length < chunk) {
+          break;
+        }
       }
+    } catch (e) {
+      rethrow;
     }
   }
 
   @override
   Future<int> count([String columns = '*']) async {
-    String sql = build(aggregateFunction: "COUNT", aggregateColumn: columns);
-    var result = await dbConnection?.select(sql, bindings);
-    return int.tryParse(result?.first.values.first) ?? 0;
+    try {
+      String sql = build(aggregateFunction: "COUNT", aggregateColumn: columns);
+      var result = await dbConnection?.select(sql, bindings);
+      return int.tryParse(result?.first.values.first) ?? 0;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
   Future<bool> doesntExist() async {
-    String sql = "SELECT NOT EXISTS(SELECT 1 $table";
-    if (conditions.isNotEmpty) {
-      sql += " WHERE ${conditions.join('')}";
+    try {
+      String sql = "SELECT NOT EXISTS(SELECT 1 $table";
+      if (conditions.isNotEmpty) {
+        sql += " WHERE ${conditions.join('')}";
+      }
+      sql += ") as `exists`";
+      var result = await dbConnection!.select(sql);
+      return (int.tryParse(result.first["exists"]) == 1);
+    } catch (e) {
+      rethrow;
     }
-    sql += ") as `exists`";
-    var result = await dbConnection!.select(sql);
-    return (int.tryParse(result.first["exists"]) == 1);
   }
 
   @override
@@ -94,13 +114,17 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<bool> exists() async {
-    String sql = "SELECT EXISTS(SELECT 1 $table";
-    if (conditions.isNotEmpty) {
-      sql += " WHERE ${conditions.join('')}";
+    try {
+      String sql = "SELECT EXISTS(SELECT 1 $table";
+      if (conditions.isNotEmpty) {
+        sql += " WHERE ${conditions.join('')}";
+      }
+      sql += ") as `exists`";
+      var result = await dbConnection!.select(sql);
+      return (int.tryParse(result.first["exists"]) == 1);
+    } catch (e) {
+      rethrow;
     }
-    sql += ") as `exists`";
-    var result = await dbConnection!.select(sql);
-    return (int.tryParse(result.first["exists"]) == 1);
   }
 
   @override
@@ -108,13 +132,17 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     dynamic id, [
     List<String> columns = const ['*'],
   ]) async {
-    final bindings = getBindings();
-    String sql = whereEqualTo('$table.id', id).limit(1).toSql();
-    final result = await dbConnection!.select(sql, bindings);
-    if (result.isEmpty) {
-      return null;
+    try {
+      final bindings = getBindings();
+      String sql = whereEqualTo('$table.id', id).limit(1).toSql();
+      final result = await dbConnection!.select(sql, bindings);
+      if (result.isEmpty) {
+        return null;
+      }
+      return result.first;
+    } catch (e) {
+      rethrow;
     }
-    return result.first;
   }
 
   @override
@@ -133,14 +161,18 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future<Map<String, dynamic>?> first([
     List<String> columns = const ['*'],
   ]) async {
-    final bindings = getBindings();
-    String sql = limit(1).toSql();
+    try {
+      final bindings = getBindings();
+      String sql = limit(1).toSql();
 
-    final result = await dbConnection!.select(sql, bindings);
-    if (result.isEmpty) {
-      return null;
+      final result = await dbConnection!.select(sql, bindings);
+      if (result.isEmpty) {
+        return null;
+      }
+      return result.first;
+    } catch (e) {
+      rethrow;
     }
-    return result.first;
   }
 
   @override
@@ -180,7 +212,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       final sql = toSql();
       return await dbConnection!.select(sql, bindings);
     } catch (e) {
-      throw Exception(e);
+      rethrow;
     }
   }
 
@@ -214,18 +246,26 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future max(String column) async {
-    final bindings = getBindings();
-    String sql = build(aggregateFunction: "MAX", aggregateColumn: column);
-    var result = await dbConnection?.select(sql, bindings);
-    return result?.first.values.first;
+    try {
+      final bindings = getBindings();
+      String sql = build(aggregateFunction: "MAX", aggregateColumn: column);
+      var result = await dbConnection?.select(sql, bindings);
+      return result?.first.values.first;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
   Future min(String column) async {
-    final bindings = getBindings();
-    String sql = build(aggregateFunction: "MIN", aggregateColumn: column);
-    var result = await dbConnection?.select(sql, bindings);
-    return result?.first.values.first;
+    try {
+      final bindings = getBindings();
+      String sql = build(aggregateFunction: "MIN", aggregateColumn: column);
+      var result = await dbConnection?.select(sql, bindings);
+      return result?.first.values.first;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
@@ -294,11 +334,15 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<num> sum(String column) async {
-    final bindings = getBindings();
-    String sql = build(aggregateFunction: "SUM", aggregateColumn: column);
+    try {
+      final bindings = getBindings();
+      String sql = build(aggregateFunction: "SUM", aggregateColumn: column);
 
-    var result = await dbConnection?.select(sql, bindings);
-    return num.tryParse(result?.first.values.first) ?? 0;
+      var result = await dbConnection?.select(sql, bindings);
+      return num.tryParse(result?.first.values.first) ?? 0;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

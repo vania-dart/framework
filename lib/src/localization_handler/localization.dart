@@ -21,26 +21,29 @@ class Localization {
   /// - `LANG_PATH` specifies the directory where the language files are stored (defaults to `lib/lang/` if not set).
   /// - `LOCALE` specifies the language/locale to load (defaults to `en` if not set).
   void init() async {
-    Directory languagePath = Directory(env('APP_LANG_PATH', 'lib/lang/'));
-    for (var entity
-        in languagePath.listSync(recursive: true, followLinks: false)) {
-      if (entity is Directory) {
-        final segments = entity.uri.pathSegments.where((s) => s.isNotEmpty);
-        final subdirName = segments.last.toLowerCase();
-        final fileMap = <String, dynamic>{};
-        for (var file in entity
-            .listSync(recursive: false)
-            .whereType<File>()
-            .where((f) => f.path.toLowerCase().endsWith('.json'))) {
-          try {
-            final content = file.readAsStringSync();
-            final decoded = json.decode(content);
-            fileMap.addAll(decoded);
-          } catch (e) {
-            stderr.writeln('⚠️ Failed to parse ${file.path}: $e');
+    Directory languagePath = Directory(env('APP_LANG_PATH', 'lib/lang'));
+
+    if (languagePath.existsSync()) {
+      for (var entity
+          in languagePath.listSync(recursive: true, followLinks: false)) {
+        if (entity is Directory) {
+          final segments = entity.uri.pathSegments.where((s) => s.isNotEmpty);
+          final subdirName = segments.last.toLowerCase();
+          final fileMap = <String, dynamic>{};
+          for (var file in entity
+              .listSync(recursive: false)
+              .whereType<File>()
+              .where((f) => f.path.toLowerCase().endsWith('.json'))) {
+            try {
+              final content = file.readAsStringSync();
+              final decoded = json.decode(content);
+              fileMap.addAll(decoded);
+            } catch (e) {
+              stderr.writeln('⚠️ Failed to parse ${file.path}: $e');
+            }
           }
+          _language[subdirName] = fileMap;
         }
-        _language[subdirName] = fileMap;
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:meta/meta.dart';
+import 'package:vania/src/exception/database_exception.dart';
 import '../_database_utils/_db_config.dart';
 import '_connection_pool.dart';
 import 'package:vania/src/contract/database/_connectors/_database_connection.dart';
@@ -54,7 +55,7 @@ class PoolManager {
       await connection.execute('SELECT 1');
       return true;
     } catch (e) {
-      return false;
+      throw DatabaseException('Connection validation failed', e);
     }
   }
 
@@ -102,7 +103,7 @@ class PoolManager {
 
       _lastHealthCheck[poolKey] = DateTime.now();
     } catch (e) {
-      stderr.writeln('Health check failed for pool $poolKey: $e');
+      throw DatabaseException('Health check failed for pool $poolKey', e);
     }
   }
 
