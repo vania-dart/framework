@@ -1,4 +1,6 @@
 import 'package:postgres/postgres.dart';
+import 'package:vania/src/exception/database_exception.dart';
+import 'package:vania/src/exception/query_exception.dart';
 
 import '../_database_utils/_db_config.dart';
 
@@ -17,18 +19,22 @@ class PostgresConnector implements DatabaseConnection {
 
   @override
   Future<void> connect() async {
-    _connection = await Connection.open(
-      Endpoint(
-        host: config.host,
-        database: config.database,
-        username: config.username,
-        password: config.password,
-        port: config.port,
-      ),
-      settings: ConnectionSettings(
-        sslMode: config.sslMode ? SslMode.verifyFull : SslMode.disable,
-      ),
-    );
+    try {
+      _connection = await Connection.open(
+        Endpoint(
+          host: config.host,
+          database: config.database,
+          username: config.username,
+          password: config.password,
+          port: config.port,
+        ),
+        settings: ConnectionSettings(
+          sslMode: config.sslMode ? SslMode.verifyFull : SslMode.disable,
+        ),
+      );
+    } catch (e) {
+      throw DatabaseException('Database connection failed', e);
+    }
   }
 
   @override
@@ -41,7 +47,11 @@ class PostgresConnector implements DatabaseConnection {
       );
       return result.affectedRows > 0;
     } catch (e) {
-      throw Exception(e);
+      throw QueryException(
+        query,
+        bindings,
+        e,
+      );
     }
   }
 
@@ -56,7 +66,11 @@ class PostgresConnector implements DatabaseConnection {
 
       return result.map((row) => row.toColumnMap()).toList();
     } catch (e) {
-      throw Exception(e);
+      throw QueryException(
+        query,
+        bindings,
+        e,
+      );
     }
   }
 
@@ -70,7 +84,11 @@ class PostgresConnector implements DatabaseConnection {
       );
       return result.affectedRows;
     } catch (e) {
-      throw Exception(e);
+      throw QueryException(
+        query,
+        bindings,
+        e,
+      );
     }
   }
 }

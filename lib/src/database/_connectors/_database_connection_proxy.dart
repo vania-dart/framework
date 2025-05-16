@@ -1,4 +1,7 @@
 import 'package:vania/src/contract/database/_connectors/_database_connection.dart';
+import 'package:vania/src/exception/database_exception.dart'
+    show DatabaseException;
+import 'package:vania/src/exception/query_exception.dart';
 import '../monitoring/database_monitor.dart';
 import '../../logger/logger.dart';
 
@@ -25,9 +28,6 @@ class DatabaseConnectionProxy implements DatabaseConnection {
     try {
       var formattedQuery = query;
 
-      Logger.log('Formatting query: $query with bindings: $bindings',
-          type: Logger.DEBUG);
-
       if (bindings.isEmpty) {
         return formattedQuery;
       }
@@ -42,12 +42,10 @@ class DatabaseConnectionProxy implements DatabaseConnection {
         formattedQuery = formattedQuery.replaceAll(placeholder, formattedValue);
       }
 
-      Logger.log('Formatted query result: $formattedQuery', type: Logger.DEBUG);
-
       return formattedQuery;
     } catch (e) {
       Logger.log('Error formatting query: $e', type: Logger.ERROR);
-      return 'ERROR: Unable to format query - $query';
+      throw DatabaseException('Error formatting query: $query', e);
     }
   }
 
@@ -73,7 +71,11 @@ class DatabaseConnectionProxy implements DatabaseConnection {
       final duration = DateTime.now().difference(startTime);
       _monitor.recordQuery(_connectionId,
           'Failed: ${_formatQuery(query, bindings)} - Error: $e', duration);
-      rethrow;
+      throw QueryException(
+        query,
+        bindings,
+        e,
+      );
     }
   }
 
@@ -91,7 +93,11 @@ class DatabaseConnectionProxy implements DatabaseConnection {
       final duration = DateTime.now().difference(startTime);
       _monitor.recordQuery(_connectionId,
           'Failed: ${_formatQuery(query, bindings)} - Error: $e', duration);
-      rethrow;
+      throw QueryException(
+        query,
+        bindings,
+        e,
+      );
     }
   }
 
@@ -109,7 +115,11 @@ class DatabaseConnectionProxy implements DatabaseConnection {
       final duration = DateTime.now().difference(startTime);
       _monitor.recordQuery(_connectionId,
           'Failed: ${_formatQuery(query, bindings)} - Error: $e', duration);
-      rethrow;
+      throw QueryException(
+        query,
+        bindings,
+        e,
+      );
     }
   }
 }

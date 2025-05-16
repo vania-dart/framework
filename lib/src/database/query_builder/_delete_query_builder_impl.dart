@@ -8,14 +8,18 @@ abstract mixin class DeleteQueryBuilderImpl implements QueryBuilder {
       final sql = "DELETE FROM $table${buildWhereClause()}";
       return await getConnection().execute(sql, bindings);
     } catch (e) {
-      throw Exception(e);
+      rethrow;
     }
   }
 
   @override
   Future<bool> truncate() async {
-    String sql = "TRUNCATE TABLE $table";
-    await dbConnection?.execute(sql);
-    return true;
+    try {
+      String sql = "TRUNCATE TABLE $table";
+      await dbConnection?.execute(sql);
+      return true;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

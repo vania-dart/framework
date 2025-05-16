@@ -1,3 +1,5 @@
+import 'package:vania/src/exception/database_exception.dart';
+
 import '../contract/database/_connectors/_database_connection.dart';
 import '../exception/invalid_argument_exception.dart';
 import '../logger/logger.dart';
@@ -30,7 +32,9 @@ class ConnectionManager {
   QueryExecutor getQueryExecutor([String? connectionName]) {
     final conn = connectionName ?? defaultConnection;
     if (conn == null || !connectionMap.containsKey(conn)) {
-      throw InvalidArgumentException('Connection not found: $conn');
+      throw DatabaseException(
+        "Connection not found: $conn. Please connect to the database first.",
+      );
     }
     return _queryExecutors.putIfAbsent(
       conn,
@@ -61,7 +65,10 @@ class ConnectionManager {
       _queryExecutors[connectionName] = QueryExecutor(monitoredConnection);
     } on InvalidArgumentException catch (e) {
       Logger.log(e.message, type: Logger.ERROR);
-      throw Exception(e.message);
+      throw DatabaseException(
+        "Failed to connect to the database",
+        e,
+      );
     }
   }
 
@@ -77,14 +84,21 @@ class ConnectionManager {
           return true;
         } else {
           await transaction.rollback();
-          throw InvalidArgumentException("Transaction commit failed.");
+          throw DatabaseException(
+            "Transaction commit failed. Please check your transaction logic.",
+          );
         }
       } else {
-        throw InvalidArgumentException("Transaction begin failed.");
+        throw DatabaseException(
+          "Transaction start failed. Please check your connection.",
+        );
       }
     } catch (e) {
       await transaction.rollback();
-      throw InvalidArgumentException("Transaction failed: ${e.toString()}");
+      throw DatabaseException(
+        "Transaction failed",
+        e,
+      );
     }
   }
 
