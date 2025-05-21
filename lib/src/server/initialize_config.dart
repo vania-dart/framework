@@ -1,3 +1,5 @@
+import 'package:vania/src/route/route_handler.dart';
+
 import '../database/_database_utils/_db_config.dart';
 import '../config/config.dart';
 import '../database/_connection_manager.dart';
@@ -32,6 +34,8 @@ Future<void> initializeConfig(config) async {
     await provider.register();
     await provider.boot();
   }
+
+  initializeRoutes();
 }
 
 DBConfig _config(database) => DBConfig(

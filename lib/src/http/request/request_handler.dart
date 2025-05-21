@@ -86,19 +86,19 @@ class RequestHandler {
         }
       } on BaseHttpResponseException catch (error) {
         if (error is NotFoundException && isHtml) {
-          if (File('lib/view/template/errors/404.html').existsSync()) {
+          if (File('lib/resources/view/errors/404.html').existsSync()) {
             return view('errors/404').makeResponse(req.response);
           }
         }
 
         if (error is InternalServerError && isHtml) {
-          if (File('lib/view/template/errors/500.html').existsSync()) {
+          if (File('lib/resources/view/errors/500.html').existsSync()) {
             return view('errors/500').makeResponse(req.response);
           }
         }
 
         if (error is PageExpiredException && isHtml) {
-          if (File('lib/view/template/errors/419.html').existsSync()) {
+          if (File('lib/resources/view/errors/419.html').existsSync()) {
             return view('errors/419').makeResponse(req.response);
           }
         }

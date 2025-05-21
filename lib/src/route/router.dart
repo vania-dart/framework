@@ -52,7 +52,6 @@ class Router {
     final bool hasRequest = _getRequestVar(action.toString());
 
     final normalizedPath = _normalizePath(path);
-    print(_prefix);
     _routes.add(RouteData(
       method: method.name,
       path: normalizedPath,
