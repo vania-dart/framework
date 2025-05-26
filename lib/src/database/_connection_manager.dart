@@ -26,6 +26,8 @@ class ConnectionManager {
   Map<String, DatabaseConnection> connectionMap = {};
   String? defaultConnection;
 
+  bool get isConnected => connectionMap.isNotEmpty;
+
   DatabaseConnection? connection([String? connectionName]) =>
       connectionMap[connectionName ?? defaultConnection];
 

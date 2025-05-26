@@ -66,7 +66,7 @@ class ControllerHandler {
     } on DatabaseException catch (error) {
       _response(request, error.message, 500);
     } on QueryException catch (error) {
-      _response(request, error.cause, 500);
+      _response(request, error.cause ?? '', 500);
     } catch (error) {
       _response(request, error.toString());
     }

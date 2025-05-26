@@ -1,10 +1,13 @@
 import 'package:meta/meta.dart';
 
+import '../../contract/database/_connectors/_database_connection.dart';
 import '../../contract/database/query_builder/query_builder.dart'
     show QueryBuilder;
 import '../../exception/invalid_argument_exception.dart';
 
 abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
+  late DatabaseConnection conn;
+
   @protected
   @override
   final Map<String, dynamic> bindings = {};
@@ -27,7 +30,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
         );
       }
 
-      final conn = getConnection();
+      conn = await getConnection();
       final columns = values.keys.toList();
       final paramBindings = <String, dynamic>{};
 
@@ -39,7 +42,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       }).join(", ");
 
       final query =
-          "INSERT INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
+          "INSERT INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
       await conn.insert(query, paramBindings);
       return true;
     } catch (e) {
@@ -55,8 +58,9 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
     var columns = values.keys.toList();
     String cols = columns.join(", ");
     String vals = columns.map((col) => formatValue(values[col])).join(", ");
-    String sql = "INSERT INTO $table ($cols) VALUES ($vals)";
-    final id = await dbConnection?.insert(sql);
+    String sql = "INSERT INTO $getTable ($cols) VALUES ($vals)";
+    conn = await getConnection();
+    final id = await conn.insert(sql);
     return id;
   }
 
@@ -83,7 +87,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
         }
       }
 
-      final conn = getConnection();
+      conn = await getConnection();
       final paramBindings = <String, dynamic>{};
       final valueGroups = <String>[];
 
@@ -99,7 +103,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       }
 
       final query =
-          "INSERT INTO $table (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
+          "INSERT INTO $getTable (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
 
       await conn.execute(query, paramBindings);
       return true;
@@ -126,8 +130,9 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       var columns = values.keys.toList();
       String cols = columns.join(", ");
       String vals = columns.map((col) => formatValue(values[col])).join(", ");
-      String sql = "INSERT IGNORE INTO $table ($cols) VALUES ($vals)";
-      await dbConnection?.execute(sql);
+      String sql = "INSERT IGNORE INTO $getTable ($cols) VALUES ($vals)";
+      conn = await getConnection();
+      await conn.execute(sql);
       return true;
     } catch (e) {
       rethrow;
@@ -141,9 +146,10 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   ) async {
     try {
       String cols = columns.join(", ");
-      String subSql = subQuery.toSql();
-      String sql = "INSERT INTO $table ($cols) $subSql";
-      await dbConnection?.execute(sql);
+      String subSql = subQuery.toRawSql();
+      String sql = "INSERT INTO $getTable ($cols) $subSql";
+      conn = await getConnection();
+      await conn.execute(sql);
       return true;
     } catch (e) {
       rethrow;
@@ -161,7 +167,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       String cols = columns.join(", ");
       String vals = columns.map((col) => formatValue(values[col])).join(", ");
 
-      String sql = "INSERT INTO $table ($cols) VALUES ($vals)";
+      String sql = "INSERT INTO $getTable ($cols) VALUES ($vals)";
 
       if (update == null) {
         update = Map.from(values);
@@ -176,8 +182,8 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
             .join(", ");
         sql += " ON DUPLICATE KEY UPDATE $updates";
       }
-
-      await dbConnection?.execute(sql);
+      conn = await getConnection();
+      await conn.execute(sql);
       return true;
     } catch (e) {
       rethrow;
