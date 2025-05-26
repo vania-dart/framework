@@ -48,9 +48,7 @@ class PostgresConnector implements DatabaseConnection {
       return result.affectedRows > 0;
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }
@@ -67,9 +65,7 @@ class PostgresConnector implements DatabaseConnection {
       return result.map((row) => row.toColumnMap()).toList();
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }
@@ -85,9 +81,7 @@ class PostgresConnector implements DatabaseConnection {
       return result.affectedRows;
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }

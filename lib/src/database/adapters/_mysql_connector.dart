@@ -41,9 +41,7 @@ class MySqlConnector implements DatabaseConnection {
       return true;
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }
@@ -59,9 +57,7 @@ class MySqlConnector implements DatabaseConnection {
       return results.rows.map((item) => item.assoc()).toList();
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }
@@ -74,9 +70,7 @@ class MySqlConnector implements DatabaseConnection {
       return results.lastInsertID;
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }
