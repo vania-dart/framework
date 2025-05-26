@@ -1,5 +1,4 @@
 import 'package:meta/meta.dart';
-
 import '../../../database/monitoring/database_monitor.dart';
 import '../../../exception/invalid_argument_exception.dart';
 
@@ -43,24 +42,27 @@ abstract class QueryBuilder
   @protected
   String build({String? aggregateFunction, String? aggregateColumn});
   String toSql();
+  String toRawSql();
 
   @protected
   DatabaseConnection? get dbConnection =>
       ConnectionManager().connection(connectionName);
 
-  String get table => '';
+  @protected
+  String get getTable => '';
+
   String? get connectionName;
 
-  DatabaseConnection getConnection() {
-    if (dbConnection == null) {
-      throw InvalidArgumentException('Database connection not set');
+  Future<DatabaseConnection> getConnection() async {
+    if (!ConnectionManager().isConnected) {
+      throw InvalidArgumentException('No database connection found.');
     }
     return dbConnection!;
   }
 
   QueryBuilder connection([String? connection]);
 
-  QueryBuilder from(String table, [String? as]);
+  QueryBuilder table(String table, [String? as]);
 
   String raw(value);
 
