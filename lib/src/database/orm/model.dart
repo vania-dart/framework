@@ -259,7 +259,7 @@ abstract class Model extends QueryBuilderImpl {
         "Invalid input: Value cannot be null. A valid value must be provided for the firstWhere method.",
       );
     }
-    conditions.add("$column $operator ${formatValue(value)}");
+    where(column, operator ?? '=', value);
     return await first(columns);
   }
 
