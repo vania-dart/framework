@@ -1,7 +1,7 @@
 import '../../exception/invalid_argument_exception.dart';
 import '../../contract/database/query_builder/query_builder.dart'
     show QueryBuilder, QueryCallback;
-import '../_database_utils/_string_inflector.dart';
+import '../_database_utils/_singularize.dart';
 import '_query_builder_impl.dart';
 
 abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
@@ -982,7 +982,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     callback(subQuery);
 
     String currentTable = getTable.split(' ').first;
-    String foreignKey = '${StringInflector.singularize(currentTable)}_id';
+    String foreignKey = '${Singularize.make(currentTable)}_id';
 
     subQuery.whereColumn('$relation.$foreignKey', '$currentTable.id');
 
