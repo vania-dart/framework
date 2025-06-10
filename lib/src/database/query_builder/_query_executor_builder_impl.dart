@@ -241,10 +241,32 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Stream<Map<String, dynamic>> cursor() async* {
-    final result = await get();
-    for (Map<String, dynamic> row in result) {
-      yield row;
+  Stream<Map<String, dynamic>> cursor([
+    int chunk = 1000,
+  ]) async* {
+    try {
+      int offset = 0;
+
+      while (true) {
+        limit(chunk).offset(offset);
+
+        final result = await get();
+        if (result.isEmpty) {
+          break;
+        }
+
+        for (final row in result) {
+          yield row;
+        }
+
+        offset += chunk;
+
+        if (result.length < chunk) {
+          break;
+        }
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 

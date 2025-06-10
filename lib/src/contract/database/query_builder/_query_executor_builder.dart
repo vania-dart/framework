@@ -46,7 +46,9 @@ abstract class QueryExecutorBuilder {
     int chunk = 1000,
     String column,
   ]);
-  Stream<Map<String, dynamic>> cursor();
+  Stream<Map<String, dynamic>> cursor([
+    int chunk = 1000,
+  ]);
   Future<dynamic> max(String column);
   Future<dynamic> min(String column);
   Future<Map<String, dynamic>> paginate({
