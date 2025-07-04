@@ -14,3 +14,9 @@ export 'src/logger/logger.dart';
 export 'src/config/config.dart';
 
 export 'src/cryptographic/hash.dart';
+
+export 'src/exception/base_http_exception.dart';
+export 'src/exception/invalid_argument_exception.dart';
+export 'src/exception/throttle_exception.dart';
+export 'src/exception/validation_exception.dart';
+export 'src/exception/unauthenticated.dart';

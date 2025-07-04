@@ -37,7 +37,7 @@ abstract class Migration {
       String sql =
           _schemaBuilder.generateCreateTableSql(tableName, ifNotExists: false);
 
-      if (_adapter != null && _adapter!.driverName == 'pgsql') {
+      if (_adapter != null && _adapter.driverName == 'pgsql') {
         final postgresAdapter = _adapter as dynamic;
         if (postgresAdapter.executeStatements != null) {
           await postgresAdapter.executeStatements(sql,
@@ -56,7 +56,7 @@ abstract class Migration {
       }
 
       if (_adapter != null) {
-        sql = _adapter!.adaptQuery(sql);
+        sql = _adapter.adaptQuery(sql);
       }
       try {
         await _connection.connection!.execute(sql);
@@ -82,7 +82,7 @@ abstract class Migration {
 
       String sql =
           _schemaBuilder.generateCreateTableSql(tableName, ifNotExists: true);
-      if (_adapter != null && _adapter!.driverName == 'pgsql') {
+      if (_adapter != null && _adapter.driverName == 'pgsql') {
         final postgresAdapter = _adapter as dynamic;
         if (postgresAdapter.executeStatements != null) {
           await postgresAdapter.executeStatements(sql,
@@ -101,7 +101,7 @@ abstract class Migration {
       }
 
       if (_adapter != null) {
-        sql = _adapter!.adaptQuery(sql);
+        sql = _adapter.adaptQuery(sql);
       }
       try {
         await _connection.connection!.execute(sql);
@@ -156,7 +156,7 @@ abstract class Migration {
     try {
       String query = 'ALTER TABLE `$table` $alterQuery$index$foreign;';
       if (_adapter != null) {
-        query = _adapter!.adaptQuery(query);
+        query = _adapter.adaptQuery(query);
       }
 
       await _connection.connection!.execute(query);
@@ -178,7 +178,7 @@ abstract class Migration {
     }
 
     if (_adapter != null) {
-      sql = _adapter!.adaptQuery(sql);
+      sql = _adapter.adaptQuery(sql);
     }
 
     try {
@@ -200,7 +200,7 @@ abstract class Migration {
     }
 
     if (_adapter != null) {
-      sql = _adapter!.adaptQuery(sql);
+      sql = _adapter.adaptQuery(sql);
     }
 
     try {
@@ -215,7 +215,7 @@ abstract class Migration {
 
   Future<void> execute(String sql) async {
     if (_adapter != null) {
-      sql = _adapter!.adaptQuery(sql);
+      sql = _adapter.adaptQuery(sql);
     }
 
     try {

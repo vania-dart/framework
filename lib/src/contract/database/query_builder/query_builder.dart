@@ -15,6 +15,9 @@ part '_query_executor_builder.dart';
 part '_select_query_builder.dart';
 part '_union_clause_builder.dart';
 part '_update_query_builder.dart';
+part '_window_functions_builder.dart';
+part '_cte_builder.dart';
+part '_bulk_operations_builder.dart';
 
 typedef QueryCallback = QueryBuilder Function(QueryBuilder qb);
 
@@ -27,7 +30,10 @@ abstract class QueryBuilder
         DeleteQueryBuilder,
         UnionClauseBuilder,
         JoinClauseBuilder,
-        QueryExecutorBuilder {
+        QueryExecutorBuilder,
+        WindowFunctionsBuilder,
+        CteBuilder,
+        BulkOperationsBuilder {
   @protected
   final List<String> conditions = [];
   @protected
@@ -74,7 +80,6 @@ abstract class QueryBuilder
   Stream<DatabaseAlert> alerts();
   Map<String, PerformanceStats> getPerformanceStats();
 
-  @protected
   Map<String, dynamic> getBindings() {
     return bindings;
   }

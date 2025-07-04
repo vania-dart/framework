@@ -1,6 +1,6 @@
 name: vania
 description: Fast, simple, and powerful backend framework for Dart built with
-version: 0.8.2
+version: 1.0.0
 homepage: https://vdart.dev
 repository: https://github.com/vania-dart/framework
 issue_tracker: https://github.com/vania-dart/framework/issues
@@ -12,14 +12,15 @@ screenshots:
     path: assets/logo.png
 
 environment:
-   sdk: '>=3.0.0 <4.0.0'
+   sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
+  args: ^2.7.0
   crypto: ^3.0.6
-  dart_jsonwebtoken: ^2.14.2
-  encrypt: ^5.0.3
+  cryptography: ^2.7.0
+  dart_jsonwebtoken: ^3.2.0
   mailer: ^6.4.1
-  meta: ^1.16.0
+  meta: ^1.17.0
   mime: ^2.0.0
   mysql_client: ^0.0.27
   path: ^1.9.1

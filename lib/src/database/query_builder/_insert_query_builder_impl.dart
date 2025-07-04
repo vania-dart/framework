@@ -55,13 +55,30 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
     Map<String, dynamic> values, [
     String? sequence,
   ]) async {
-    var columns = values.keys.toList();
-    String cols = columns.join(", ");
-    String vals = columns.map((col) => formatValue(values[col])).join(", ");
-    String sql = "INSERT INTO $getTable ($cols) VALUES ($vals)";
-    conn = await getConnection();
-    final id = await conn.insert(sql);
-    return id;
+    try {
+      if (values.isEmpty) {
+        throw InvalidArgumentException(
+          "Values map cannot be empty for insertGetId operation.",
+        );
+      }
+
+      conn = await getConnection();
+      final columns = values.keys.toList();
+      final paramBindings = <String, dynamic>{};
+
+      final placeholders = values.keys.map((key) {
+        final paramName = _nextParamName();
+        paramBindings[paramName] = values[key];
+        return ":$paramName";
+      }).join(", ");
+
+      final query =
+          "INSERT INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
+      final id = await conn.insert(query, paramBindings);
+      return id;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
@@ -127,12 +144,23 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
     Map<String, dynamic> values,
   ) async {
     try {
-      var columns = values.keys.toList();
-      String cols = columns.join(", ");
-      String vals = columns.map((col) => formatValue(values[col])).join(", ");
-      String sql = "INSERT IGNORE INTO $getTable ($cols) VALUES ($vals)";
+      if (values.isEmpty) {
+        throw InvalidArgumentException(
+          "Values map cannot be empty for insertOrIgnore operation.",
+        );
+      }
       conn = await getConnection();
-      await conn.execute(sql);
+      final columns = values.keys.toList();
+      final paramBindings = <String, dynamic>{};
+      final placeholders = values.keys.map((key) {
+        final paramName = _nextParamName();
+        paramBindings[paramName] = values[key];
+        return ":$paramName";
+      }).join(", ");
+
+      final query =
+          "INSERT IGNORE INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
+      await conn.execute(query, paramBindings);
       return true;
     } catch (e) {
       rethrow;
@@ -163,11 +191,24 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
     Map<String, dynamic>? update,
   ]) async {
     try {
-      var columns = values.keys.toList();
-      String cols = columns.join(", ");
-      String vals = columns.map((col) => formatValue(values[col])).join(", ");
+      if (values.isEmpty) {
+        throw InvalidArgumentException(
+          "Values map cannot be empty for upsert operation.",
+        );
+      }
 
-      String sql = "INSERT INTO $getTable ($cols) VALUES ($vals)";
+      conn = await getConnection();
+      final columns = values.keys.toList();
+      final paramBindings = <String, dynamic>{};
+
+      final placeholders = values.keys.map((key) {
+        final paramName = _nextParamName();
+        paramBindings[paramName] = values[key];
+        return ":$paramName";
+      }).join(", ");
+
+      String sql =
+          "INSERT INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
 
       if (update == null) {
         update = Map.from(values);
@@ -177,13 +218,16 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       }
 
       if (update.isNotEmpty) {
-        String updates = update.entries
-            .map((e) => "${e.key} = ${formatValue(e.value)}")
-            .join(", ");
-        sql += " ON DUPLICATE KEY UPDATE $updates";
+        final updateClauses = update.entries.map((entry) {
+          final paramName = _nextParamName();
+          paramBindings[paramName] = entry.value;
+          return "${entry.key} = :$paramName";
+        }).join(", ");
+
+        sql += " ON DUPLICATE KEY UPDATE $updateClauses";
       }
-      conn = await getConnection();
-      await conn.execute(sql);
+
+      await conn.execute(sql, paramBindings);
       return true;
     } catch (e) {
       rethrow;

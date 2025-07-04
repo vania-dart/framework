@@ -7,7 +7,7 @@ class VaniaEncryption {
 
   /// Encrypts the given [plainText] using the provided [passphrase].
   ///
-  /// This method first encodes the [plainText] using Base64 and UTF-8 encoding.
+  /// This method first encodes the [plainText] using Base64 and `UTF-8` encoding.
   /// Then, it creates a cryptographic key from the [passphrase] and uses the
   /// AES encryption algorithm to encrypt the text with a predefined initialization
   /// vector (IV). The result is an encrypted string returned in Base64 format.
@@ -52,7 +52,7 @@ class VaniaEncryption {
   /// This method first creates a cryptographic key from the [passphrase].
   /// It then uses the AES encryption algorithm to decrypt the [encryptedText]
   /// with a predefined initialization vector (IV). The decrypted text is
-  /// decoded from Base64 and UTF-8 encoding to return the original plaintext.
+  /// decoded from Base64 and `UTF-8` encoding to return the original plaintext.
   ///
   /// Parameters:
   /// - [encryptedText]: The text to be decrypted, in Base64 format.

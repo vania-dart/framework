@@ -118,7 +118,7 @@ class TableDefinition implements Future<void> {
       String alterSql = 'ALTER TABLE `$_tableName` ${options.join(', ')}';
 
       if (_adapter != null) {
-        alterSql = _adapter!.adaptQuery(alterSql);
+        alterSql = _adapter.adaptQuery(alterSql);
       }
 
       await _connection!.connection!.execute(alterSql);
