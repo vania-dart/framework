@@ -3,6 +3,8 @@ import '../../contract/database/query_builder/query_builder.dart';
 import '../../exception/invalid_argument_exception.dart';
 import '../_connection_manager.dart';
 import '../monitoring/database_monitor.dart';
+import '_bulk_operations_builder_impl.dart';
+import '_cte_builder_impl.dart';
 import '_delete_query_builder_impl.dart';
 import '_insert_query_builder_impl.dart';
 import '_join_clause_builder_impl.dart';
@@ -11,6 +13,7 @@ import '_query_executor_builder_impl.dart';
 import '_select_query_builder_impl.dart';
 import '_union_clause_builder_impl.dart';
 import '_update_query_builder_impl.dart';
+import '_window_functions_builder_impl.dart';
 
 class QueryBuilderImpl extends QueryBuilder
     with
@@ -21,7 +24,10 @@ class QueryBuilderImpl extends QueryBuilder
         DeleteQueryBuilderImpl,
         SelectQueryBuilderImpl,
         JoinClauseBuilderImpl,
-        UnionClauseBuilderImpl {
+        UnionClauseBuilderImpl,
+        WindowFunctionsBuilderImpl,
+        BulkOperationsBuilderImpl,
+        CteBuilderImpl {
   String _connectionName = 'mysql';
   final List<String> _orderBy = [];
   final List<String> _groupBy = [];
@@ -31,6 +37,7 @@ class QueryBuilderImpl extends QueryBuilder
   String? _tableAlias;
   int? _limit;
   int? _offset;
+  int _paramCounter = 0;
 
   @override
   String get connectionName => _connectionName;
@@ -129,7 +136,9 @@ class QueryBuilderImpl extends QueryBuilder
   ]) {
     String clause;
     if (operator != null && value != null) {
-      clause = "$column $operator ${formatValue(value)}";
+      final paramName = _nextParamName();
+      bindings[paramName] = value;
+      clause = "$column $operator :$paramName";
     } else {
       clause = column;
     }
@@ -142,15 +151,25 @@ class QueryBuilderImpl extends QueryBuilder
   }
 
   @override
-  QueryBuilder havingBetween(String column, List<dynamic> values,
-      {String boolean = 'and', bool not = false}) {
+  QueryBuilder havingBetween(
+    String column,
+    List<dynamic> values, {
+    String boolean = 'and',
+    bool not = false,
+  }) {
     if (values.length < 2) {
       throw InvalidArgumentException(
         'The list of values must contain at least two items.',
       );
     }
+
+    final paramName1 = _nextParamName();
+    final paramName2 = _nextParamName();
+    bindings[paramName1] = values[0];
+    bindings[paramName2] = values[1];
+
     String clause =
-        "$column ${not ? "NOT BETWEEN" : "BETWEEN"} ${formatValue(values[0])} AND ${formatValue(values[1])}";
+        "$column ${not ? "NOT BETWEEN" : "BETWEEN"} :$paramName1 AND :$paramName2";
     if (_having.isEmpty) {
       _having.add(clause);
     } else {
@@ -268,12 +287,16 @@ class QueryBuilderImpl extends QueryBuilder
   }
 
   @override
-  @protected
   Map<String, dynamic> getBindings() {
     Map<String, dynamic> allBindings = {};
 
     allBindings.addAll((this as WhereClausesBuilderImpl).bindings);
 
     return allBindings;
+  }
+
+  String _nextParamName() {
+    _paramCounter++;
+    return 'p$_paramCounter';
   }
 }
