@@ -1,22 +1,29 @@
+import '../../contract/database/_connectors/_database_connection.dart';
 import '../../contract/database/query_builder/query_builder.dart'
     show QueryBuilder;
 
 abstract mixin class DeleteQueryBuilderImpl implements QueryBuilder {
+  late DatabaseConnection conn;
   @override
   Future<bool> delete() async {
     try {
-      final sql = "DELETE FROM $table${buildWhereClause()}";
-      return await getConnection().execute(sql, bindings);
+      final sql = "DELETE FROM $getTable${buildWhereClause()}";
+      conn = await getConnection();
+      return await conn.execute(sql, bindings);
     } catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<bool> truncate() async {
+  Future<bool> truncate({bool force = false}) async {
     try {
-      String sql = "TRUNCATE TABLE $table";
-      await dbConnection?.execute(sql);
+      String sql = "TRUNCATE TABLE $getTable";
+      if (force) {
+        sql = "SET FOREIGN_KEY_CHECKS=0; $sql; SET FOREIGN_KEY_CHECKS=1;";
+      }
+      conn = await getConnection();
+      await conn.execute(sql);
       return true;
     } catch (e) {
       rethrow;

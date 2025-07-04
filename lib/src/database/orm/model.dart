@@ -39,13 +39,20 @@ abstract class Model extends QueryBuilderImpl {
   String get keyType => 'int';
   @protected
   String get primaryKey => 'id';
-  QueryBuilder get query => connection(defaultConnection).from(table);
+
+  QueryBuilder get query =>
+      connection(defaultConnection).table('$tablePrefix$tableName');
 
   @protected
   bool get softDeletes => false;
-  @override
-  String get table =>
+
+  @protected
+  String get tablePrefix => '';
+
+  @protected
+  String get tableName =>
       toSnakeCase(Pluralize().make(runtimeType.toString().toLowerCase()));
+
   @protected
   bool get timestamps => true;
 
@@ -252,7 +259,7 @@ abstract class Model extends QueryBuilderImpl {
         "Invalid input: Value cannot be null. A valid value must be provided for the firstWhere method.",
       );
     }
-    conditions.add("$column $operator ${formatValue(value)}");
+    where(column, operator ?? '=', value);
     return await first(columns);
   }
 
@@ -368,7 +375,7 @@ abstract class Model extends QueryBuilderImpl {
 
   bool is_(Model? model) {
     if (model == null) return false;
-    return model.getKey() == getKey() && model.table == table;
+    return model.getKey() == getKey() && model.getTable == getTable;
   }
 
   @override

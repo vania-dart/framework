@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:encrypt/encrypt.dart';
+
+import 'package:cryptography/cryptography.dart';
 
 class VaniaEncryption {
-  static IV iv = IV(Uint8List(16));
+  static final List<int> _fixedNonce = List<int>.filled(12, 0);
 
   /// Encrypts the given [plainText] using the provided [passphrase].
   ///
@@ -18,12 +18,33 @@ class VaniaEncryption {
   ///
   /// Returns:
   /// A Base64 encoded string representing the encrypted text.
-  static String encryptString(String plainText, String passphrase) {
-    plainText = base64.encode(utf8.encode(plainText));
-    Key key = Key.fromUtf8(passphrase.substring(0, 32));
-    Encrypter encrypter = Encrypter(AES(key));
-    Encrypted encrypted = encrypter.encrypt(plainText, iv: iv);
-    return encrypted.base64;
+  static Future<String> encryptString(
+      String plainText, String passphrase) async {
+    try {
+      plainText = base64.encode(utf8.encode(plainText));
+
+      final keyBytes =
+          utf8.encode(passphrase.padRight(32, '0').substring(0, 32));
+      final secretKey = SecretKey(keyBytes);
+
+      final plainBytes = utf8.encode(plainText);
+
+      final aesGcm = AesGcm.with256bits();
+      final secretBox = await aesGcm.encrypt(
+        plainBytes,
+        secretKey: secretKey,
+        nonce: _fixedNonce,
+      );
+
+      final combined = <int>[];
+      combined.addAll(secretBox.nonce);
+      combined.addAll(secretBox.cipherText);
+      combined.addAll(secretBox.mac.bytes);
+
+      return base64.encode(combined);
+    } catch (error) {
+      return '';
+    }
   }
 
   /// Decrypts the given [encryptedText] using the provided [passphrase].
@@ -31,21 +52,42 @@ class VaniaEncryption {
   /// This method first creates a cryptographic key from the [passphrase].
   /// It then uses the AES encryption algorithm to decrypt the [encryptedText]
   /// with a predefined initialization vector (IV). The decrypted text is
-  /// decoded from Base64 and UTF-8 encoding to return the original plain text.
+  /// decoded from Base64 and UTF-8 encoding to return the original plaintext.
   ///
   /// Parameters:
   /// - [encryptedText]: The text to be decrypted, in Base64 format.
   /// - [passphrase]: The passphrase used to generate the decryption key.
   ///
   /// Returns:
-  /// The original plain text if decryption is successful, or an empty
+  /// The original plaintext if decryption is successful, or an empty
   /// string if decryption fails.
-  static String decryptString(String encryptedText, String passphrase) {
+  static Future<String> decryptString(
+      String encryptedText, String passphrase) async {
     try {
-      Key key = Key.fromUtf8(passphrase.substring(0, 32));
-      Encrypter encrypter = Encrypter(AES(key));
-      String decrypted = encrypter.decrypt64(encryptedText, iv: iv);
-      return utf8.decode(base64.decode(decrypted));
+      final keyBytes =
+          utf8.encode(passphrase.padRight(32, '0').substring(0, 32));
+      final secretKey = SecretKey(keyBytes);
+
+      // Decode the base64 encrypted text
+      final encryptedBytes = base64.decode(encryptedText);
+
+      final nonce = encryptedBytes.sublist(0, 12);
+      final mac = encryptedBytes.sublist(encryptedBytes.length - 16);
+      final cipherText = encryptedBytes.sublist(12, encryptedBytes.length - 16);
+
+      final secretBox = SecretBox(
+        cipherText,
+        nonce: nonce,
+        mac: Mac(mac),
+      );
+
+      final aesGcm = AesGcm.with256bits();
+      final decryptedBytes = await aesGcm.decrypt(
+        secretBox,
+        secretKey: secretKey,
+      );
+      final decryptedText = utf8.decode(decryptedBytes);
+      return utf8.decode(base64.decode(decryptedText));
     } catch (error) {
       return '';
     }

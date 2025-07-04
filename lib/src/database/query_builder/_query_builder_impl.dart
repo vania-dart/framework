@@ -1,5 +1,4 @@
 import 'package:meta/meta.dart';
-
 import '../../contract/database/query_builder/query_builder.dart';
 import '../../exception/invalid_argument_exception.dart';
 import '../_connection_manager.dart';
@@ -38,7 +37,7 @@ class QueryBuilderImpl extends QueryBuilder
   set connectionName(String value) => _connectionName = value;
 
   @override
-  String get table {
+  String get getTable {
     String tableClause = (_table != null) ? "$_table" : "";
     if (_tableAlias != null && _tableAlias!.isNotEmpty) {
       tableClause += " AS $_tableAlias";
@@ -68,39 +67,33 @@ class QueryBuilderImpl extends QueryBuilder
   String build({String? aggregateFunction, String? aggregateColumn}) {
     String sql = '';
 
-    if (table.isNotEmpty) {
+    if (getTable.isNotEmpty) {
       if (aggregateFunction != null && aggregateColumn != null) {
-        sql = "SELECT $aggregateFunction($aggregateColumn) FROM $table";
+        sql = "SELECT $aggregateFunction($aggregateColumn) FROM $getTable";
       } else {
         sql =
-            "SELECT ${selectColumns.isEmpty ? "*" : selectColumns.join(", ")} FROM $table";
+            "SELECT ${selectColumns.isEmpty ? "*" : selectColumns.join(", ")} FROM $getTable";
       }
 
       if (joins.isNotEmpty) {
         sql += " ${joins.join(" ")}";
-        joins.clear();
       }
 
       sql += conditions.isNotEmpty ? " WHERE ${conditions.join(" ")}" : "";
-      conditions.clear();
 
       if (unions.isNotEmpty) {
         sql += " ${unions.join(" ")}";
-        unions.clear();
       }
 
       if (aggregateFunction == null && aggregateColumn == null) {
         if (_groupBy.isNotEmpty) {
           sql += " GROUP BY ${_groupBy.join(", ")}";
-          _groupBy.clear();
         }
         if (_having.isNotEmpty) {
           sql += " HAVING ${_having.join(" ")}";
-          _having.clear();
         }
         if (_orderBy.isNotEmpty) {
           sql += " ORDER BY ${_orderBy.join(", ")}";
-          _orderBy.clear();
         }
 
         sql += (_limit != null) ? " LIMIT $_limit" : "";
@@ -108,7 +101,6 @@ class QueryBuilderImpl extends QueryBuilder
       }
     } else if (conditions.isNotEmpty) {
       sql = conditions.join(" ");
-      conditions.clear();
     } else {
       sql = '';
     }
@@ -228,7 +220,7 @@ class QueryBuilderImpl extends QueryBuilder
   }
 
   @override
-  QueryBuilder from(String table, [String? as]) {
+  QueryBuilder table(String table, [String? as]) {
     _table = table;
     _tableAlias = as;
     return this;
@@ -242,6 +234,38 @@ class QueryBuilderImpl extends QueryBuilder
 
   @override
   String toSql() => build();
+
+  @override
+  String toRawSql() {
+    String sql = build();
+    final bindings = getBindings();
+
+    bindings.forEach((key, value) {
+      String placeholder = ':$key';
+      String formattedValue = _formatValueForRawSql(value);
+      sql = sql.replaceAll(placeholder, formattedValue);
+    });
+
+    return sql;
+  }
+
+  String _formatValueForRawSql(dynamic value) {
+    if (value == null) {
+      return 'NULL';
+    } else if (value is String) {
+      return "'${value.replaceAll("'", "''")}'";
+    } else if (value is num) {
+      return value.toString();
+    } else if (value is bool) {
+      return value.toString();
+    } else if (value is DateTime) {
+      return "'${value.toIso8601String()}'";
+    } else if (value is List) {
+      return '(${value.map(_formatValueForRawSql).join(', ')})';
+    } else {
+      return "'${value.toString().replaceAll("'", "''")}'";
+    }
+  }
 
   @override
   @protected

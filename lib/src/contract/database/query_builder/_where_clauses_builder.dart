@@ -367,5 +367,27 @@ abstract interface class WhereClausesBuilder {
     String boolean = 'and',
   });
 
+  QueryBuilder whereHas(
+    String relation,
+    QueryCallback callback, {
+    String boolean = 'and',
+  });
+
+  QueryBuilder orWhereHas(
+    String relation,
+    QueryCallback callback,
+  );
+
+  QueryBuilder whereDoesntHave(
+    String relation,
+    QueryCallback callback, {
+    String boolean = 'and',
+  });
+
+  QueryBuilder orWhereDoesntHave(
+    String relation,
+    QueryCallback callback,
+  );
+
   QueryBuilder withSoftDeletes([String column = 'deleted_at']);
 }

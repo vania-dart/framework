@@ -1,9 +1,11 @@
+import '../../contract/database/_connectors/_database_connection.dart';
 import '../../exception/invalid_argument_exception.dart';
 
 import '../../contract/database/query_builder/query_builder.dart'
     show PaginatedResult, QueryBuilder;
 
 abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
+  late DatabaseConnection conn;
   @override
   Future<num> avg(
     String column,
@@ -14,8 +16,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
         aggregateColumn: column,
       );
       final bindings = getBindings();
-      var result = await dbConnection?.select(sql, bindings);
-      return num.tryParse(result?.first.values.first) ?? 0;
+      conn = await getConnection();
+      var result = await conn.select(sql, bindings);
+      return num.tryParse(result.first.values.first) ?? 0;
     } catch (e) {
       rethrow;
     }
@@ -80,8 +83,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future<int> count([String columns = '*']) async {
     try {
       String sql = build(aggregateFunction: "COUNT", aggregateColumn: columns);
-      var result = await dbConnection?.select(sql, bindings);
-      return int.tryParse(result?.first.values.first) ?? 0;
+      conn = await getConnection();
+      var result = await conn.select(sql, bindings);
+      return int.tryParse(result.first.values.first) ?? 0;
     } catch (e) {
       rethrow;
     }
@@ -90,7 +94,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<bool> doesntExist() async {
     try {
-      String sql = "SELECT NOT EXISTS(SELECT 1 $table";
+      String sql = "SELECT NOT EXISTS(SELECT 1 $getTable";
       if (conditions.isNotEmpty) {
         sql += " WHERE ${conditions.join('')}";
       }
@@ -115,7 +119,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<bool> exists() async {
     try {
-      String sql = "SELECT EXISTS(SELECT 1 $table";
+      String sql = "SELECT EXISTS(SELECT 1 $getTable";
       if (conditions.isNotEmpty) {
         sql += " WHERE ${conditions.join('')}";
       }
@@ -134,7 +138,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   ]) async {
     try {
       final bindings = getBindings();
-      String sql = whereEqualTo('$table.id', id).limit(1).toSql();
+      String sql = whereEqualTo('$getTable.id', id).limit(1).toSql();
       final result = await dbConnection!.select(sql, bindings);
       if (result.isEmpty) {
         return null;
@@ -164,8 +168,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     try {
       final bindings = getBindings();
       String sql = limit(1).toSql();
-
-      final result = await dbConnection!.select(sql, bindings);
+      conn = await getConnection();
+      final result = await conn.select(sql, bindings);
       if (result.isEmpty) {
         return null;
       }
@@ -198,8 +202,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
         "Invalid input: Value cannot be null. A valid value must be provided for the firstWhere method.",
       );
     }
-
-    conditions.add("$column $operator ${formatValue(value)}");
+    where(column, operator ?? '=', value);
     return await first(columns);
   }
 
@@ -210,7 +213,8 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     try {
       final bindings = getBindings();
       final sql = toSql();
-      return await dbConnection!.select(sql, bindings);
+      conn = await getConnection();
+      return await conn.select(sql, bindings);
     } catch (e) {
       rethrow;
     }
@@ -237,10 +241,32 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Stream<Map<String, dynamic>> cursor() async* {
-    final result = await get();
-    for (Map<String, dynamic> row in result) {
-      yield row;
+  Stream<Map<String, dynamic>> cursor([
+    int chunk = 1000,
+  ]) async* {
+    try {
+      int offset = 0;
+
+      while (true) {
+        limit(chunk).offset(offset);
+
+        final result = await get();
+        if (result.isEmpty) {
+          break;
+        }
+
+        for (final row in result) {
+          yield row;
+        }
+
+        offset += chunk;
+
+        if (result.length < chunk) {
+          break;
+        }
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -249,8 +275,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     try {
       final bindings = getBindings();
       String sql = build(aggregateFunction: "MAX", aggregateColumn: column);
-      var result = await dbConnection?.select(sql, bindings);
-      return result?.first.values.first;
+      conn = await getConnection();
+      var result = await conn.select(sql, bindings);
+      return result.first.values.first;
     } catch (e) {
       rethrow;
     }
@@ -261,8 +288,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     try {
       final bindings = getBindings();
       String sql = build(aggregateFunction: "MIN", aggregateColumn: column);
-      var result = await dbConnection?.select(sql, bindings);
-      return result?.first.values.first;
+      conn = await getConnection();
+      var result = await conn.select(sql, bindings);
+      return result.first.values.first;
     } catch (e) {
       rethrow;
     }
@@ -337,9 +365,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     try {
       final bindings = getBindings();
       String sql = build(aggregateFunction: "SUM", aggregateColumn: column);
-
-      var result = await dbConnection?.select(sql, bindings);
-      return num.tryParse(result?.first.values.first) ?? 0;
+      conn = await getConnection();
+      var result = await conn.select(sql, bindings);
+      return num.tryParse(result.first.values.first) ?? 0;
     } catch (e) {
       rethrow;
     }

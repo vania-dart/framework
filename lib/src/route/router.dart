@@ -51,6 +51,10 @@ class Router {
   }) {
     final bool hasRequest = _getRequestVar(action.toString());
 
+    if (!path.startsWith('/')) {
+      path = '/$path';
+    }
+
     final normalizedPath = _normalizePath(path);
     _routes.add(RouteData(
       method: method.name,
@@ -282,7 +286,7 @@ class Router {
 
   static void group(
     Function callback, {
-    String? prefix,
+    String? prefix = '',
     List<Middleware> middleware = const [],
     String? domain,
   }) {
@@ -296,16 +300,23 @@ class Router {
 
     if (router._groupPrefix != null) {
       if (prefix != null) {
+        if (!prefix.startsWith('/')) {
+          prefix = '/$prefix';
+        }
         router._groupPrefix = _joinPrefixes(router._groupPrefix!, prefix);
       }
     } else {
+      if (prefix != null) {
+        if (!prefix.startsWith('/')) {
+          prefix = '/$prefix';
+        }
+      }
       router._groupPrefix = prefix;
     }
 
     if (middleware.isNotEmpty) {
       router._groupMiddleware.addAll(middleware);
     }
-
     callback();
 
     router._groupDomain = previousDomain;

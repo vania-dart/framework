@@ -1,6 +1,7 @@
 import '../../exception/invalid_argument_exception.dart';
 import '../../contract/database/query_builder/query_builder.dart'
     show QueryBuilder, QueryCallback;
+import '../_database_utils/_singularize.dart';
 import '_query_builder_impl.dart';
 
 abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
@@ -912,8 +913,93 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
+  QueryBuilder whereHas(
+    String relation,
+    QueryCallback callback, {
+    String boolean = 'and',
+  }) {
+    String condition = _createRelationshipCondition(relation, callback, false);
+    _appendCondition(
+      condition,
+      isOr: (boolean.toLowerCase() == 'or'),
+    );
+    return this;
+  }
+
+  @override
+  QueryBuilder orWhereHas(
+    String relation,
+    QueryCallback callback,
+  ) {
+    String condition = _createRelationshipCondition(relation, callback, false);
+    _appendCondition(condition, isOr: true);
+    return this;
+  }
+
+  @override
+  QueryBuilder whereDoesntHave(
+    String relation,
+    QueryCallback callback, {
+    String boolean = 'and',
+  }) {
+    String condition = _createRelationshipCondition(relation, callback, true);
+    _appendCondition(
+      condition,
+      isOr: (boolean.toLowerCase() == 'or'),
+    );
+    return this;
+  }
+
+  @override
+  QueryBuilder orWhereDoesntHave(
+    String relation,
+    QueryCallback callback,
+  ) {
+    String condition = _createRelationshipCondition(relation, callback, true);
+    _appendCondition(condition, isOr: true);
+    return this;
+  }
+
+  @override
   QueryBuilder withSoftDeletes([String column = 'deleted_at']) =>
       whereNull(column);
+
+  String _createRelationshipCondition(
+    String relation,
+    QueryCallback callback,
+    bool not,
+  ) {
+    if (relation.isEmpty) {
+      throw InvalidArgumentException(
+        'Relation name cannot be empty for relationship queries.',
+      );
+    }
+
+    QueryBuilder subQuery = QueryBuilderImpl();
+
+    subQuery.table(relation);
+
+    callback(subQuery);
+
+    String currentTable = getTable.split(' ').first;
+    String foreignKey = '${Singularize.make(currentTable)}_id';
+
+    subQuery.whereColumn('$relation.$foreignKey', '$currentTable.id');
+
+    String subQuerySQL = subQuery.toSql();
+    bindings.addAll(subQuery.getBindings());
+
+    String existsClause = not ? 'NOT EXISTS' : 'EXISTS';
+    return "$existsClause (SELECT 1 FROM $relation WHERE $relation.$foreignKey = $currentTable.id AND (${_extractWhereFromSubQuery(subQuerySQL)}))";
+  }
+
+  String _extractWhereFromSubQuery(String sql) {
+    int whereIndex = sql.indexOf('WHERE');
+    if (whereIndex != -1) {
+      return sql.substring(whereIndex + 5).trim();
+    }
+    return '1=1';
+  }
 
   void _appendCondition(String condition, {bool isOr = false}) {
     if (conditions.isEmpty) {

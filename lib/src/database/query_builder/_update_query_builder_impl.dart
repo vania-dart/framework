@@ -1,8 +1,10 @@
+import '../../contract/database/_connectors/_database_connection.dart';
 import '../../contract/database/query_builder/query_builder.dart'
     show QueryBuilder;
 import '../../exception/invalid_argument_exception.dart';
 
 abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
+  late DatabaseConnection conn;
   @override
   Future<bool> update(Map<String, dynamic> values) async {
     try {
@@ -18,8 +20,9 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
       }
 
       String sql =
-          "UPDATE $table${buildJoins()} SET ${setStatements.join(", ")}${buildWhereClause()}";
-      return await getConnection().execute(sql, bindings);
+          "UPDATE $getTable${buildJoins()} SET ${setStatements.join(", ")}${buildWhereClause()}";
+      conn = await getConnection();
+      return await conn.execute(sql, bindings);
     } catch (e) {
       rethrow;
     }
@@ -63,8 +66,9 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
       }
 
       String sql =
-          "UPDATE $table${buildJoins()} SET ${setClauses.join(", ")} WHERE $column IN (${whereValues.join(", ")})";
-      return await getConnection().execute(sql, bindings);
+          "UPDATE $getTable${buildJoins()} SET ${setClauses.join(", ")} WHERE $column IN (${whereValues.join(", ")})";
+      conn = await getConnection();
+      return await conn.execute(sql, bindings);
     } catch (e) {
       rethrow;
     }
@@ -106,8 +110,9 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
       }
 
       String sql =
-          "UPDATE $table${buildJoins()} SET $setClause${buildWhereClause()}";
-      return await getConnection().execute(sql, bindings);
+          "UPDATE $getTable${buildJoins()} SET $setClause${buildWhereClause()}";
+      conn = await getConnection();
+      return await conn.execute(sql, bindings);
     } catch (e) {
       rethrow;
     }
@@ -137,8 +142,9 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
       }
 
       String sql =
-          "UPDATE $table${buildJoins()} SET $setClause${buildWhereClause()}";
-      return await getConnection().execute(sql, bindings);
+          "UPDATE $getTable${buildJoins()} SET $setClause${buildWhereClause()}";
+      conn = await getConnection();
+      return await conn.execute(sql, bindings);
     } catch (e) {
       rethrow;
     }
@@ -168,8 +174,9 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
       }
 
       String sql =
-          "UPDATE $table${buildJoins()} SET ${setClauses.join(", ")}${buildWhereClause()}";
-      return await getConnection().execute(sql, bindings);
+          "UPDATE $getTable${buildJoins()} SET ${setClauses.join(", ")}${buildWhereClause()}";
+      conn = await getConnection();
+      return await conn.execute(sql, bindings);
     } catch (e) {
       rethrow;
     }

@@ -83,9 +83,7 @@ class SQLiteConnector implements DatabaseConnection {
       return true;
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }
@@ -115,9 +113,7 @@ class SQLiteConnector implements DatabaseConnection {
       return rows;
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }
@@ -137,9 +133,7 @@ class SQLiteConnector implements DatabaseConnection {
       return id;
     } catch (e) {
       throw QueryException(
-        query,
-        bindings,
-        e,
+        e.toString(),
       );
     }
   }

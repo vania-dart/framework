@@ -119,11 +119,18 @@ RouteData? _handleNotFound(HttpRequest req, String method) {
 }
 
 RouteData? _findMatchingRoute(
-    String requestPath, String method, String domain) {
+  String requestPath,
+  String method,
+  String domain,
+) {
   final staticList = _staticRoutes[method] ?? [];
+
   for (final route in staticList) {
-    final fullPath =
+    String fullPath =
         _normalizePath(_normalizePrefix(route.prefix) + route.path);
+    if (fullPath.endsWith('/')) {
+      fullPath = fullPath.substring(0, fullPath.length - 1);
+    }
     if (fullPath == _normalizePath(requestPath) &&
         _domainMatches(domain, route.domain)) {
       return _applyDomainParams(route, domain);
