@@ -17,6 +17,8 @@ Future<void> initializeConfig(config) async {
       _config(connections[ConnectionManager().defaultConnection]),
       database['default'],
     );
+
+    // Handle additional connections
     List<String> additionalConnections =
         database['additional_connections'] ?? <String>[];
     if (additionalConnections.isNotEmpty) {
