@@ -21,12 +21,15 @@ abstract class Model extends QueryBuilderImpl {
   Map<String, dynamic> attributes = {};
   final Map<String, Relation> _relations = {};
   List<_RelationQuery> _withRelation = [];
+  String get defaultConnection => _connection;
+
   String _connection = 'mysql';
   @protected
   String get createdAt => 'created_at';
-  String get defaultConnection => _connection;
   @protected
   String get deletedAt => 'deleted_at';
+  @protected
+  String get updatedAt => 'updated_at';
   @protected
   List<String> get fillable => [];
   @protected
@@ -40,8 +43,8 @@ abstract class Model extends QueryBuilderImpl {
   @protected
   String get primaryKey => 'id';
 
-  QueryBuilder get query =>
-      connection(defaultConnection).table('$tablePrefix$tableName');
+  Model get query =>
+      connection(defaultConnection).table('$tablePrefix$tableName') as Model;
 
   @protected
   bool get softDeletes => false;
@@ -50,14 +53,21 @@ abstract class Model extends QueryBuilderImpl {
   String get tablePrefix => '';
 
   @protected
+  @override
+  String get getTable => tableName;
+
+  @protected
   String get tableName =>
       toSnakeCase(Pluralize().make(runtimeType.toString().toLowerCase()));
 
   @protected
   bool get timestamps => true;
 
-  @protected
-  String get updatedAt => 'updated_at';
+  bool _relationsRegistered = false;
+
+  /// Override this method to define model relationships
+  /// This method is called automatically when include() is used
+  void registerRelations() {}
 
   @override
   Future<num> avg(
@@ -171,6 +181,21 @@ abstract class Model extends QueryBuilderImpl {
   }
 
   @override
+  Future<bool> delete() async {
+    try {
+      if (softDeletes) {
+        final now = DateTime.now();
+        super.update({deletedAt: now, updatedAt: now});
+      } else {
+        super.delete();
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
   @override
   Future<bool> doesntExist() async {
     if (softDeletes) {
@@ -198,13 +223,18 @@ abstract class Model extends QueryBuilderImpl {
 
   @override
   Future<Map<String, dynamic>?> find(
-    dynamic id, [
+    dynamic id, {
+    String? primaryKey,
     List<String> columns = const ['*'],
-  ]) async {
+  }) async {
     if (softDeletes) {
       whereNull(deletedAt);
     }
-    Map<String, dynamic>? result = await super.find(id, columns);
+    Map<String, dynamic>? result = await super.find(
+      id,
+      primaryKey: primaryKey ?? this.primaryKey,
+      columns: columns,
+    );
     attributes = Map.from(result ?? {});
     result?.removeWhere((key, _) => hidden.contains(key));
 
@@ -218,10 +248,15 @@ abstract class Model extends QueryBuilderImpl {
 
   @override
   Future<Map<String, dynamic>?> findOrFail(
-    id, [
+    id, {
+    String? primaryKey,
     List<String> columns = const ['*'],
-  ]) async {
-    var result = await find(id, columns);
+  }) async {
+    var result = await find(
+      id,
+      primaryKey: primaryKey ?? this.primaryKey,
+      columns: columns,
+    );
     if (result == null) {
       throw InvalidArgumentException("Record with id $id not found.");
     }
@@ -301,21 +336,19 @@ abstract class Model extends QueryBuilderImpl {
     String? foreignKey,
     String localKey = 'id',
   }) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries(
-        [
-          MapEntry(
-            name,
-            HasMany(
-              related: model,
-              parent: this,
-              foreignKey: foreignKey,
-              localKey: localKey,
-            ),
+    _relations.addEntries(
+      [
+        MapEntry(
+          name,
+          HasMany(
+            related: model,
+            parent: this,
+            foreignKey: foreignKey,
+            localKey: localKey,
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
 
   void hasOne(
@@ -650,7 +683,12 @@ abstract class Model extends QueryBuilderImpl {
     return super.value(column);
   }
 
-  Model include(String relation, {Function(Model qb)? callback}) {
+  Model include(String relation, [Function(Model qb)? callback]) {
+    if (!_relationsRegistered) {
+      registerRelations();
+      _relationsRegistered = true;
+    }
+
     _withRelation.add(_RelationQuery(relation, callback));
     return this;
   }
@@ -674,6 +712,11 @@ abstract class Model extends QueryBuilderImpl {
       List<String> wr = relation.split('.');
 
       String primaryRelation = wr.first;
+
+      if (!_relations.containsKey(primaryRelation)) {
+      throw InvalidArgumentException(
+          'Relation $relation not found in $runtimeType');
+    }
 
       Relation rela = _relations[primaryRelation] as Relation;
 

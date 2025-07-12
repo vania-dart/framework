@@ -2,6 +2,7 @@ import 'package:vania/src/exception/database_exception.dart';
 
 import '../contract/database/_connectors/_database_connection.dart';
 import '../exception/invalid_argument_exception.dart';
+import '../exception/query_exception.dart';
 import '../logger/logger.dart';
 import '_connectors/_database_connection_factory.dart';
 import '_connectors/_db_transaction.dart';
@@ -95,6 +96,12 @@ class ConnectionManager {
           "Transaction start failed. Please check your connection.",
         );
       }
+    } on QueryException catch (e) {
+      await transaction.rollback();
+      throw DatabaseException(
+        "Transaction failed ${e.cause}",
+        e,
+      );
     } catch (e) {
       await transaction.rollback();
       throw DatabaseException(
