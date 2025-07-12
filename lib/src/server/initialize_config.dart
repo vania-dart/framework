@@ -49,8 +49,8 @@ DBConfig _config(database) => DBConfig(
       password: database['password'] ?? '',
       sslMode: database['sslmode'] ?? '',
       collation: database['collation'] ?? '',
-      pool: database['pool'] ?? false,
-      poolSize: database['poolsize'] ?? 0,
+      pool: database['pool'] ?? true,
+      poolSize: database['poolsize'] ?? 1,
       filePath: database['file_path'] ?? '',
       openInMemorySQLite: database['openInMemorySQLite'] ?? false,
     );
