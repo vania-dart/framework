@@ -133,12 +133,13 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<Map<String, dynamic>?> find(
-    dynamic id, [
+    dynamic id, {
+    String primaryKey = 'id',
     List<String> columns = const ['*'],
-  ]) async {
+  }) async {
     try {
+      String sql = whereEqualTo('$getTable.$primaryKey', id).limit(1).toSql();
       final bindings = getBindings();
-      String sql = whereEqualTo('$getTable.id', id).limit(1).toSql();
       final result = await dbConnection!.select(sql, bindings);
       if (result.isEmpty) {
         return null;
@@ -151,10 +152,15 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<Map<String, dynamic>?> findOrFail(
-    id, [
+    id, {
+    String primaryKey = 'id',
     List<String> columns = const ['*'],
-  ]) async {
-    var result = await find(id, columns);
+  }) async {
+    var result = await find(
+      id,
+      primaryKey: primaryKey,
+      columns: columns,
+    );
     if (result == null) {
       throw InvalidArgumentException("Record with id $id not found.");
     }
@@ -307,7 +313,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
-    final pageData = await take(perPage).skip(offset).get();
+    final pageData = await take(perPage).skip(offset).get(columns);
     final isFirst = currentPage == 1;
     final isLast = currentPage == lastPage;
     final hasMore = currentPage < lastPage;
@@ -349,7 +355,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
-    final pageData = await take(perPage).skip(offset).get();
+    final pageData = await take(perPage).skip(offset).get(columns);
 
     return {
       'data': pageData,
