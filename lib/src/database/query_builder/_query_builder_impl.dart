@@ -74,11 +74,16 @@ class QueryBuilderImpl extends QueryBuilder
   String build({String? aggregateFunction, String? aggregateColumn}) {
     String sql = '';
 
+    String withClause = buildWithClause();
+    if (withClause.isNotEmpty) {
+      sql = '$withClause ';
+    }
+
     if (getTable.isNotEmpty) {
       if (aggregateFunction != null && aggregateColumn != null) {
-        sql = "SELECT $aggregateFunction($aggregateColumn) FROM $getTable";
+        sql += "SELECT $aggregateFunction($aggregateColumn) FROM $getTable";
       } else {
-        sql =
+        sql +=
             "SELECT ${selectColumns.isEmpty ? "*" : selectColumns.join(", ")} FROM $getTable";
       }
 
@@ -107,12 +112,12 @@ class QueryBuilderImpl extends QueryBuilder
         sql += (_offset != null) ? " OFFSET $_offset" : "";
       }
     } else if (conditions.isNotEmpty) {
-      sql = conditions.join(" ");
+      sql += conditions.join(" ");
     } else {
-      sql = '';
+      sql += '';
     }
 
-    return sql;
+    return sql.trim();
   }
 
   @override
@@ -291,6 +296,8 @@ class QueryBuilderImpl extends QueryBuilder
     Map<String, dynamic> allBindings = {};
 
     allBindings.addAll((this as WhereClausesBuilderImpl).bindings);
+
+    allBindings.addAll(getCteBindings());
 
     return allBindings;
   }
