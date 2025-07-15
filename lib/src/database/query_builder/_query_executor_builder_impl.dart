@@ -60,15 +60,11 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       while (true) {
         whereGreaterThan(column, lastId).orderByAsc(column).limit(chunk);
         final result = await get();
-        if (result.first[column] == null) {
-          throw ();
-        }
         if (result.isEmpty) {
           break;
         }
-
         callback(result);
-        lastId += result.last[column] as int;
+        lastId = int.parse(result.last[column].toString());
 
         if (result.length < chunk) {
           break;
@@ -82,6 +78,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<int> count([String columns = '*']) async {
     try {
+      final bindings = getBindings();
       String sql = build(aggregateFunction: "COUNT", aggregateColumn: columns);
       conn = await getConnection();
       var result = await conn.select(sql, bindings);
@@ -94,12 +91,14 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<bool> doesntExist() async {
     try {
-      String sql = "SELECT NOT EXISTS(SELECT 1 $getTable";
+      String sql = "SELECT NOT EXISTS(SELECT 1 FROM $getTable";
       if (conditions.isNotEmpty) {
         sql += " WHERE ${conditions.join('')}";
       }
       sql += ") as `exists`";
-      var result = await dbConnection!.select(sql);
+      final bindings = getBindings();
+      var result = await dbConnection!.select(sql, bindings);
+
       return (int.tryParse(result.first["exists"]) == 1);
     } catch (e) {
       rethrow;
@@ -119,12 +118,13 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<bool> exists() async {
     try {
-      String sql = "SELECT EXISTS(SELECT 1 $getTable";
+      String sql = "SELECT EXISTS(SELECT 1 FROM $getTable";
       if (conditions.isNotEmpty) {
         sql += " WHERE ${conditions.join('')}";
       }
       sql += ") as `exists`";
-      var result = await dbConnection!.select(sql);
+      final bindings = getBindings();
+      var result = await dbConnection!.select(sql, bindings);
       return (int.tryParse(result.first["exists"]) == 1);
     } catch (e) {
       rethrow;
@@ -134,11 +134,14 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<Map<String, dynamic>?> find(
     dynamic id, {
-    String primaryKey = 'id',
+    String byColumnName = 'id',
     List<String> columns = const ['*'],
   }) async {
     try {
-      String sql = whereEqualTo('$getTable.$primaryKey', id).limit(1).toSql();
+      String sql = select(columns)
+          .whereEqualTo('$getTable.$byColumnName', id)
+          .limit(1)
+          .toSql();
       final bindings = getBindings();
       final result = await dbConnection!.select(sql, bindings);
       if (result.isEmpty) {
@@ -153,12 +156,12 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<Map<String, dynamic>?> findOrFail(
     id, {
-    String primaryKey = 'id',
+    String byColumnName = 'id',
     List<String> columns = const ['*'],
   }) async {
     var result = await find(
       id,
-      primaryKey: primaryKey,
+      byColumnName: byColumnName,
       columns: columns,
     );
     if (result == null) {
@@ -218,6 +221,9 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   ]) async {
     try {
       final bindings = getBindings();
+      if (selectColumns.isEmpty) {
+        selectColumns.addAll(columns);
+      }
       final sql = toSql();
       conn = await getConnection();
       return await conn.select(sql, bindings);

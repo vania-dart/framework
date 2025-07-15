@@ -224,7 +224,7 @@ abstract class Model extends QueryBuilderImpl {
   @override
   Future<Map<String, dynamic>?> find(
     dynamic id, {
-    String? primaryKey,
+    String? byColumnName,
     List<String> columns = const ['*'],
   }) async {
     if (softDeletes) {
@@ -232,7 +232,7 @@ abstract class Model extends QueryBuilderImpl {
     }
     Map<String, dynamic>? result = await super.find(
       id,
-      primaryKey: primaryKey ?? this.primaryKey,
+      byColumnName: byColumnName ?? primaryKey,
       columns: columns,
     );
     attributes = Map.from(result ?? {});
@@ -249,12 +249,12 @@ abstract class Model extends QueryBuilderImpl {
   @override
   Future<Map<String, dynamic>?> findOrFail(
     id, {
-    String? primaryKey,
+    String? byColumnName,
     List<String> columns = const ['*'],
   }) async {
     var result = await find(
       id,
-      primaryKey: primaryKey ?? this.primaryKey,
+      byColumnName: byColumnName ?? primaryKey,
       columns: columns,
     );
     if (result == null) {
@@ -714,9 +714,9 @@ abstract class Model extends QueryBuilderImpl {
       String primaryRelation = wr.first;
 
       if (!_relations.containsKey(primaryRelation)) {
-      throw InvalidArgumentException(
-          'Relation $relation not found in $runtimeType');
-    }
+        throw InvalidArgumentException(
+            'Relation $relation not found in $runtimeType');
+      }
 
       Relation rela = _relations[primaryRelation] as Relation;
 

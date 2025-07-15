@@ -53,7 +53,7 @@ class QueryBuilderImpl extends QueryBuilder
   }
 
   @override
-  String raw(value) => RawExpression(value).toString();
+  RawExpression raw(value) => RawExpression(value);
 
   @override
   Future<bool> transaction(
@@ -90,7 +90,6 @@ class QueryBuilderImpl extends QueryBuilder
       if (joins.isNotEmpty) {
         sql += " ${joins.join(" ")}";
       }
-
       sql += conditions.isNotEmpty ? " WHERE ${conditions.join(" ")}" : "";
 
       if (unions.isNotEmpty) {
@@ -276,6 +275,8 @@ class QueryBuilderImpl extends QueryBuilder
   String _formatValueForRawSql(dynamic value) {
     if (value == null) {
       return 'NULL';
+    } else if (value is RawExpression) {
+      return value.toString();
     } else if (value is String) {
       return "'${value.replaceAll("'", "''")}'";
     } else if (value is num) {
@@ -298,7 +299,7 @@ class QueryBuilderImpl extends QueryBuilder
     allBindings.addAll((this as WhereClausesBuilderImpl).bindings);
 
     allBindings.addAll(getCteBindings());
-
+    (this as WhereClausesBuilderImpl).paramCounter = 0;
     return allBindings;
   }
 
