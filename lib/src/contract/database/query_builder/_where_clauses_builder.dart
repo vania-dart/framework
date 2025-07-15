@@ -14,10 +14,7 @@ abstract interface class WhereClausesBuilder {
   });
 
   QueryBuilder orWhereColumn(
-    String first,
-    String? secondColumn, [
-    String? operator,
-  ]);
+      String first, String operator, String secondColumn);
 
   QueryBuilder orWhereDate(
     String column,
@@ -164,8 +161,8 @@ abstract interface class WhereClausesBuilder {
   });
   QueryBuilder whereColumn(
     String firstColumn,
-    String? secondColumn, [
-    String? operator,
+    String operator,
+    String secondColumn, [
     String boolean = 'and',
   ]);
 

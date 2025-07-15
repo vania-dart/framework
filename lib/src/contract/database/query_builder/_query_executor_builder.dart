@@ -19,15 +19,15 @@ abstract class QueryExecutorBuilder {
   Future<bool> exists();
   Future<Map<String, dynamic>?> find(
     dynamic id, {
-    String primaryKey = 'id',
+    String byColumnName = 'id',
     List<String> columns = const ['*'],
-});
+  });
 
   Future<Map<String, dynamic>?> findOrFail(
-    dynamic id,  {
-    String primaryKey = 'id',
+    dynamic id, {
+    String byColumnName = 'id',
     List<String> columns = const ['*'],
-});
+  });
   Future<Map<String, dynamic>?> first([
     List<String> columns,
   ]);
