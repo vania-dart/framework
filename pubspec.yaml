@@ -22,7 +22,7 @@ dependencies:
   mailer: ^6.4.1
   meta: ^1.17.0
   mime: ^2.0.0
-  mysql_client: ^0.0.27
+  mysql_dart: ^1.0.0
   path: ^1.9.1
   postgres: ^3.5.4
   sprintf: ^7.0.0
