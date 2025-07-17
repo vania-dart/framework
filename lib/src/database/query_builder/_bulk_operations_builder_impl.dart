@@ -405,12 +405,10 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
 
   @override
   Future<bool> transactionalBulkOperation(
-    Future<void> Function() operations,
+    Future<bool> Function() action,
   ) async {
     try {
-      return await transaction(() async {
-        await operations();
-      });
+      return await transaction(() async => await action());
     } catch (e) {
       rethrow;
     }

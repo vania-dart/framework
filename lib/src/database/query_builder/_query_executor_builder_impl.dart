@@ -18,7 +18,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       final bindings = getBindings();
       conn = await getConnection();
       var result = await conn.select(sql, bindings);
-      return num.tryParse(result.first.values.first) ?? 0;
+      return num.tryParse(result.first.values.first.toString()) ?? 0;
     } catch (e) {
       rethrow;
     }
@@ -82,7 +82,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       String sql = build(aggregateFunction: "COUNT", aggregateColumn: columns);
       conn = await getConnection();
       var result = await conn.select(sql, bindings);
-      return int.tryParse(result.first.values.first) ?? 0;
+      return int.tryParse(result.first.values.first.toString()) ?? 0;
     } catch (e) {
       rethrow;
     }
@@ -99,7 +99,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       final bindings = getBindings();
       var result = await dbConnection!.select(sql, bindings);
 
-      return (int.tryParse(result.first["exists"]) == 1);
+      return (int.tryParse(result.first["exists"].toString()) == 1);
     } catch (e) {
       rethrow;
     }
@@ -125,7 +125,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       sql += ") as `exists`";
       final bindings = getBindings();
       var result = await dbConnection!.select(sql, bindings);
-      return (int.tryParse(result.first["exists"]) == 1);
+      return (int.tryParse(result.first["exists"].toString()) == 1);
     } catch (e) {
       rethrow;
     }
@@ -379,7 +379,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
       String sql = build(aggregateFunction: "SUM", aggregateColumn: column);
       conn = await getConnection();
       var result = await conn.select(sql, bindings);
-      return num.tryParse(result.first.values.first) ?? 0;
+      return num.tryParse(result.first.values.first.toString()) ?? 0;
     } catch (e) {
       rethrow;
     }

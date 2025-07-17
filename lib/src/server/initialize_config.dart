@@ -48,9 +48,11 @@ DBConfig _config(database) => DBConfig(
       username: database['username'] ?? '',
       password: database['password'] ?? '',
       sslMode: database['sslmode'] ?? '',
-      collation: database['collation'] ?? '',
+      collation: database['collation'] ?? 'utf8',
+      timezone: database['timezone'] ?? 'UTC',
       pool: database['pool'],
       poolSize: database['poolsize'],
       filePath: database['file_path'] ?? '',
+      schema: database['schema'] ?? 'public',
       openInMemorySQLite: database['openInMemorySQLite'] ?? false,
     );

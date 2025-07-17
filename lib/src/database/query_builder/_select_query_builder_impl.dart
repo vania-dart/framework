@@ -22,13 +22,13 @@ abstract mixin class SelectQueryBuilderImpl implements QueryBuilder {
       query = query.replaceFirst('?', ':$paramName');
     }
 
-    selectColumns.add('($query)');
+    selectColumns.add(query);
     return this;
   }
 
   @override
   QueryBuilder selectSub(QueryBuilder subQuery, String as) {
-    String sub = "(${subQuery.toSql()}) AS $as";
+    String sub = "(${subQuery.toRawSql()}) AS $as";
     selectColumns.add(sub);
     return this;
   }
