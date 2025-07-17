@@ -4,8 +4,12 @@ import '../../contract/database/query_builder/query_builder.dart'
 import '../_database_utils/_singularize.dart';
 import '_query_builder_impl.dart';
 
+int _paramCounter = 0;
+
 abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
-  int _paramCounter = 0;
+  set paramCounter(int paramN) {
+    _paramCounter = paramN;
+  }
 
   String _nextParamName() {
     _paramCounter++;
@@ -40,7 +44,8 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
       bindings[paramName] = value;
       _appendCondition("$condition $operator :$paramName", isOr: true);
     } else if (condition is QueryCallback) {
-      QueryBuilder nested = QueryBuilderImpl();
+      QueryBuilderImpl nested = QueryBuilderImpl()
+        ..paramCounter = _paramCounter;
       condition(nested);
       _appendCondition("(${nested.toSql()})", isOr: true);
       bindings.addAll(nested.getBindings());
@@ -68,11 +73,10 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   @override
   QueryBuilder orWhereColumn(
     String first,
-    String? secondColumn, [
-    String? operator,
-  ]) {
-    String op = operator ?? '=';
-    String condition = "$first $op $secondColumn";
+    String operator,
+    String secondColumn,
+  ) {
+    String condition = "$first $operator $secondColumn";
     _appendCondition(
       condition,
       isOr: true,
@@ -338,7 +342,8 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
       _appendCondition("$condition $operator :$paramName",
           isOr: (boolean.toLowerCase() == 'or'));
     } else if (condition is QueryCallback) {
-      QueryBuilder nested = QueryBuilderImpl();
+      QueryBuilderImpl nested = QueryBuilderImpl()
+        ..paramCounter = _paramCounter;
       condition(nested);
       _appendCondition("(${nested.toSql()})",
           isOr: (boolean.toLowerCase() == 'or'));
@@ -446,17 +451,11 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   @override
   QueryBuilder whereColumn(
     String firstColumn,
-    String? secondColumn, [
-    String? operator,
+    String operator,
+    String secondColumn, [
     String boolean = 'and',
   ]) {
-    String op = operator ?? '=';
-    if (secondColumn == null) {
-      throw InvalidArgumentException(
-        "The second column is required and cannot be empty.",
-      );
-    }
-    String condition = "$firstColumn $op $secondColumn";
+    String condition = "$firstColumn $operator $secondColumn";
     _appendCondition(
       condition,
       isOr: (boolean.toLowerCase() == 'or'),
@@ -984,7 +983,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String currentTable = getTable.split(' ').first;
     String foreignKey = '${Singularize.make(currentTable)}_id';
 
-    subQuery.whereColumn('$relation.$foreignKey', '$currentTable.id');
+    subQuery.whereColumn('$relation.$foreignKey', '=', '$currentTable.id');
 
     String subQuerySQL = subQuery.toSql();
     bindings.addAll(subQuery.getBindings());
@@ -1075,7 +1074,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
 
     String mode = "";
     if (options.containsKey('mode')) {
-      mode = " ${options['mode']}";
+      mode = " IN ${options['mode']} MODE";
     }
 
     return "MATCH($colStr) AGAINST(:$paramName$mode)";
