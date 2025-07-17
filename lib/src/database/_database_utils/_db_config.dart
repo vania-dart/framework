@@ -9,6 +9,8 @@ class DBConfig {
   final bool sslMode;
   final bool openInMemorySQLite;
   final String? filePath;
+  final String? schema;
+  String? timezone;
   final bool pool;
   int poolSize;
 
@@ -19,10 +21,12 @@ class DBConfig {
     this.username = 'root',
     this.password = '',
     this.database = 'vania',
+    this.timezone,
     this.filePath,
     this.sslMode = false,
     this.openInMemorySQLite = false,
     this.collation = 'utf8mb4_general_ci',
+    this.schema,
     this.pool = false,
     this.poolSize = 2,
   });
