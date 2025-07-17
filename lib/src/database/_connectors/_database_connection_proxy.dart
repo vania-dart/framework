@@ -1,8 +1,9 @@
 import 'package:vania/src/contract/database/_connectors/_database_connection.dart';
 import 'package:vania/src/exception/database_exception.dart'
     show DatabaseException;
-import '../monitoring/database_monitor.dart';
+
 import '../../logger/logger.dart';
+import '../monitoring/database_monitor.dart';
 
 class DatabaseConnectionProxy implements DatabaseConnection {
   final DatabaseConnection _connection;
@@ -10,6 +11,9 @@ class DatabaseConnectionProxy implements DatabaseConnection {
   final String _connectionId;
 
   DatabaseConnectionProxy(this._connection, this._connectionId, this._monitor);
+
+  // Expose the underlying connection for pool management
+  DatabaseConnection get underlyingConnection => _connection;
 
   @override
   Future<void> connect() => _connection.connect();
@@ -109,4 +113,8 @@ class DatabaseConnectionProxy implements DatabaseConnection {
       rethrow;
     }
   }
+
+  @override
+  Future<T> transaction<T>(Future<T> Function() action) async =>
+      _connection.transaction(action);
 }
