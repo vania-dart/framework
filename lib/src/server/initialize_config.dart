@@ -9,7 +9,7 @@ import '../utils/helper.dart';
 Future<void> initializeConfig(config) async {
   Config().setApplicationConfig = config;
 
-  if (env('DB_CONNECTION') != null) {
+  if (env('DB_CONNECTION') != null && config['database'] != null) {
     final Map<String, dynamic> database = config['database'];
     ConnectionManager().defaultConnection = database['default'];
     Map<String, dynamic> connections = database['connections'];
@@ -49,8 +49,8 @@ DBConfig _config(database) => DBConfig(
       password: database['password'] ?? '',
       sslMode: database['sslmode'] ?? '',
       collation: database['collation'] ?? '',
-      pool: database['pool'] ?? true,
-      poolSize: database['poolsize'] ?? 1,
+      pool: database['pool'],
+      poolSize: database['poolsize'],
       filePath: database['file_path'] ?? '',
       openInMemorySQLite: database['openInMemorySQLite'] ?? false,
     );

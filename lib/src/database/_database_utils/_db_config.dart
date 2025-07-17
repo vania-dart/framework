@@ -23,7 +23,7 @@ class DBConfig {
     this.sslMode = false,
     this.openInMemorySQLite = false,
     this.collation = 'utf8mb4_general_ci',
-    this.pool = true,
-    this.poolSize = 1,
+    this.pool = false,
+    this.poolSize = 2,
   });
 }
