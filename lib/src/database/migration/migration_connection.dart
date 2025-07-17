@@ -43,7 +43,6 @@ class MigrationConnection implements MigrationConnectionInterface {
       Map<String, dynamic> connections = databaseConfig['connections'];
 
       _driver = databaseConfig['default'];
-
       await connectionManager.connect(
         _createDBConfig(connections[_driver]),
         _driver!,

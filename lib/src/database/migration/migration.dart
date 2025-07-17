@@ -41,14 +41,9 @@ abstract class Migration {
         final postgresAdapter = _adapter as dynamic;
         if (postgresAdapter.executeStatements != null) {
           await postgresAdapter.executeStatements(sql,
-              (String statement) async {
-            try {
+              (List<String> statements) async {
+            for (String statement in statements) {
               await _connection.connection!.execute(statement);
-            } on QueryException catch (e) {
-              stderr.writeln(
-                'Error executing statement: $statement\nError: ${e.cause}',
-              );
-              exit(0);
             }
           });
           return;

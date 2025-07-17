@@ -35,14 +35,9 @@ class PostgreSqlAdapter implements DatabaseAdapterInterface {
   }
 
   Future<void> executeStatements(
-      String query, Future<void> Function(String) executor) async {
+      String query, Future<void> Function(List<String>) executor) async {
     List<String> statements = adaptQueryToStatements(query);
-
-    for (String statement in statements) {
-      if (statement.trim().isNotEmpty) {
-        await executor(statement);
-      }
-    }
+    await executor(statements);
   }
 
   void _extractTableNameAndIndexes(String query) {

@@ -94,7 +94,6 @@ class PostgresConnector implements DatabaseConnection {
         Sql.named(query.replaceAll(':p', '@p')),
         parameters: bindings,
       );
-      print("$query");
       return result.affectedRows > 0;
     } catch (e) {
       throw QueryException(

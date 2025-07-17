@@ -140,7 +140,6 @@ class SQLiteConnector implements DatabaseConnection {
 
   @override
   Future<T> transaction<T>(Future<T> Function() action) {
-    // TODO: implement transaction
     throw UnimplementedError();
   }
 }

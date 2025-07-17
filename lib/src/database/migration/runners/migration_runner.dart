@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:vania/query_builder.dart';
+
 import '../../../utils/functions.dart';
 import '../migration.dart';
 import '../migration_connection.dart';
@@ -27,6 +29,9 @@ class MigrationRunner {
           ' Migration $migrationName executed ....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
     } catch (e) {
       stopwatch.stop();
+      if (e is QueryException) {
+        stderr.write(e.cause);
+      }
       stderr.writeln(
           ' Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m');
       exit(1);
@@ -79,7 +84,7 @@ class MigrationRunner {
     final isExecuted = await _isMigrationExecuted(migrationName);
     if (!isExecuted) {
       stderr.writeln(
-          'Migration $migrationName not found in executed migrations, skipping rollback...');
+          'Migration $migrationName not found in executed migrations, skipping drop...');
       return;
     }
 
@@ -142,7 +147,6 @@ class MigrationRunner {
         sql =
             'INSERT INTO "migrations" ("migration", "batch") VALUES (\'$snakeCaseName\', $batch)';
       }
-
       await MigrationConnection().connection!.execute(sql);
     } catch (e) {
       stderr.writeln('Failed to record migration with batch: $e');
@@ -244,7 +248,9 @@ class MigrationRunner {
     stderr.writeln('🔄 Running fresh migration...');
 
     try {
-      await _dropAllTables();
+      for (final migration in _migrations.values) {
+        await _runDown(migration.migrationName, migration.down);
+      }
 
       await MigrationConnection().truncateMigration();
 
@@ -368,63 +374,6 @@ class MigrationRunner {
       stderr.writeln('✅ Rollback completed successfully!');
     } catch (e) {
       stderr.writeln('❌ Failed to rollback migrations: $e');
-      exit(1);
-    }
-  }
-
-  Future<void> _dropAllTables() async {
-    if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
-      exit(1);
-    }
-
-    try {
-      stderr.writeln('🗑️ Dropping all tables...');
-      String sql;
-      if (MigrationConnection().adapter?.driverName == 'mysql') {
-        sql = '''
-          SET FOREIGN_KEY_CHECKS = 0;
-          SET @tables = NULL;
-          SELECT GROUP_CONCAT(table_name) INTO @tables
-          FROM information_schema.tables
-          WHERE table_schema = (SELECT DATABASE());
-          SELECT IFNULL(@tables,'dummy') INTO @tables;
-          SET @tables = CONCAT('DROP TABLE IF EXISTS ', @tables);
-          PREPARE stmt FROM @tables;
-          EXECUTE stmt;
-          DEALLOCATE PREPARE stmt;
-          SET FOREIGN_KEY_CHECKS = 1;
-        ''';
-      } else if (MigrationConnection().adapter?.driverName == 'pgsql') {
-        sql = '''
-          DROP SCHEMA public CASCADE;
-          CREATE SCHEMA public;
-          GRANT ALL ON SCHEMA public TO postgres;
-          GRANT ALL ON SCHEMA public TO public;
-        ''';
-      } else if (MigrationConnection().adapter?.driverName == 'sqlite') {
-        final result = await MigrationConnection().connection!.select(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-        for (final row in result) {
-          final tableName = row['name'] as String;
-          await MigrationConnection()
-              .connection!
-              .execute('DROP TABLE IF EXISTS "$tableName"');
-        }
-        return;
-      } else {
-        stderr.writeln(
-          '❌ Driver not supported: ${MigrationConnection().adapter?.driverName}',
-        );
-        exit(1);
-      }
-      if (MigrationConnection().adapter?.driverName != 'sqlite') {
-        await MigrationConnection().connection!.execute(sql);
-      }
-    } catch (e) {
-      stderr.writeln('❌ Failed to drop all tables: $e');
       exit(1);
     }
   }
