@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import '../../contract/database/query_builder/query_builder.dart';
 import '../../exception/invalid_argument_exception.dart';
+import '../../utils/helper.dart' show env;
 import '../_connection_manager.dart';
 import '../monitoring/database_monitor.dart';
 import '_bulk_operations_builder_impl.dart';
@@ -28,7 +29,7 @@ class QueryBuilderImpl extends QueryBuilder
         WindowFunctionsBuilderImpl,
         BulkOperationsBuilderImpl,
         CteBuilderImpl {
-  String _connectionName = 'mysql';
+  String _connectionName = env<String>('DB_CONNECTION', '');
   final List<String> _orderBy = [];
   final List<String> _groupBy = [];
   final List<String> _having = [];
@@ -57,10 +58,10 @@ class QueryBuilderImpl extends QueryBuilder
 
   @override
   Future<bool> transaction(
-    Future<dynamic> Function() queries, [
+    Future<bool> Function() action, [
     String? conditionName,
   ]) =>
-      ConnectionManager().transaction(queries, conditionName);
+      ConnectionManager().transaction(action, conditionName);
 
   @override
   Stream<DatabaseAlert> alerts() => ConnectionManager().alerts;
@@ -121,7 +122,7 @@ class QueryBuilderImpl extends QueryBuilder
 
   @override
   QueryBuilder connection([String? connection]) {
-    connectionName = connection ?? 'mysql';
+    connectionName = connection ?? _connectionName;
     return this;
   }
 

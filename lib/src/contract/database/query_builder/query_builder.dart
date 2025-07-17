@@ -62,6 +62,7 @@ abstract class QueryBuilder
     if (!ConnectionManager().isConnected) {
       throw InvalidArgumentException('No database connection found.');
     }
+
     return dbConnection!;
   }
 
@@ -72,7 +73,7 @@ abstract class QueryBuilder
   RawExpression raw(value);
 
   Future<bool> transaction(
-    Future<dynamic> Function() queries, [
+    Future<bool> Function() action, [
     String? conditionName,
   ]);
 
