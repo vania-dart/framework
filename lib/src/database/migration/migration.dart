@@ -27,7 +27,7 @@ abstract class Migration {
   @mustBeOverridden
   Future<void> down();
 
-  TableDefinition createTable(String tableName, Function(Schema) callback) {
+  TableDefinition create(String tableName, Function(Schema) callback) {
     _schemaBuilder.reset();
     _schemaBuilder.setTableName(tableName);
 
@@ -41,14 +41,9 @@ abstract class Migration {
         final postgresAdapter = _adapter as dynamic;
         if (postgresAdapter.executeStatements != null) {
           await postgresAdapter.executeStatements(sql,
-              (String statement) async {
-            try {
+              (List<String> statements) async {
+            for (String statement in statements) {
               await _connection.connection!.execute(statement);
-            } on QueryException catch (e) {
-              stderr.writeln(
-                'Error executing statement: $statement\nError: ${e.cause}',
-              );
-              exit(0);
             }
           });
           return;
@@ -72,6 +67,7 @@ abstract class Migration {
         connection: _connection, adapter: _adapter);
   }
 
+  @Deprecated('createTableIfNotExists will be deprecated in version 1.1.0')
   TableDefinition createTableIfNotExists(
       String tableName, Function(Schema) callback) {
     _schemaBuilder.reset();
@@ -168,7 +164,7 @@ abstract class Migration {
     }
   }
 
-  Future<void> dropTable(String tableName) async {
+  Future<void> drop(String tableName) async {
     String sql =
         _schemaBuilder.generateDropTableSql(tableName, ifExists: false);
 
@@ -191,6 +187,7 @@ abstract class Migration {
     }
   }
 
+  @Deprecated('dropTableIfExists will be deprecated in version 1.1.0')
   Future<void> dropTableIfExists(String tableName) async {
     String sql = _schemaBuilder.generateDropTableSql(tableName, ifExists: true);
 

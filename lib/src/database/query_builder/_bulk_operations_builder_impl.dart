@@ -57,10 +57,10 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
           "(VALUES ${valueGroups.join(', ')}) AS source(${sourceColumns.join(', ')})";
 
       final matchConditions =
-          matchOn.map((col) => "$table.$col = source.$col").join(' AND ');
+          matchOn.map((col) => "$getTable.$col = source.$col").join(' AND ');
 
       String mergeSQL =
-          "MERGE INTO $table USING $sourceClause ON $matchConditions";
+          "MERGE INTO $getTable USING $sourceClause ON $matchConditions";
 
       if (whenMatched == ConflictAction.update) {
         final columnsToUpdate = updateColumns ??
@@ -107,7 +107,6 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
 
     try {
       final conn = await getConnection();
-
       for (int i = 0; i < data.length; i += batchSize) {
         final batch = data.skip(i).take(batchSize).toList();
         final paramBindings = <String, dynamic>{};
@@ -125,11 +124,11 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
         }
 
         String sql =
-            "INSERT INTO $table (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
+            "INSERT INTO $getTable (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
 
         if (conflictAction == ConflictAction.ignore) {
           sql =
-              "INSERT IGNORE INTO $table (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
+              "INSERT IGNORE INTO $getTable (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
         } else if (conflictAction == ConflictAction.update &&
             conflictColumns != null) {
           final updateCols = updateColumns ??
@@ -139,7 +138,7 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
           sql += " ON DUPLICATE KEY UPDATE $updateSets";
         } else if (conflictAction == ConflictAction.replace) {
           sql =
-              "REPLACE INTO $table (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
+              "REPLACE INTO $getTable (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
         }
 
         await conn.execute(sql, paramBindings);
@@ -209,7 +208,7 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
         }
 
         final sql =
-            "UPDATE $table SET ${setClauses.join(', ')} WHERE $matchColumn IN (${matchValues.join(', ')})";
+            "UPDATE $getTable SET ${setClauses.join(', ')} WHERE $matchColumn IN (${matchValues.join(', ')})";
 
         await conn.execute(sql, paramBindings);
       }
@@ -244,7 +243,7 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
           return ":$paramName";
         }).join(', ');
 
-        final sql = "DELETE FROM $table WHERE $column IN ($placeholders)";
+        final sql = "DELETE FROM $getTable WHERE $column IN ($placeholders)";
 
         await conn.execute(sql, paramBindings);
       }
@@ -285,7 +284,7 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
           orConditions.add("(${andConditions.join(' AND ')})");
         }
 
-        final sql = "DELETE FROM $table WHERE ${orConditions.join(' OR ')}";
+        final sql = "DELETE FROM $getTable WHERE ${orConditions.join(' OR ')}";
 
         await conn.execute(sql, paramBindings);
       }
@@ -406,12 +405,10 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
 
   @override
   Future<bool> transactionalBulkOperation(
-    Future<void> Function() operations,
+    Future<bool> Function() action,
   ) async {
     try {
-      return await transaction(() async {
-        await operations();
-      });
+      return await transaction(() async => await action());
     } catch (e) {
       rethrow;
     }

@@ -4,6 +4,7 @@ import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/websocket/web_socket_handler.dart';
 import 'package:vania/src/websocket/websocket_event.dart';
 
+import '../../vania.dart' show env;
 import 'middleware/csrf_middleware.dart';
 
 class Router {
@@ -21,6 +22,24 @@ class Router {
   static final RegExp _closureStartRegex = RegExp(r'Closure: \(');
 
   List<RouteData> get routes => List.unmodifiable(_routes);
+
+  static String url(String name, [Map<String, dynamic>? params]) {
+    RouteData routeData =
+        Router()._routes.where((route) => route.name == name).first;
+
+    if (params == null) {
+      return '${env<String>('APP_URL')}/${routeData.path}';
+    }
+
+    final reg = RegExp(r'\{(\w+)\}');
+    return routeData.path.replaceAllMapped(reg, (match) {
+      final key = match.group(1)!;
+      if (!params.containsKey(key)) {
+        throw ArgumentError('Missing parameter: $key');
+      }
+      return '${env<String>('APP_URL')}/${params[key].toString()}';
+    });
+  }
 
   static void basePrefix([String? prefix]) {
     if (prefix == null) {

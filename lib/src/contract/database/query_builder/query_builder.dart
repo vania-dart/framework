@@ -1,23 +1,22 @@
 import 'package:meta/meta.dart';
+import '../../../database/_connection_manager.dart';
 import '../../../database/monitoring/database_monitor.dart';
 import '../../../exception/invalid_argument_exception.dart';
-
-import '../../../database/_connection_manager.dart';
 import '../_connectors/_database_connection.dart';
 
 part '../../../database/_database_utils/_paginated_result.dart';
 part '../../../database/_database_utils/_raw_expression.dart';
+part '_bulk_operations_builder.dart';
+part '_cte_builder.dart';
 part '_delete_query_builder.dart';
 part '_insert_query_builder.dart';
 part '_join_clause_builder.dart';
-part '_where_clauses_builder.dart';
 part '_query_executor_builder.dart';
 part '_select_query_builder.dart';
 part '_union_clause_builder.dart';
 part '_update_query_builder.dart';
+part '_where_clauses_builder.dart';
 part '_window_functions_builder.dart';
-part '_cte_builder.dart';
-part '_bulk_operations_builder.dart';
 
 typedef QueryCallback = QueryBuilder Function(QueryBuilder qb);
 
@@ -63,6 +62,7 @@ abstract class QueryBuilder
     if (!ConnectionManager().isConnected) {
       throw InvalidArgumentException('No database connection found.');
     }
+
     return dbConnection!;
   }
 
@@ -70,10 +70,10 @@ abstract class QueryBuilder
 
   QueryBuilder table(String table, [String? as]);
 
-  String raw(value);
+  RawExpression raw(value);
 
   Future<bool> transaction(
-    Future<dynamic> Function() queries, [
+    Future<bool> Function() action, [
     String? conditionName,
   ]);
 

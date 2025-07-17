@@ -76,6 +76,6 @@ abstract class BulkOperationsBuilder {
   });
 
   Future<bool> transactionalBulkOperation(
-    Future<void> Function() operations,
+    Future<bool> Function() operations,
   );
 }

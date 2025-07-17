@@ -73,7 +73,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       }).join(", ");
 
       final query =
-          "INSERT INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
+          "INSERT INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
       final id = await conn.insert(query, paramBindings);
       return id;
     } catch (e) {
@@ -159,7 +159,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       }).join(", ");
 
       final query =
-          "INSERT IGNORE INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
+          "INSERT IGNORE INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
       await conn.execute(query, paramBindings);
       return true;
     } catch (e) {
@@ -208,7 +208,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       }).join(", ");
 
       String sql =
-          "INSERT INTO $table (${columns.join(', ')}) VALUES ($placeholders)";
+          "INSERT INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
 
       if (update == null) {
         update = Map.from(values);

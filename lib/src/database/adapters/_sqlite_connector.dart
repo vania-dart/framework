@@ -137,4 +137,9 @@ class SQLiteConnector implements DatabaseConnection {
       );
     }
   }
+
+  @override
+  Future<T> transaction<T>(Future<T> Function() action) {
+    throw UnimplementedError();
+  }
 }

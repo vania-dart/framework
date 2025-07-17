@@ -12,5 +12,7 @@ abstract interface class DatabaseConnection {
     String query, [
     Map<String, dynamic> bindings = const {},
   ]);
+  Future<T> transaction<T>(Future<T> Function() action);
+
   Future<void> close();
 }
