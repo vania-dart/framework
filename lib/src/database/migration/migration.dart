@@ -27,15 +27,16 @@ abstract class Migration {
   @mustBeOverridden
   Future<void> down();
 
-  TableDefinition create(String tableName, Function(Schema) callback) {
+  TableDefinition create(String tableName, Function(Schema) callback,
+      [bool ifNotExists = false]) {
     _schemaBuilder.reset();
     _schemaBuilder.setTableName(tableName);
 
     Future<void> createFunction() async {
       callback(_schemaBuilder);
 
-      String sql =
-          _schemaBuilder.generateCreateTableSql(tableName, ifNotExists: false);
+      String sql = _schemaBuilder.generateCreateTableSql(tableName,
+          ifNotExists: ifNotExists);
 
       if (_adapter != null && _adapter.driverName == 'pgsql') {
         final postgresAdapter = _adapter as dynamic;
@@ -113,64 +114,49 @@ abstract class Migration {
         connection: _connection, adapter: _adapter);
   }
 
-  Future<void> alterColumn(
+  TableDefinition alterColumn(
     String table,
     Function(Schema) callback, {
     String beforeColumn = '',
     String afterColumn = '',
-  }) async {
+  }) {
     _schemaBuilder.reset();
     _schemaBuilder.setTableName(table);
+    Future<void> createFunction() async {
+      callback(_schemaBuilder);
 
-    callback(_schemaBuilder);
-
-    String index = _schemaBuilder.indexes.isNotEmpty
-        ? ',ADD ${_schemaBuilder.indexes.join(',')}'
-        : '';
-    String foreign = _schemaBuilder.foreignKeys.isNotEmpty
-        ? ',ADD ${_schemaBuilder.foreignKeys.join(',')}'
-        : '';
-
-    String alterQuery = '';
-    if (_schemaBuilder.queries.isNotEmpty) {
-      alterQuery = 'ADD COLUMN ${_schemaBuilder.queries.first}';
-      if (beforeColumn.isNotEmpty) {
-        alterQuery = ' $alterQuery BEFORE `$beforeColumn`';
-      } else if (afterColumn.isNotEmpty) {
-        alterQuery = ' $alterQuery AFTER `$afterColumn`';
+      try {
+        String sql = _schemaBuilder.generateCreateAlterSql(
+          table,
+          afterColumn: afterColumn,
+          beforeColumn: beforeColumn,
+        );
+        if (_adapter != null) {
+          sql = _adapter.adaptQuery(sql);
+        }
+        await _connection.connection!.execute(sql);
+      } on QueryException catch (e) {
+        stderr.writeln(
+          '${e.cause}',
+        );
+        exit(0);
       }
     }
 
-    if (_schemaBuilder.queries.isEmpty && index.isNotEmpty) {
-      index = index.replaceFirst(',', '');
-    }
-
-    if (_schemaBuilder.queries.isEmpty && index.isEmpty) {
-      foreign = foreign.replaceFirst(',', '');
-    }
-
-    try {
-      String query = 'ALTER TABLE `$table` $alterQuery$index$foreign;';
-      if (_adapter != null) {
-        query = _adapter.adaptQuery(query);
-      }
-
-      await _connection.connection!.execute(query);
-    } on QueryException catch (e) {
-      stderr.writeln(
-        '${e.cause}',
-      );
-      exit(0);
-    }
+    return TableDefinition(table, createFunction,
+        connection: _connection, adapter: _adapter);
   }
 
   Future<void> drop(String tableName) async {
-    String sql =
-        _schemaBuilder.generateDropTableSql(tableName, ifExists: false);
+    String sql = _schemaBuilder.generateDropTableSql(tableName, ifExists: true);
 
     if (_adapter?.driverName == 'mysql') {
       sql =
-          'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;${sql}SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
+          'SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;$sql;SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;';
+    }
+
+    if (_adapter?.driverName == 'pgsql') {
+      sql = '$sql CASCADE';
     }
 
     if (_adapter != null) {

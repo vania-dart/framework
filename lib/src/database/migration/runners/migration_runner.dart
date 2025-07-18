@@ -33,12 +33,13 @@ class MigrationRunner {
         stderr.write(e.cause);
       }
       stderr.writeln(
-          ' Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m');
+          '❌ Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m');
       exit(1);
     }
   }
 
   MigrationRunner migrationRegister(List<Migration> migrations) {
+    _migrations.clear();
     for (var migration in migrations) {
       String name = migration.migrationName;
       if (!_migrations.containsKey(name)) {
@@ -81,19 +82,11 @@ class MigrationRunner {
 
   Future<void> _runDown(
       String migrationName, Function migrationCallback) async {
-    final isExecuted = await _isMigrationExecuted(migrationName);
-    if (!isExecuted) {
-      stderr.writeln(
-          'Migration $migrationName not found in executed migrations, skipping drop...');
-      return;
-    }
-
     final stopwatch = Stopwatch()..start();
 
     try {
+      await Future.delayed(Duration(milliseconds: 30));
       await migrationCallback();
-
-      await _removeMigrationRecord(migrationName);
 
       stopwatch.stop();
       stderr.writeln(
@@ -122,7 +115,12 @@ class MigrationRunner {
 
       return result.isNotEmpty;
     } catch (e) {
-      stderr.writeln('Failed to check if migration is executed: $e');
+      if (e is QueryException) {
+        stderr
+            .writeln('❌ Failed to check if migration is executed: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to check if migration is executed: $e');
+      }
       exit(1);
     }
   }
@@ -147,9 +145,15 @@ class MigrationRunner {
         sql =
             'INSERT INTO "migrations" ("migration", "batch") VALUES (\'$snakeCaseName\', $batch)';
       }
+
+      await Future.delayed(Duration(milliseconds: 100));
       await MigrationConnection().connection!.execute(sql);
     } catch (e) {
-      stderr.writeln('Failed to record migration with batch: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to record migration with batch: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to record migration with batch: $e');
+      }
       exit(1);
     }
   }
@@ -170,10 +174,14 @@ class MigrationRunner {
       } else {
         sql = 'DELETE FROM "migrations" WHERE "migration"=\'$snakeCaseName\'';
       }
-
+      await Future.delayed(Duration(milliseconds: 50));
       await MigrationConnection().connection!.execute(sql);
     } catch (e) {
-      stderr.writeln('Failed to remove migration record: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to remove migration record: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to remove migration record: $e');
+      }
       exit(1);
     }
   }
@@ -203,14 +211,18 @@ class MigrationRunner {
       } else {
         sql = 'SELECT COALESCE(MAX("batch"), 0) as max_batch FROM "migrations"';
       }
-
+      await Future.delayed(Duration(milliseconds: 10));
       final result = await MigrationConnection().connection!.select(sql);
       if (result.isNotEmpty) {
         return int.parse(result.first['max_batch'].toString());
       }
       return 0;
     } catch (e) {
-      stderr.writeln('Failed to get current batch number: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to get current batch number: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to get current batch number: $e');
+      }
       exit(1);
     }
   }
@@ -235,35 +247,37 @@ class MigrationRunner {
 
       return result.map((row) => row['migration'] as String).toList();
     } catch (e) {
-      stderr.writeln('Failed to get migrations from batch: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to get migrations from batch: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to get migrations from batch: $e');
+      }
       exit(1);
     }
-  }
-
-  void _resetBatch() {
-    _currentBatch = null;
   }
 
   Future<void> _fresh(List<Migration> migrations) async {
     stderr.writeln('🔄 Running fresh migration...');
 
     try {
+      await MigrationConnection().truncateMigration();
+      _currentBatch = null;
+
       for (final migration in _migrations.values) {
         await _runDown(migration.migrationName, migration.down);
       }
-
-      await MigrationConnection().truncateMigration();
-
-      _resetBatch();
 
       stderr.writeln('📦 Running all migrations...');
       for (final migration in migrations) {
         await _runUp(migration.migrationName, migration.up);
       }
-
       stderr.writeln('✅ Fresh migration completed successfully!');
     } catch (e) {
-      stderr.writeln('❌ Failed to run fresh migration: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to run fresh migration: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to run fresh migration: $e');
+      }
       exit(1);
     }
   }
@@ -282,7 +296,11 @@ class MigrationRunner {
         exit(1);
       }
     } catch (e) {
-      stderr.writeln('❌ Failed to install migration repository: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to install migration repository: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to install migration repository: $e');
+      }
       exit(1);
     }
   }
@@ -292,7 +310,7 @@ class MigrationRunner {
 
     try {
       await _reset(migrations);
-      _resetBatch();
+      _currentBatch = null;
       stderr.writeln('📦 Re-running all migrations...');
       for (final migration in migrations.values) {
         await _runUp(migration.migrationName, migration.up);
@@ -300,7 +318,11 @@ class MigrationRunner {
 
       stderr.writeln('✅ Migration refresh completed successfully!');
     } catch (e) {
-      stderr.writeln('❌ Failed to refresh migrations: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to refresh migrations: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to refresh migrations: $e');
+      }
       exit(1);
     }
   }
@@ -327,7 +349,11 @@ class MigrationRunner {
 
       stderr.writeln('✅ All migrations reset successfully!');
     } catch (e) {
-      stderr.writeln('❌ Failed to reset migrations: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to reset migrations: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to reset migrations: $e');
+      }
       exit(1);
     }
   }
@@ -373,7 +399,11 @@ class MigrationRunner {
 
       stderr.writeln('✅ Rollback completed successfully!');
     } catch (e) {
-      stderr.writeln('❌ Failed to rollback migrations: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to rollback migrations: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to rollback migrations: $e');
+      }
       exit(1);
     }
   }
@@ -397,7 +427,11 @@ class MigrationRunner {
       final result = await MigrationConnection().connection!.select(sql);
       return result.map((row) => row['migration'] as String).toList();
     } catch (e) {
-      stderr.writeln('❌ Failed to get all migrations: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to get all migrations: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to get all migrations: $e');
+      }
       exit(1);
     }
   }
@@ -423,7 +457,11 @@ class MigrationRunner {
       final result = await MigrationConnection().connection!.select(sql);
       return result.map((row) => row['migration'] as String).toList();
     } catch (e) {
-      stderr.writeln('❌ Failed to get last $n migrations: $e');
+      if (e is QueryException) {
+        stderr.writeln('❌ Failed to get last $n migrations: ${e.cause}');
+      } else {
+        stderr.writeln('❌ Failed to get last $n migrations: $e');
+      }
       exit(1);
     }
   }

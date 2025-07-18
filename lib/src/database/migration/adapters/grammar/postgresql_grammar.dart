@@ -62,7 +62,7 @@ class PostgreSqlGrammar extends BaseGrammar {
         r'\s+ON\s+UPDATE\s+CURRENT_TIMESTAMP': (match) => '',
         r'ON\s+UPDATE\s+CURRENT_TIMESTAMP': (match) => '',
 
-        // Handle BIGINT NOT NULL without AUTO_INCREMENT but with separate PRIMARY KEY
+        // Handle `BIGINT` NOT NULL without AUTO_INCREMENT but with separate PRIMARY KEY
         r'[`"](\w+)[`"]\s+BIGINT(?:\(\d+\))?\s+(?:UNSIGNED\s+)?NOT\s+NULL(?!\s+AUTO_INCREMENT)':
             (match) => '"${match[1]}" BIGINT NOT NULL',
 

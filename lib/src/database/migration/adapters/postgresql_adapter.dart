@@ -13,6 +13,8 @@ class PostgreSqlAdapter implements DatabaseAdapterInterface {
   @override
   String get driverName => 'pgsql';
 
+  String _cleanedQuery = '';
+
   @override
   String adaptQuery(String query) {
     List<String> statements = adaptQueryToStatements(query);
@@ -22,7 +24,7 @@ class PostgreSqlAdapter implements DatabaseAdapterInterface {
   List<String> adaptQueryToStatements(String query) {
     _extractTableNameAndIndexes(query);
 
-    String result = _grammar.convertQuery(query);
+    String result = _grammar.convertQuery(_cleanedQuery);
 
     List<String> statements = [result];
 
@@ -44,61 +46,66 @@ class PostgreSqlAdapter implements DatabaseAdapterInterface {
     _extractedIndexes.clear();
     _currentTableName = null;
 
-    RegExp tableNameRegex = RegExp(
-        r'CREATE TABLE (?:IF NOT EXISTS )?[`"]?([^`"]+)[`"]?\s*\(',
-        caseSensitive: false);
-    Match? tableMatch = tableNameRegex.firstMatch(query);
+    final tableNameRegex = RegExp(
+      r'CREATE TABLE (?:IF NOT EXISTS )?[`"]?([^`"]+)[`"]?\s*\(',
+      caseSensitive: false,
+    );
+    final tableMatch = tableNameRegex.firstMatch(query);
     if (tableMatch != null) {
       _currentTableName = tableMatch.group(1);
     }
 
-    RegExp indexRegex =
-        RegExp(r'INDEX\s+[`"]([^`"]+)[`"]\s*\(([^)]+)\)', caseSensitive: false);
-    Iterable<Match> indexMatches = indexRegex.allMatches(query);
-
-    for (Match match in indexMatches) {
-      String indexName = match.group(1)!;
-      String columns = match.group(2)!;
-      String cleanColumns = columns
+    final indexRegex = RegExp(
+      r'((?:SPATIAL|FULLTEXT|UNIQUE)\s+)?INDEX\s+[`"]([^`"]+)[`"]\s*\(([^)]+)\)',
+      caseSensitive: false,
+    );
+    final rawIndexes = indexRegex.allMatches(query).toList();
+    for (final m in rawIndexes) {
+      final typeKey = m.group(1)?.trim().toUpperCase() ?? '';
+      final name = m.group(2)!;
+      final cols = m.group(3)!;
+      final cleanCols = cols
           .replaceAll(RegExp(r'[`"]'), '')
           .replaceAll(RegExp(r'\s+'), ' ')
           .trim();
-      _extractedIndexes.add('$indexName:$cleanColumns');
+      _extractedIndexes.add('$name:$cleanCols:$typeKey');
     }
-
-    RegExp constraintRegex = RegExp(
-        r'CONSTRAINT\s+[`"]([^`"]+)[`"]\s+UNIQUE\s*\(([^)]+)\)',
-        caseSensitive: false);
-    Iterable<Match> constraintMatches = constraintRegex.allMatches(query);
-
-    for (Match match in constraintMatches) {
-      String constraintName = match.group(1)!;
-      String columns = match.group(2)!;
-      String cleanColumns = columns
+    query = query.replaceAll(indexRegex, '');
+    query = query.replaceAll(RegExp(r',\s*\)'), ')');
+    final constraintRegex = RegExp(
+      r'CONSTRAINT\s+[`"]([^`"]+)[`"]\s+UNIQUE\s*\(([^)]+)\)',
+      caseSensitive: false,
+    );
+    for (final m in constraintRegex.allMatches(query)) {
+      final name = m.group(1)!;
+      final cols = m.group(2)!;
+      final cleanCols = cols
           .replaceAll(RegExp(r'[`"]'), '')
           .replaceAll(RegExp(r'\s+'), ' ')
           .trim();
-      _extractedIndexes.add('$constraintName:$cleanColumns:UNIQUE');
+      _extractedIndexes.add('$name:$cleanCols:UNIQUE');
     }
+
+    _cleanedQuery = query;
   }
 
   List<String> _generateIndexStatements() {
-    List<String> statements = [];
+    final statements = <String>[];
 
-    for (String indexInfo in _extractedIndexes) {
-      List<String> parts = indexInfo.split(':');
-      String indexName = parts[0];
-      String columns = parts[1];
-      bool isUnique = parts.length > 2 && parts[2] == 'UNIQUE';
+    for (final info in _extractedIndexes) {
+      final parts = info.split(':');
+      final name = parts[0];
+      final cols = parts[1];
+      final typeKey = parts.length > 2 ? parts[2] : '';
 
-      List<String> columnList =
-          columns.split(',').map((col) => '"${col.trim()}"').toList();
-      String formattedColumns = columnList.join(', ');
+      final colList =
+          cols.split(',').map((c) => '"${c.trim()}"').toList().join(', ');
 
-      String uniqueKeyword = isUnique ? 'UNIQUE ' : '';
-      String statement =
-          'CREATE ${uniqueKeyword}INDEX IF NOT EXISTS "$indexName" ON "$_currentTableName" ($formattedColumns)';
-      statements.add(statement);
+      final prefix = typeKey.isNotEmpty ? '$typeKey ' : '';
+
+      final stmt = 'CREATE ${prefix}INDEX IF NOT EXISTS "$name" '
+          'ON "$_currentTableName" ($colList)';
+      statements.add(stmt);
     }
 
     return statements;
