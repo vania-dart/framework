@@ -44,8 +44,6 @@ class MySqlConnector implements DatabaseConnection {
         );
         await _connection.connect();
       }
-
-      print(_connection.runtimeType);
     } catch (e) {
       throw DatabaseException('Database connection failed', e);
     }
