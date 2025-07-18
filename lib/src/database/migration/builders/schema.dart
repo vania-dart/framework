@@ -147,7 +147,7 @@ class Schema implements SchemaInterface {
       _indexes.add('INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
     } else {
       _indexes.add(
-          '${type.name} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
+          '${type.name.toUpperCase()} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
     }
   }
 
@@ -253,8 +253,47 @@ class Schema implements SchemaInterface {
     return query.toString();
   }
 
+  String generateCreateAlterSql(
+    String tableName, {
+    bool ifNotExists = false,
+    String beforeColumn = '',
+    String afterColumn = '',
+  }) {
+    _finalizeColumnDefinitions();
+
+    final clauses = <String>[];
+
+    for (final colDef in _queries) {
+      var clause = 'ADD COLUMN ${colDef.trim()}';
+      if (beforeColumn.isNotEmpty) clause += ' BEFORE `$beforeColumn`';
+      if (afterColumn.isNotEmpty) clause += ' AFTER `$afterColumn`';
+      clauses.add(clause);
+    }
+
+    if (_primaryField.isNotEmpty) {
+      clauses.add('ADD PRIMARY KEY (`$_primaryField`)');
+    }
+
+    for (final idx in _indexes) {
+      clauses.add('ADD $idx');
+    }
+
+    for (final fk in _foreignKeys) {
+      clauses.add('ADD $fk');
+    }
+
+    final buffer = StringBuffer();
+    buffer.writeln('ALTER TABLE `$tableName`');
+    for (var i = 0; i < clauses.length; i++) {
+      final sep = i == clauses.length - 1 ? '' : ',';
+      buffer.writeln('  ${clauses[i]}$sep');
+    }
+
+    return buffer.toString();
+  }
+
   String generateDropTableSql(String tableName, {bool ifExists = false}) {
     String dropClause = ifExists ? 'DROP TABLE IF EXISTS' : 'DROP TABLE';
-    return '$dropClause `$tableName`;';
+    return '$dropClause `$tableName`';
   }
 }
