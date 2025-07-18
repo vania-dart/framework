@@ -211,7 +211,7 @@ class MigrationRunner {
       } else {
         sql = 'SELECT COALESCE(MAX("batch"), 0) as max_batch FROM "migrations"';
       }
-       await Future.delayed(Duration(milliseconds: 10));
+      await Future.delayed(Duration(milliseconds: 10));
       final result = await MigrationConnection().connection!.select(sql);
       if (result.isNotEmpty) {
         return int.parse(result.first['max_batch'].toString());
