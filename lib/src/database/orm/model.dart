@@ -58,7 +58,7 @@ abstract class Model extends QueryBuilderImpl {
 
   @protected
   String get tableName =>
-      toSnakeCase(Pluralize().make(runtimeType.toString().toLowerCase()));
+      toSnakeCase(Pluralize().make(runtimeType.toString())).toLowerCase();
 
   @protected
   bool get timestamps => true;
@@ -175,6 +175,11 @@ abstract class Model extends QueryBuilderImpl {
   }
 
   Future<Map<String, dynamic>> create(Map<String, dynamic> values) async {
+    if (timestamps) {
+      values[createdAt] = DateTime.now();
+      values[updatedAt] = DateTime.now();
+    }
+
     final id = await insertGetId(values);
     final result = await find(id);
     return result!;
@@ -236,7 +241,6 @@ abstract class Model extends QueryBuilderImpl {
       columns: columns,
     );
     attributes = Map.from(result ?? {});
-    result?.removeWhere((key, _) => hidden.contains(key));
 
     if (result != null) {
       List<Map<String, dynamic>> data = [result];
@@ -274,7 +278,6 @@ abstract class Model extends QueryBuilderImpl {
     super.limit(1).toSql();
     final result = await super.first(columns);
     attributes = Map.from(result ?? {});
-    result?.removeWhere((key, _) => hidden.contains(key));
 
     if (result == null) {
       return null;
@@ -380,11 +383,6 @@ abstract class Model extends QueryBuilderImpl {
   ) async {
     _validateFieldsForAssignment(values);
 
-    if (timestamps) {
-      values[createdAt] = DateTime.now();
-      values[updatedAt] = DateTime.now();
-    }
-
     await super.insert(values);
     return Future.value(true);
   }
@@ -396,10 +394,6 @@ abstract class Model extends QueryBuilderImpl {
   ]) async {
     _validateFieldsForAssignment(values);
 
-    if (timestamps) {
-      values[createdAt] = DateTime.now();
-      values[updatedAt] = DateTime.now();
-    }
     final id = await super.insertGetId(values, sequence);
     attributes[primaryKey] = id;
 
@@ -614,8 +608,7 @@ abstract class Model extends QueryBuilderImpl {
       result.remove(key);
     }
     _relations.forEach((key, relation) {
-      if (relation is Future<dynamic>) {
-      } else {
+      if (relation is! Future<dynamic>) {
         result[key] = relation;
       }
     });
@@ -642,9 +635,11 @@ abstract class Model extends QueryBuilderImpl {
   ) async {
     if (updates.isEmpty) return false;
 
-    for (var row in updates) {
-      _validateFieldsForAssignment(row);
-      row.addEntries([MapEntry(updatedAt, DateTime.now())]);
+    if (timestamps) {
+      for (var row in updates) {
+        _validateFieldsForAssignment(row);
+        row.addEntries([MapEntry(updatedAt, DateTime.now())]);
+      }
     }
 
     return super.updateMany(updates, column);

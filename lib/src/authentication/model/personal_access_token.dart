@@ -1,3 +1,6 @@
 import 'package:vania/src/database/orm/model.dart';
 
-class PersonalAccessTokens extends Model {}
+class PersonalAccessToken extends Model {
+  @override
+  List<String> guarded = ['id'];
+}
