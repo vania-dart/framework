@@ -75,6 +75,10 @@ class QueryBuilderImpl extends QueryBuilder
   String build({String? aggregateFunction, String? aggregateColumn}) {
     String sql = '';
 
+    if (selectColumns.length > 1) {
+      selectColumns.remove('*');
+    }
+
     String withClause = buildWithClause();
     if (withClause.isNotEmpty) {
       sql = '$withClause ';
