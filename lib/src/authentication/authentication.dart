@@ -19,8 +19,6 @@ class Auth {
 
   bool _loggedIn = false;
 
-  String _currentToken = '';
-
   final Map<String, dynamic> _user = {};
 
   bool get loggedIn => _loggedIn;
@@ -120,7 +118,7 @@ class Auth {
         .createToken(_userGuard, expiresIn, withRefreshToken);
 
     if (!customToken) {
-      await PersonalAccessTokens().query.insert({
+      await PersonalAccessToken().query.insert({
         'name': _userGuard,
         'tokenable_id': _user[_userGuard]['id'],
         'token': md5.convert(utf8.encode(token['access_token'])).toString(),
@@ -177,7 +175,7 @@ class Auth {
       }
 
       _user[_userGuard] = user;
-      await PersonalAccessTokens().query.insert({
+      await PersonalAccessToken().query.insert({
         'name': _userGuard,
         'tokenable_id': user['id'],
         'token': md5.convert(utf8.encode(newToken['access_token'])),
@@ -194,10 +192,10 @@ class Auth {
   /// tokens.
   ///
   /// Returns true if the operation was successful.
-  Future<bool> deleteTokens() async {
-    await PersonalAccessTokens()
+  Future<bool> deleteTokens(dynamic userId) async {
+    await PersonalAccessToken()
         .query
-        .where('tokenable_id', '=', _user[_userGuard]['id'])
+        .where('tokenable_id', '=', userId)
         .update({'deleted_at': DateTime.now()});
 
     return true;
@@ -211,10 +209,10 @@ class Auth {
   ///
   /// Returns a Future that resolves to true if the operation was successful.
   ///
-  Future<bool> deleteCurrentToken() async {
-    await PersonalAccessTokens()
+  Future<bool> deleteCurrentToken(String token) async {
+    await PersonalAccessToken()
         .query
-        .where('token', '=', md5.convert(utf8.encode(_currentToken)))
+        .where('token', '=', md5.convert(utf8.encode(token)))
         .update({'deleted_at': DateTime.now()});
     return true;
   }
@@ -247,10 +245,9 @@ class Auth {
     if (isCustomToken) {
       _user[_userGuard] = payload;
       _loggedIn = true;
-      _currentToken = token;
       return true;
     } else {
-      Map<String, dynamic>? exists = await PersonalAccessTokens()
+      Map<String, dynamic>? exists = await PersonalAccessToken()
           .query
           .where('token', '=', md5.convert(utf8.encode(token)))
           .whereNull('deleted_at')
@@ -260,7 +257,7 @@ class Auth {
         throw Unauthenticated(message: 'Invalid token');
       }
 
-      await PersonalAccessTokens()
+      await PersonalAccessToken()
           .query
           .where('token', '=', md5.convert(utf8.encode(token)))
           .update({'last_used_at': DateTime.now()});
@@ -279,7 +276,6 @@ class Auth {
       if (user != null) {
         _user[_userGuard] = user;
         _loggedIn = true;
-        _currentToken = token;
         return true;
       } else {
         throw Unauthenticated(message: 'Invalid token');
