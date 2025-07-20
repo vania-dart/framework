@@ -1,3 +1,12 @@
+## 1.0.0
+
+- Release stable version 1.0.0  
+- Refactor and improve `QueryBuilder`: remove Eloquent package and implement core version  
+- Implement full ORM functionality in core  
+- Optimize routing system  
+- Enhance request validation  
+- Remove extraneous code and optimize core performance  
+
 ## 0.8.2
 
 - Fix (Session): session file locking issue on Linux.  
