@@ -71,7 +71,7 @@ class HasApiTokens {
         'type': 'refresh_token',
       });
       String refreshToken = jwtRefresh.sign(SecretKey('$secretKey$guard'),
-          expiresIn: const Duration(days: 30));
+          expiresIn: const Duration(days: 120));
       payload['refresh_token'] = refreshToken;
     }
 

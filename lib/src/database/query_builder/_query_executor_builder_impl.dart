@@ -135,13 +135,16 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future<Map<String, dynamic>?> find(
     dynamic id, {
     String byColumnName = 'id',
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
   }) async {
     try {
-      String sql = select(columns)
-          .whereEqualTo('$getTable.$byColumnName', id)
-          .limit(1)
-          .toSql();
+      String sql = whereEqualTo('$getTable.$byColumnName', id).limit(1).toSql();
+      if (columns.isNotEmpty) {
+        for (String column in columns) {
+          selectColumns.remove(column);
+        }
+        selectColumns.addAll(columns);
+      }
       final bindings = getBindings();
       final result = await dbConnection!.select(sql, bindings);
       if (result.isEmpty) {
@@ -157,7 +160,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   Future<Map<String, dynamic>?> findOrFail(
     id, {
     String byColumnName = 'id',
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
   }) async {
     var result = await find(
       id,
@@ -172,9 +175,15 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<Map<String, dynamic>?> first([
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
   ]) async {
     try {
+      if (columns.isNotEmpty) {
+        for (String column in columns) {
+          selectColumns.remove(column);
+        }
+        selectColumns.addAll(columns);
+      }
       final bindings = getBindings();
       String sql = limit(1).toSql();
       conn = await getConnection();
@@ -190,7 +199,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<Map<String, dynamic>?> firstOrFail([
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
   ]) async {
     var result = await first(columns);
     if (result == null) {
@@ -204,7 +213,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     String column, [
     String? operator = '=',
     value,
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
   ]) async {
     if (value == null) {
       throw InvalidArgumentException(
@@ -217,11 +226,14 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
 
   @override
   Future<List<Map<String, dynamic>>> get([
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
   ]) async {
     try {
       final bindings = getBindings();
-      if (selectColumns.isEmpty) {
+      if (columns.isNotEmpty) {
+        for (String column in columns) {
+          selectColumns.remove(column);
+        }
         selectColumns.addAll(columns);
       }
       final sql = toSql();
@@ -311,7 +323,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<Map<String, dynamic>> paginate({
     int perPage = 15,
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
     String? pageName,
     int? page,
   }) async {
@@ -353,7 +365,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   @override
   Future<Map<String, dynamic>> simplePaginate([
     int perPage = 15,
-    List<String> columns = const ['*'],
+    List<String> columns = const [],
     String? pageName,
     int? page,
   ]) async {
