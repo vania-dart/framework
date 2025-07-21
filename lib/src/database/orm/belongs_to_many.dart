@@ -1,24 +1,38 @@
 import 'package:vania/src/contract/orm/relation.dart';
 
 class BelongsToMany extends Relation {
+  final String pivotTable;
+  final String parentPivotKey;
+  final String relatedPivotKey;
+  final String parentLocalKey;
+  final String relatedLocalKey;
+  final List<String> pivotFields;
+
   BelongsToMany({
-    required super.related,
     required super.parent,
-    super.foreignKey,
-    required super.localKey,
+    required super.related,
+    required this.pivotTable,
+    required this.parentPivotKey,
+    required this.relatedPivotKey,
+    this.parentLocalKey = 'id',
+    this.relatedLocalKey = 'id',
+    this.pivotFields = const [],
   });
 
   @override
   List<Map<String, dynamic>> match(
-    List<Map<String, dynamic>> models,
-    List<Map<String, dynamic>> results,
-    String relation,
-  ) =>
-      matchMany(
-        models,
-        results,
-        relation,
-        localKey,
-        foreignKey ?? '${related.runtimeType.toString().toLowerCase()}_id',
-      );
+    List<Map<String, dynamic>> parents,
+    List<Map<String, dynamic>> rows,
+    String relationName,
+  ) {
+    return matchToMany(
+      parents,
+      rows,
+      relationName,
+      parentLocalKey,
+      parentPivotKey,
+      relatedPivotKey,
+      pivotFields: pivotFields,
+    );
+  }
 }

@@ -1,7 +1,10 @@
 import 'package:meta/meta.dart';
+import 'package:vania/query_builder.dart';
 import 'package:vania/src/contract/database/query_builder/query_builder.dart';
 import 'package:vania/src/contract/orm/morph_relation.dart';
 import 'package:vania/src/contract/orm/relation.dart';
+import 'package:vania/src/database/_database_utils/_singularize.dart';
+import 'package:vania/src/database/orm/polymorphic/morphed_by_many.dart';
 import 'package:vania/src/database/query_builder/_query_builder_impl.dart';
 import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/utils/_pluralize.dart';
@@ -43,6 +46,9 @@ abstract class Model extends QueryBuilderImpl {
   @protected
   String get primaryKey => 'id';
 
+  @protected
+  String? _table;
+
   Model get query =>
       connection(defaultConnection).table('$tablePrefix$tableName') as Model;
 
@@ -54,11 +60,15 @@ abstract class Model extends QueryBuilderImpl {
 
   @protected
   @override
-  String get getTable => tableName;
+  String get getTable => _table ?? tableName;
 
   @protected
   String get tableName =>
       toSnakeCase(Pluralize().make(runtimeType.toString())).toLowerCase();
+
+  set tableName(String table) {
+    _table = table;
+  }
 
   @protected
   bool get timestamps => true;
@@ -85,44 +95,49 @@ abstract class Model extends QueryBuilderImpl {
     String? foreignKey,
     String localKey = 'id',
   }) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries(
-        [
-          MapEntry(
-            name,
-            BelongsTo(
-              related: model,
-              parent: this,
-              foreignKey: foreignKey,
-              localKey: localKey,
-            ),
+    _relations.addEntries(
+      [
+        MapEntry(
+          name,
+          BelongsTo(
+            related: model,
+            parent: this,
+            foreignKey: foreignKey ??
+                '${model.runtimeType.toString()}_id'.toLowerCase(),
+            localKey: localKey,
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
 
   void belongsToMany(
     String name,
     Model model, {
-    String? foreignKey,
-    String localKey = 'id',
+    String? pivotTable,
+    required parentPivotKey,
+    required relatedPivotKey,
+    parentLocalKey = 'id',
+    relatedLocalKey = 'id',
   }) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries(
-        [
-          MapEntry(
-            name,
-            BelongsToMany(
-              related: model,
-              parent: this,
-              foreignKey: foreignKey,
-              localKey: localKey,
-            ),
+    _relations.addEntries(
+      [
+        MapEntry(
+          name,
+          BelongsToMany(
+            related: model,
+            parent: this,
+            pivotTable: pivotTable ??
+                '${Singularize.make(model.runtimeType.toString())}_${Singularize.make(runtimeType.toString())}'
+                    .toLowerCase(),
+            parentPivotKey: parentPivotKey,
+            relatedPivotKey: relatedPivotKey,
+            parentLocalKey: parentLocalKey,
+            relatedLocalKey: relatedLocalKey,
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
 
   @override
@@ -200,7 +215,6 @@ abstract class Model extends QueryBuilderImpl {
     }
   }
 
-  @override
   @override
   Future<bool> doesntExist() async {
     if (softDeletes) {
@@ -346,7 +360,8 @@ abstract class Model extends QueryBuilderImpl {
           HasMany(
             related: model,
             parent: this,
-            foreignKey: foreignKey,
+            foreignKey:
+                foreignKey ?? '${runtimeType.toString()}_id'.toLowerCase(),
             localKey: localKey,
           ),
         ),
@@ -360,21 +375,20 @@ abstract class Model extends QueryBuilderImpl {
     String? foreignKey,
     String localKey = 'id',
   }) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries(
-        [
-          MapEntry(
-            name,
-            HasOne(
-              related: model,
-              parent: this,
-              foreignKey: foreignKey,
-              localKey: localKey,
-            ),
+    _relations.addEntries(
+      [
+        MapEntry(
+          name,
+          HasOne(
+            related: model,
+            parent: this,
+            foreignKey:
+                foreignKey ?? '${runtimeType.toString()}_id'.toLowerCase(),
+            localKey: localKey,
           ),
-        ],
-      );
-    }
+        ),
+      ],
+    );
   }
 
   @override
@@ -425,21 +439,23 @@ abstract class Model extends QueryBuilderImpl {
       {required String morphKey,
       required String morphType,
       required String type,
+      required String pivotTable,
+      required String relatedMorphKey,
       String localKey = 'id'}) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries([
-        MapEntry(
-            name,
-            MorphTo(
-              parent: this,
-              related: model,
-              morphKey: morphKey,
-              morphType: morphType,
-              type: type,
-              localKey: localKey,
-            ))
-      ]);
-    }
+    _relations.addEntries([
+      MapEntry(
+          name,
+          MorphedByMany(
+            parent: this,
+            related: model,
+            morphKey: morphKey,
+            morphType: morphType,
+            pivotTable: pivotTable,
+            relatedMorphKey: relatedMorphKey,
+            type: type,
+            localKey: localKey,
+          ))
+    ]);
   }
 
   void morphMany(String name, Model model,
@@ -447,20 +463,18 @@ abstract class Model extends QueryBuilderImpl {
       required String morphType,
       required String type,
       String localKey = 'id'}) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries([
-        MapEntry(
-            name,
-            MorphMany(
-              parent: this,
-              related: model,
-              morphKey: morphKey,
-              morphType: morphType,
-              type: type,
-              localKey: localKey,
-            ))
-      ]);
-    }
+    _relations.addEntries([
+      MapEntry(
+          name,
+          MorphMany(
+            parent: this,
+            related: model,
+            morphKey: morphKey,
+            morphType: morphType,
+            type: type,
+            localKey: localKey,
+          ))
+    ]);
   }
 
   void morphOne(String name, Model model,
@@ -468,20 +482,18 @@ abstract class Model extends QueryBuilderImpl {
       required String morphType,
       required String type,
       String localKey = 'id'}) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries([
-        MapEntry(
-            name,
-            MorphOne(
-              parent: this,
-              related: model,
-              morphKey: morphKey,
-              morphType: morphType,
-              type: type,
-              localKey: localKey,
-            ))
-      ]);
-    }
+    _relations.addEntries([
+      MapEntry(
+          name,
+          MorphOne(
+            parent: this,
+            related: model,
+            morphKey: morphKey,
+            morphType: morphType,
+            type: type,
+            localKey: localKey,
+          ))
+    ]);
   }
 
   void morphTo(String name, Model model,
@@ -489,41 +501,41 @@ abstract class Model extends QueryBuilderImpl {
       required String morphType,
       required String type,
       String localKey = 'id'}) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries([
-        MapEntry(
-            name,
-            MorphTo(
-              parent: this,
-              related: model,
-              morphKey: morphKey,
-              morphType: morphType,
-              type: type,
-              localKey: localKey,
-            ))
-      ]);
-    }
+    _relations.addEntries([
+      MapEntry(
+          name,
+          MorphTo(
+            parent: this,
+            related: model,
+            morphKey: morphKey,
+            morphType: morphType,
+            type: type,
+            localKey: localKey,
+          ))
+    ]);
   }
 
   void morphToMany(String name, Model model,
       {required String morphKey,
       required String morphType,
       required String type,
+      required String pivotTable,
+      required String relatedMorphKey,
       String localKey = 'id'}) {
-    if (!_relations.containsKey(name)) {
-      _relations.addEntries([
-        MapEntry(
-            name,
-            MorphToMany(
-              parent: this,
-              related: model,
-              morphKey: morphKey,
-              morphType: morphType,
-              type: type,
-              localKey: localKey,
-            ))
-      ]);
-    }
+    _relations.addEntries([
+      MapEntry(
+          name,
+          MorphToMany(
+            parent: this,
+            related: model,
+            morphKey: morphKey,
+            morphType: morphType,
+            pivotTable: pivotTable,
+            relatedMorphKey: relatedMorphKey,
+            type: type,
+            localKey: localKey,
+          ))
+    ]);
   }
 
   Model newInstance() {
@@ -682,6 +694,10 @@ abstract class Model extends QueryBuilderImpl {
     if (!_relationsRegistered) {
       registerRelations();
       _relationsRegistered = true;
+      final rela = _relations[relation];
+      if (rela != null && rela is MorphTo) {
+        where(rela.morphType, '=', rela.type!);
+      }
     }
 
     _withRelation.add(_RelationQuery(relation, callback));
@@ -714,20 +730,55 @@ abstract class Model extends QueryBuilderImpl {
       }
 
       Relation rela = _relations[primaryRelation] as Relation;
-
-      Set userIds = models.map((m) => m[rela.localKey]).toSet();
-      rela.parent._clearWithRelation(rq);
       Model qb = rela.related;
+      rela.parent._clearWithRelation(rq);
+
       if (rq.callback != null) {
-        qb = rq.callback!(qb);
+        qb = rq.callback!(qb) as Model;
       }
 
       if (rela is MorphRelation) {
-        qb = qb
-            .whereIn(rela.morphKey, userIds.toList())
-            .whereEqualTo(rela.morphType, rela.type) as Model;
+        if (rela is MorphTo) {
+          Set ids = models.map((m) => m[rela.morphKey]).toSet();
+          qb = qb.whereIn(rela.localKey, ids.toList()) as Model;
+        } else {
+          Set ids = models.map((m) => m[rela.localKey]).toSet();
+
+          if (rela is MorphToMany || rela is MorphedByMany) {
+            qb = qb
+                .whereIn(rela.morphKey, ids.toList())
+                .whereEqualTo(rela.morphType, rela.type)
+                .join(
+                  rela.related.tableName,
+                  '${rela.pivotTable}.${rela.relatedMorphKey}',
+                  '=',
+                  '${rela.related.tableName}.${rela.localKey}',
+                ) as Model;
+            qb.tableName = rela.pivotTable!;
+          } else {
+            qb = qb
+                .whereIn(rela.morphKey, ids.toList())
+                .whereEqualTo(rela.morphType, rela.type) as Model;
+          }
+        }
       } else {
-        qb = qb.whereIn(rela.foreignKey!, userIds.toList()) as Model;
+        Set ids = models.map((m) => m[rela.localKey]).toSet();
+
+        if (rela is BelongsToMany) {
+          qb = qb
+              .whereIn(
+                  '${rela.pivotTable}.${rela.parentPivotKey}', ids.toList())
+              .join(
+                rela.pivotTable,
+                '${rela.pivotTable}.${rela.relatedPivotKey}',
+                '=',
+                '${rela.related.tableName}.${rela.relatedLocalKey}',
+              ) as Model;
+        } else if (rela is BelongsTo) {
+          qb = qb.whereIn(rela.localKey, ids.toList()) as Model;
+        } else {
+          qb = qb.whereIn(rela.foreignKey!, ids.toList()) as Model;
+        }
       }
 
       if (wr.length > 1) {
@@ -736,6 +787,7 @@ abstract class Model extends QueryBuilderImpl {
         callBack(rela.match(models, results, primaryRelation));
       } else {
         var results = await qb.get();
+
         callBack(rela.match(models, results, primaryRelation));
       }
     }

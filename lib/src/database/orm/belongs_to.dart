@@ -18,7 +18,7 @@ class BelongsTo extends Relation {
         models,
         results,
         relation,
-        localKey,
         foreignKey ?? '${related.runtimeType.toString()}_id',
+        localKey,
       );
 }
