@@ -62,6 +62,38 @@ abstract class Relation {
     return models;
   }
 
+  List<Map<String, dynamic>> matchToMany(
+    List<Map<String, dynamic>> parents,
+    List<Map<String, dynamic>> results,
+    String relation,
+    String parentLocalKey,
+    String parentPivotKey,
+    String relatedPivotKey, {
+    List<String> pivotFields = const [],
+  }) {
+    final lookup = <dynamic, List<Map<String, dynamic>>>{};
+    for (var row in results) {
+      final pivotVal = row[parentPivotKey];
+      lookup.putIfAbsent(pivotVal, () => []).add(row);
+    }
+    return parents.map((parent) {
+      final cloned = Map<String, dynamic>.from(parent);
+      final primaryVal = parent[parentLocalKey];
+      final joinedRows = lookup[primaryVal] ?? [];
+
+      final relatedList = joinedRows.map((row) {
+        final relatedData = Map<String, dynamic>.from(row)
+          ..remove(parentPivotKey)
+          ..remove(relatedPivotKey)
+          ..removeWhere((k, _) => pivotFields.contains(k));
+        return relatedData;
+      }).toList();
+
+      cloned[relation] = relatedList;
+      return cloned;
+    }).toList();
+  }
+
   /// Match many related models to parents (for normal relations)
   List<Map<String, dynamic>> matchMany(
     List<Map<String, dynamic>> models,
@@ -131,6 +163,26 @@ abstract class Relation {
     }).toList();
 
     return models;
+  }
+
+  List<Map<String, dynamic>> matchMorphToOne(
+    List<Map<String, dynamic>> parents,
+    List<Map<String, dynamic>> results,
+    String relation,
+    String morphKey,
+    String relatedKey,
+  ) {
+    final dict = <String, Map<String, dynamic>>{};
+    for (var row in results) {
+      final key = row[relatedKey].toString();
+      dict[key] = row;
+    }
+    return parents.map((parent) {
+      final clone = Map<String, dynamic>.from(parent);
+      final lookupKey = parent[morphKey]?.toString();
+      clone[relation] = lookupKey != null ? dict[lookupKey] : null;
+      return clone;
+    }).toList();
   }
 
   /// Match one related morph model to parents (for hasOne polymorphic relation).

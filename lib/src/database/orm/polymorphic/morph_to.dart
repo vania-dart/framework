@@ -16,14 +16,12 @@ class MorphTo extends MorphRelation {
     List<Map<String, dynamic>> results,
     String relation,
   ) {
-    return matchMorphOneOrMany(
+    return matchMorphToOne(
       models,
       results,
       relation,
-      localKey,
       morphKey,
-      morphType,
-      type ?? related.runtimeType.toString().toLowerCase(),
+      localKey,
     );
   }
 }

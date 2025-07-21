@@ -6,6 +6,8 @@ class MorphedByMany extends MorphRelation {
     required super.related,
     required super.morphKey,
     required super.morphType,
+    required super.pivotTable,
+    required super.relatedMorphKey,
     super.type,
     super.localKey = 'id',
   });
