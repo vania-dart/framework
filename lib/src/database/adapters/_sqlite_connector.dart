@@ -5,7 +5,6 @@ import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:vania/src/contract/database/_connectors/_database_connection.dart';
 import 'package:vania/src/exception/database_exception.dart';
-import 'package:vania/src/exception/query_exception.dart';
 import '../../utils/helper.dart' show env;
 import '../_database_utils/_db_config.dart';
 
@@ -82,9 +81,7 @@ class SQLiteConnector implements DatabaseConnection {
 
       return true;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 
@@ -112,9 +109,7 @@ class SQLiteConnector implements DatabaseConnection {
       stmt.dispose();
       return rows;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 
@@ -132,9 +127,7 @@ class SQLiteConnector implements DatabaseConnection {
 
       return id;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 

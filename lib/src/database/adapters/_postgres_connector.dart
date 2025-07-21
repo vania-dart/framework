@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:postgres/postgres.dart';
 import 'package:vania/src/exception/database_exception.dart';
-import 'package:vania/src/exception/query_exception.dart';
-
 import '../_database_utils/_db_config.dart';
 
 import '../../contract/database/_connectors/_database_connection.dart';
@@ -96,9 +94,7 @@ class PostgresConnector implements DatabaseConnection {
       );
       return result.affectedRows > 0;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 
@@ -128,9 +124,7 @@ class PostgresConnector implements DatabaseConnection {
       }
       return maps;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 
@@ -144,9 +138,7 @@ class PostgresConnector implements DatabaseConnection {
       );
       return result.affectedRows;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 
