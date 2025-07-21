@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:mysql_dart/mysql_dart.dart';
 import 'package:vania/src/exception/database_exception.dart';
-import 'package:vania/src/exception/query_exception.dart';
 import '../_database_utils/_db_config.dart';
 import '../../contract/database/_connectors/_database_connection.dart';
 
@@ -56,9 +57,7 @@ class MySqlConnector implements DatabaseConnection {
       await _connection.execute(query, bindings);
       return true;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 
@@ -112,11 +111,21 @@ class MySqlConnector implements DatabaseConnection {
         return [];
       }
 
-      return results.rows.map((item) => item.assoc()).toList();
+      return results.rows.map((item) => item.assoc()).toList().map((row) {
+        final newRow = Map<String, dynamic>.from(row);
+        newRow.forEach((key, value) {
+          if (value is List<int>) {
+            try {
+              newRow[key] = utf8.decode(value);
+            } catch (e) {
+              newRow[key] = value;
+            }
+          }
+        });
+        return newRow;
+      }).toList();
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 
@@ -134,9 +143,7 @@ class MySqlConnector implements DatabaseConnection {
       }
       return results.lastInsertID;
     } catch (e) {
-      throw QueryException(
-        e.toString(),
-      );
+      rethrow;
     }
   }
 }
