@@ -64,8 +64,8 @@ class Response {
         res.headers.contentType = ContentType.json;
         try {
           res.write(jsonEncode(data));
-        } catch (_) {
-          res.write(jsonEncode(data.toString()));
+        } catch (e) {
+          res.write('jsonEncode Error: $e');
         }
         await res.close();
         break;

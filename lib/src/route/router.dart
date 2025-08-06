@@ -5,7 +5,6 @@ import 'package:vania/src/websocket/web_socket_handler.dart';
 import 'package:vania/src/websocket/websocket_event.dart';
 
 import '../../vania.dart' show env;
-import 'middleware/csrf_middleware.dart';
 
 class Router {
   static final Router _singleton = Router._internal();
@@ -15,7 +14,7 @@ class Router {
   String? _prefix;
   String? _groupPrefix;
   String? _groupDomain;
-  final List<Middleware> _groupMiddleware = [CsrfMiddleware()];
+  final List<Middleware> _groupMiddleware = [];
   final List<RouteData> _routes = [];
 
   static final RegExp _requestVarRegex = RegExp(r'Closure: \(([^)]*)\) =>');
@@ -92,7 +91,10 @@ class Router {
   }
 
   static Router _addRoute(
-      HttpRequestMethod method, String path, Function action) {
+    HttpRequestMethod method,
+    String path,
+    Function action,
+  ) {
     return Router()
         ._addRouteInternal(method, path, action)
         .middleware(Router()._groupMiddleware)

@@ -4,6 +4,7 @@ import 'package:vania/src/exception/query_exception.dart';
 import 'package:vania/src/extensions/extensions.dart';
 import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/http/session/session_manager.dart';
+import 'package:vania/src/route/middleware/csrf_middleware.dart';
 import 'package:vania/src/view_engine/helper.dart';
 
 import 'package:vania/src/config/http_cors.dart';
@@ -62,8 +63,11 @@ class RequestHandler {
                 .sessionStart(req, req.response);
             RouteHistory().updateRouteHistory(req);
           }
+          if (env<bool>('CSRF_PROTECTION_ENABLED', false)) {
+            route.preMiddleware.add(CsrfMiddleware());
+          }
 
-          /// check if pre middleware exist and call it
+          /// Check if pre middleware exist and call it
           if (route.preMiddleware.isNotEmpty) {
             await middlewareHandler(route.preMiddleware, request);
           }

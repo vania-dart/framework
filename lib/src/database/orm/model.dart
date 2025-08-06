@@ -780,7 +780,6 @@ abstract class Model extends QueryBuilderImpl {
           qb = qb.whereIn(rela.foreignKey!, ids.toList()) as Model;
         }
       }
-
       if (wr.length > 1) {
         wr.removeAt(0);
         var results = await qb.include(wr.join('.')).get();
