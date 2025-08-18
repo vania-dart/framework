@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:mime/mime.dart';
 import 'package:vania/src/aws/s3_client.dart';
-import '../performance/_task_manager.dart';
 import 'storage_driver.dart';
 
 class S3Storage implements StorageDriver {
@@ -13,9 +12,7 @@ class S3Storage implements StorageDriver {
   factory S3Storage() => _instance;
   S3Storage._internal();
 
-  final TaskManager _taskManager = TaskManager();
   final S3Client _s3Client = S3Client();
-  static const Duration _defaultTimeout = Duration(seconds: 30);
   final Map<String, _CachedMetadata> _metadataCache = {};
   static const Duration _metadataCacheDuration = Duration(minutes: 5);
 
@@ -33,68 +30,62 @@ class S3Storage implements StorageDriver {
     filePath = removeLeadingSlash(filePath);
     final uri = _s3Client.buildUri(filePath);
 
-    return await _taskManager.runInIsolate(() async {
-      final client = HttpClient();
-      try {
-        final request = await client.putUrl(uri);
-        final contentType =
-            lookupMimeType(filePath) ?? 'application/octet-stream';
-        request.headers.set('Content-Type', contentType);
-        request.headers.set('Content-Length', content.length.toString());
+    final client = HttpClient();
+    try {
+      final request = await client.putUrl(uri);
+      final contentType =
+          lookupMimeType(filePath) ?? 'application/octet-stream';
+      request.headers.set('Content-Type', contentType);
+      request.headers.set('Content-Length', content.length.toString());
 
-        final payloadHash = sha256.convert(content).toString();
-        _s3Client
-            .generateS3Headers('PUT', filePath, hash: payloadHash)
-            .forEach((key, value) => request.headers.set(key, value));
+      final payloadHash = sha256.convert(content).toString();
+      _s3Client
+          .generateS3Headers('PUT', filePath, hash: payloadHash)
+          .forEach((key, value) => request.headers.set(key, value));
 
-        request.add(content);
-        final response = await request.close();
+      request.add(content);
+      final response = await request.close();
 
-        if (response.statusCode == 200) {
-          _invalidateMetadataCache(filePath);
-          return uri.toString();
-        }
-        throw Exception('Failed to upload file: ${response.statusCode}');
-      } finally {
-        client.close();
+      if (response.statusCode == 200) {
+        _invalidateMetadataCache(filePath);
+        return uri.toString();
       }
-    }, timeout: _defaultTimeout);
+      throw Exception('Failed to upload file: ${response.statusCode}');
+    } finally {
+      client.close();
+    }
   }
 
   @override
   Future<String?> get(String file) async {
     file = removeLeadingSlash(file);
-    return await _taskManager.runInIsolate(() async {
-      final client = HttpClient();
-      try {
-        final response = await _executeRequest(client, 'GET', file);
-        if (response.statusCode == 200) {
-          return await response.transform(utf8.decoder).join();
-        }
-        return null;
-      } finally {
-        client.close();
+    final client = HttpClient();
+    try {
+      final response = await _executeRequest(client, 'GET', file);
+      if (response.statusCode == 200) {
+        return await response.transform(utf8.decoder).join();
       }
-    }, timeout: _defaultTimeout);
+      return null;
+    } finally {
+      client.close();
+    }
   }
 
   @override
   Future<Uint8List?> getAsBytes(String file) async {
     file = removeLeadingSlash(file);
-    return await _taskManager.runInIsolate(() async {
-      final client = HttpClient();
-      try {
-        final response = await _executeRequest(client, 'GET', file);
-        if (response.statusCode == 200) {
-          return await response
-              .fold<BytesBuilder>(BytesBuilder(), (b, d) => b..add(d))
-              .then((b) => b.takeBytes());
-        }
-        return null;
-      } finally {
-        client.close();
+    final client = HttpClient();
+    try {
+      final response = await _executeRequest(client, 'GET', file);
+      if (response.statusCode == 200) {
+        return await response
+            .fold<BytesBuilder>(BytesBuilder(), (b, d) => b..add(d))
+            .then((b) => b.takeBytes());
       }
-    }, timeout: _defaultTimeout);
+      return null;
+    } finally {
+      client.close();
+    }
   }
 
   @override
@@ -103,10 +94,7 @@ class S3Storage implements StorageDriver {
     if (content == null) return null;
 
     try {
-      return await _taskManager.runInIsolate(
-        () async => jsonDecode(content) as Map<String, dynamic>,
-        timeout: _defaultTimeout,
-      );
+      return jsonDecode(content) as Map<String, dynamic>;
     } catch (e) {
       return null;
     }
@@ -142,19 +130,17 @@ class S3Storage implements StorageDriver {
   @override
   Future<bool> delete(String file) async {
     file = removeLeadingSlash(file);
-    return await _taskManager.runInIsolate(() async {
-      final client = HttpClient();
-      try {
-        final response = await _executeRequest(client, 'DELETE', file);
-        final success = response.statusCode == 204;
-        if (success) {
-          _invalidateMetadataCache(file);
-        }
-        return success;
-      } finally {
-        client.close();
+    final client = HttpClient();
+    try {
+      final response = await _executeRequest(client, 'DELETE', file);
+      final success = response.statusCode == 204;
+      if (success) {
+        _invalidateMetadataCache(file);
       }
-    }, timeout: _defaultTimeout);
+      return success;
+    } finally {
+      client.close();
+    }
   }
 
   Future<HttpClientResponse> _executeRequest(
@@ -199,26 +185,23 @@ class S3Storage implements StorageDriver {
     if (cached != null && !cached.isExpired) {
       return cached;
     }
+    final client = HttpClient();
+    try {
+      final response = await _executeRequest(client, 'HEAD', file);
+      if (response.statusCode != 200) return null;
 
-    return await _taskManager.runInIsolate(() async {
-      final client = HttpClient();
-      try {
-        final response = await _executeRequest(client, 'HEAD', file);
-        if (response.statusCode != 200) return null;
+      final metadata = _CachedMetadata(
+        contentLength:
+            int.tryParse(response.headers.value('content-length') ?? ''),
+        contentType: response.headers.value('content-type'),
+        lastModified: response.headers.value('last-modified'),
+      );
 
-        final metadata = _CachedMetadata(
-          contentLength:
-              int.tryParse(response.headers.value('content-length') ?? ''),
-          contentType: response.headers.value('content-type'),
-          lastModified: response.headers.value('last-modified'),
-        );
-
-        _metadataCache[file] = metadata;
-        return metadata;
-      } finally {
-        client.close();
-      }
-    }, timeout: _defaultTimeout);
+      _metadataCache[file] = metadata;
+      return metadata;
+    } finally {
+      client.close();
+    }
   }
 
   void _invalidateMetadataCache(String file) {

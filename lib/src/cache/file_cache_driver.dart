@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
-import '../performance/_task_manager.dart';
 import '../utils/helper.dart';
 import 'cache_driver.dart';
 
@@ -10,9 +9,7 @@ class FileCacheDriver implements CacheDriver {
   factory FileCacheDriver() => _instance;
   FileCacheDriver._internal();
 
-  final TaskManager _taskManager = TaskManager();
   final String _cacheDir = storagePath('framework/cache');
-  static const Duration _defaultTimeout = Duration(seconds: 30);
 
   @override
   Future<dynamic> get(String key, [dynamic defaultValue]) async {
@@ -20,25 +17,18 @@ class FileCacheDriver implements CacheDriver {
     if (!await file.exists()) return defaultValue;
 
     try {
-      final content = await _taskManager.runInIsolate(
-        () async {
-          final data = await file.readAsString();
-          final cache = jsonDecode(data);
+      final data = await file.readAsString();
+      final cache = jsonDecode(data);
 
-          if (cache['expiration'] != null) {
-            final expiration = DateTime.parse(cache['expiration']);
-            if (DateTime.now().isAfter(expiration)) {
-              await file.delete();
-              return defaultValue;
-            }
-          }
+      if (cache['expiration'] != null) {
+        final expiration = DateTime.parse(cache['expiration']);
+        if (DateTime.now().isAfter(expiration)) {
+          await file.delete();
+          return defaultValue;
+        }
+      }
 
-          return cache['value'] ?? defaultValue;
-        },
-        timeout: _defaultTimeout,
-      );
-
-      return content;
+      return cache['value'] ?? defaultValue;
     } catch (e) {
       await file.delete();
       return defaultValue;
@@ -51,17 +41,11 @@ class FileCacheDriver implements CacheDriver {
     final file = _getCacheFile(key);
     await _ensureCacheDirectory();
 
-    await _taskManager.runInIsolate(
-      () async {
-        final cache = {
-          'value': value,
-          'expiration': DateTime.now().add(duration).toIso8601String(),
-        };
-
-        await file.writeAsString(jsonEncode(cache));
-      },
-      timeout: _defaultTimeout,
-    );
+    final cache = {
+      'value': value,
+      'expiration': DateTime.now().add(duration).toIso8601String(),
+    };
+    await file.writeAsString(jsonEncode(cache));
   }
 
   @override
@@ -73,17 +57,12 @@ class FileCacheDriver implements CacheDriver {
     final file = _getCacheFile(key);
     await _ensureCacheDirectory();
 
-    await _taskManager.runInIsolate(
-      () async {
-        final cache = {
-          'value': value,
-          'expiration': null,
-        };
+    final cache = {
+      'value': value,
+      'expiration': null,
+    };
 
-        await file.writeAsString(jsonEncode(cache));
-      },
-      timeout: _defaultTimeout,
-    );
+    await file.writeAsString(jsonEncode(cache));
   }
 
   @override
