@@ -6,7 +6,7 @@ import '../database/_connection_manager.dart';
 import '../service/service_provider.dart';
 import '../utils/helper.dart';
 
-Future<void> initializeConfig(config) async {
+Future<void> initializeConfig(Map<String, dynamic> config) async {
   Config().setApplicationConfig = config;
 
   if (env('DB_CONNECTION') != null && config['database'] != null) {
@@ -40,7 +40,7 @@ Future<void> initializeConfig(config) async {
   initializeRoutes();
 }
 
-DBConfig _config(database) => DBConfig(
+DBConfig _config(Map<String, dynamic> database) => DBConfig(
       driver: database['driver'] ?? '',
       host: database['host'] ?? '',
       port: database['port'] ?? '',

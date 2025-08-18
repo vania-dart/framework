@@ -134,7 +134,7 @@ class RequestHandler {
     }
   }
 
-  void _response(req, message, {int statusCode = 500}) {
+  void _response(HttpRequest req, dynamic message, {int statusCode = 500}) {
     if (req.headers.value('accept').toString().contains('html')) {
       Response.html(message).makeResponse(req.response);
     } else {

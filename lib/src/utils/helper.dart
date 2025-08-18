@@ -31,7 +31,7 @@ String trans(
 void setLocale(String locale) => Localization().setLocale(locale);
 bool isLocale(String locale) => Localization().isLocale(locale);
 
-abort(int code, String message) {
+void abort(int code, String message) {
   throw HttpResponseException(message: message, code: code);
 }
 

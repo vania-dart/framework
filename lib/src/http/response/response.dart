@@ -117,12 +117,12 @@ class Response {
     }
   }
 
-  static redirect(String location) => Response(
+  static Response redirect(String location) => Response(
       responseType: ResponseType.redirect,
       data: location,
       httpStatusCode: HttpStatus.found);
 
-  static json(
+  static Response json(
     dynamic jsonData, [
     int statusCode = HttpStatus.ok,
   ]) =>
@@ -132,7 +132,7 @@ class Response {
         httpStatusCode: statusCode,
       );
 
-  static jsonWithHeader(
+  static Response jsonWithHeader(
     dynamic jsonData, {
     int statusCode = HttpStatus.ok,
     Map<String, String> headers = const {},
@@ -144,7 +144,7 @@ class Response {
         headers: headers,
       );
 
-  static html(
+  static Response html(
     dynamic htmlData, {
     Map<String, String> headers = const {},
   }) =>
@@ -154,7 +154,7 @@ class Response {
         headers: headers,
       );
 
-  static file(
+  static Response file(
     String fileName,
     Uint8List bytes, {
     Map<String, String> headers = const {},
@@ -168,7 +168,7 @@ class Response {
         headers: headers,
       );
 
-  static sse(
+  static Response sse(
     Stream<dynamic> eventStream, {
     int statusCode = HttpStatus.ok,
     Map<String, String> headers = const {},
@@ -180,7 +180,7 @@ class Response {
         headers: headers,
       );
 
-  static download(
+  static Response download(
     String fileName,
     Uint8List bytes, {
     Map<String, String> headers = const {},
@@ -194,7 +194,7 @@ class Response {
         headers: headers,
       );
 
-  static back([String? key, String? message]) {
+  static Response back([String? key, String? message]) {
     String previousRoute = RouteHistory().previousRoute;
     if (key != null && message != null) {
       TemplateEngine().sessions[key] = message;
@@ -213,7 +213,7 @@ class Response {
     );
   }
 
-  static backWithInput([String? input, String? message]) {
+  static Response backWithInput([String? input, String? message]) {
     String previousRoute = RouteHistory().previousRoute;
     if (input != null && message != null) {
       TemplateEngine().sessionErrors[input] = message;
