@@ -70,7 +70,7 @@ abstract class QueryBuilder
 
   QueryBuilder table(String table, [String? as]);
 
-  RawExpression raw(value);
+  RawExpression raw(String value);
 
   Future<bool> transaction(
     Future<bool> Function() action, [

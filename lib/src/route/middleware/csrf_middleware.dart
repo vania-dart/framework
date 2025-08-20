@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:vania/http/response.dart';
 import 'package:vania/src/config/config.dart';
 import 'package:vania/src/exception/page_expired_exception.dart';
 import 'package:vania/src/http/middleware/middleware.dart';
@@ -36,16 +37,34 @@ class CsrfMiddleware extends Middleware {
             req.input('_token') ??
             req.header('X-CSRF-TOKEN');
         if (token == null || token.isEmpty) {
+          if (req.isJson()) {
+            throw PageExpiredException(
+                message:
+                    'Security Error: The CSRF token is missing or incorrect',
+                responseType: ResponseType.json);
+          }
           throw PageExpiredException();
         }
 
         final storedToken =
             await _sessionManager.getSession<String?>('x_csrf_token');
         if (storedToken == null || storedToken.isEmpty) {
+          if (req.isJson()) {
+            throw PageExpiredException(
+                message:
+                    'Security Error: The CSRF token is missing or incorrect',
+                responseType: ResponseType.json);
+          }
           throw PageExpiredException();
         }
 
         if (storedToken != token) {
+          if (req.isJson()) {
+            throw PageExpiredException(
+                message:
+                    'Security Error: The CSRF token is missing or incorrect',
+                responseType: ResponseType.json);
+          }
           throw PageExpiredException();
         }
 
@@ -54,6 +73,12 @@ class CsrfMiddleware extends Middleware {
         String expectedCookie = _computeCsrfCookieValue(storedToken, iv);
 
         if (expectedCookie != cookie['token']) {
+          if (req.isJson()) {
+            throw PageExpiredException(
+                message:
+                    'Security Error: The CSRF token is missing or incorrect',
+                responseType: ResponseType.json);
+          }
           throw PageExpiredException();
         }
       }

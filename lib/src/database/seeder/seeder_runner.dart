@@ -17,7 +17,7 @@ class SeederRunner {
 
   SeederRunner._internal();
 
-  DBConfig _config(database) => DBConfig(
+  DBConfig _config(Map<String, dynamic> database) => DBConfig(
         driver: database['driver'] ?? '',
         host: database['host'] ?? '',
         port: database['port'] ?? '',

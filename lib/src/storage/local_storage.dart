@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
-import '../performance/_task_manager.dart';
 import '../utils/helper.dart';
 import 'storage_driver.dart';
 
@@ -13,9 +12,7 @@ class LocalStorage implements StorageDriver {
   factory LocalStorage() => _instance;
   LocalStorage._internal();
 
-  final TaskManager _taskManager = TaskManager();
   final String _storageDir = storagePath('app/public');
-  static const Duration _defaultTimeout = Duration(seconds: 30);
 
   @override
   Future<bool> delete(String file) async {
@@ -23,10 +20,7 @@ class LocalStorage implements StorageDriver {
     if (!await targetFile.exists()) return false;
 
     try {
-      await _taskManager.runInIsolate(
-        () async => await targetFile.delete(),
-        timeout: _defaultTimeout,
-      );
+      await targetFile.delete();
       return true;
     } catch (e) {
       return false;
@@ -44,10 +38,7 @@ class LocalStorage implements StorageDriver {
     if (!await targetFile.exists()) return null;
 
     try {
-      return await _taskManager.runInIsolate(
-        () => targetFile.readAsBytes(),
-        timeout: _defaultTimeout,
-      );
+      return targetFile.readAsBytes();
     } catch (e) {
       return null;
     }
@@ -59,10 +50,7 @@ class LocalStorage implements StorageDriver {
     if (!await targetFile.exists()) return null;
 
     try {
-      return await _taskManager.runInIsolate(
-        () => targetFile.readAsString(),
-        timeout: _defaultTimeout,
-      );
+      return targetFile.readAsString();
     } catch (e) {
       return null;
     }
@@ -74,10 +62,7 @@ class LocalStorage implements StorageDriver {
     if (content == null) return null;
 
     try {
-      return await _taskManager.runInIsolate(
-        () async => jsonDecode(content) as Map<String, dynamic>,
-        timeout: _defaultTimeout,
-      );
+      return jsonDecode(content) as Map<String, dynamic>;
     } catch (e) {
       return null;
     }
@@ -89,16 +74,11 @@ class LocalStorage implements StorageDriver {
     await _ensureDirectoryExists(targetFile.parent);
 
     try {
-      await _taskManager.runInIsolate(
-        () async {
-          if (content is List<int>) {
-            await targetFile.writeAsBytes(content);
-          } else {
-            await targetFile.writeAsString(content.toString());
-          }
-        },
-        timeout: _defaultTimeout,
-      );
+      if (content is List<int>) {
+        await targetFile.writeAsBytes(content);
+      } else {
+        await targetFile.writeAsString(content.toString());
+      }
       return path;
     } catch (e) {
       throw Exception('Failed to write file: $e');
@@ -124,10 +104,7 @@ class LocalStorage implements StorageDriver {
     if (!await targetFile.exists()) return null;
 
     try {
-      return await _taskManager.runInIsolate(
-        () => targetFile.length(),
-        timeout: _defaultTimeout,
-      );
+      return targetFile.length();
     } catch (e) {
       return null;
     }
