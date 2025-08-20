@@ -1,3 +1,16 @@
+## 1.0.2
+
+- Fix(Cache): fixed cache issue
+- Fix(Request): fix `hasFile()` and `has()` method behavior
+- Add(Request): add `asList()` method to get the data as a List
+- Add(CSRF): add `CSRF_PROTECTION_ENABLED` config to toggle CSRF protection
+
+## 1.0.1
+
+- Refactor(ORM): fix eager-loading for polymorphic relations (`MorphTo`, `MorphToMany`, `MorphedByMany`) 
+- Refactor(ORM): enhance eager-loading for core relations (`hasOne`, `hasMany`, `belongsTo`, `belongsToMany`)
+- Fix(Database): decode byte arrays to `UTF-8` strings in query results
+
 ## 1.0.0
 
 - Release stable version 1.0.0  
