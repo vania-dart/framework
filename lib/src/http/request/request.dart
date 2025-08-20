@@ -92,7 +92,7 @@ class Request {
 
   Future<Request> extractBody() async {
     _extractCookies();
-    final whereMethod = ['post', 'patch', 'put']
+    final whereMethod = ['post', 'patch', 'put', 'delete']
         .where((method) => method == request.method.toLowerCase())
         .toList();
     if (whereMethod.isNotEmpty) {
@@ -142,13 +142,13 @@ class Request {
       return hasKey;
     }
 
-    return false;
+    return (_all[keys] != null && _all[keys].toString().isNotEmpty);
   }
 
   bool hasAny(List<String> keys) {
     bool hasKey = false;
     for (String key in keys) {
-      if (_all[key] != null) {
+      if (_all[key] != null && _all[key].toString().isNotEmpty) {
         hasKey = true;
       }
     }
@@ -219,7 +219,8 @@ class Request {
     return _all[key];
   }
 
-  bool hasFile(String key) => (file(key) != null || files(key) != null);
+  bool hasFile(String key) => (_all[key].toString().isNotEmpty &&
+      (file(key) != null || files(key) != null));
 
   List<RequestFile>? files(String key) {
     if (_all[key] == null) {
@@ -236,6 +237,10 @@ class Request {
 
   String string(String key) {
     return _all[key].toString();
+  }
+
+  List asList(String key) {
+    return List.from(_all[key]);
   }
 
   int? integer(String key) {
