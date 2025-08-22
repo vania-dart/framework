@@ -1,3 +1,7 @@
+## 1.0.2+1
+
+- fix(querybuilder): remove unnecessary `update_` prefix from update bindings
+
 ## 1.0.2
 
 - Fix(Cache): fixed cache issue
