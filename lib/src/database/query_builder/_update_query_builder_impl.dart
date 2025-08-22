@@ -14,7 +14,7 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
 
       List<String> setStatements = [];
       for (var entry in values.entries) {
-        final paramName = 'update_${entry.key}';
+        final paramName = entry.key;
         bindings[paramName] = entry.value;
         setStatements.add("${entry.key} = :$paramName");
       }
