@@ -14,7 +14,7 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
 
       List<String> setStatements = [];
       for (var entry in values.entries) {
-        final paramName = entry.key;
+        final paramName = 'p${entry.key}';
         bindings[paramName] = entry.value;
         setStatements.add("${entry.key} = :$paramName");
       }
@@ -47,8 +47,8 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
         List<String> cases = [];
         for (var row in updates) {
           if (row.containsKey(col)) {
-            final keyParamName = 'key_$caseCounter';
-            final valueParamName = 'value_$caseCounter';
+            final keyParamName = 'p$caseCounter';
+            final valueParamName = 'p$caseCounter';
             bindings[keyParamName] = row[column];
             bindings[valueParamName] = row[col];
             cases.add("WHEN $column = :$keyParamName THEN :$valueParamName");
@@ -60,7 +60,7 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
 
       List<String> whereValues = [];
       for (var i = 0; i < updates.length; i++) {
-        final paramName = 'where_$i';
+        final paramName = 'p$i';
         bindings[paramName] = updates[i][column];
         whereValues.add(":$paramName");
       }
@@ -93,7 +93,7 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
     Map<String, dynamic> extra = const {},
   ]) async {
     try {
-      final paramName = 'inc_amount';
+      final paramName = 'pamount';
       bindings[paramName] = amount;
 
       String setClause = "$column = $column + :$paramName";
@@ -102,7 +102,7 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
         List<String> extraClauses = [];
 
         for (var entry in extra.entries) {
-          final extraParamName = 'extra_${extraCounter++}';
+          final extraParamName = 'p${extraCounter++}';
           bindings[extraParamName] = entry.value;
           extraClauses.add("${entry.key} = :$extraParamName");
         }
@@ -125,7 +125,7 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
     Map<String, dynamic> extra = const {},
   ]) async {
     try {
-      final paramName = 'dec_amount';
+      final paramName = 'pamount';
       bindings[paramName] = amount;
 
       String setClause = "$column = $column - :$paramName";
@@ -134,7 +134,7 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
         List<String> extraClauses = [];
 
         for (var entry in extra.entries) {
-          final extraParamName = 'extra_${extraCounter++}';
+          final extraParamName = 'p${extraCounter++}';
           bindings[extraParamName] = entry.value;
           extraClauses.add("${entry.key} = :$extraParamName");
         }
@@ -160,14 +160,14 @@ abstract mixin class UpdateQueryBuilderImpl implements QueryBuilder {
       var counter = 0;
 
       for (var entry in increments.entries) {
-        final paramName = 'inc_${counter++}';
+        final paramName = 'p${counter++}';
         bindings[paramName] = entry.value;
         setClauses.add("${entry.key} = ${entry.key} + :$paramName");
       }
 
       if (extra.isNotEmpty) {
         for (var entry in extra.entries) {
-          final paramName = 'extra_${counter++}';
+          final paramName = 'p${counter++}';
           bindings[paramName] = entry.value;
           setClauses.add("${entry.key} = :$paramName");
         }

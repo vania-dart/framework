@@ -1,3 +1,7 @@
+## 1.0.2+2
+
+- fix(querybuilder): fixed `postgres` params name
+
 ## 1.0.2+1
 
 - fix(querybuilder): remove unnecessary `update_` prefix from update bindings

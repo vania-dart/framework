@@ -13,7 +13,7 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
 
   String _nextParamName() {
     _paramCounter++;
-    return 'bulk_p$_paramCounter';
+    return 'p$_paramCounter';
   }
 
   @override

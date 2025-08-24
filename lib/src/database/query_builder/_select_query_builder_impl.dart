@@ -17,7 +17,7 @@ abstract mixin class SelectQueryBuilderImpl implements QueryBuilder {
   @override
   QueryBuilder selectRaw(String query, [List bindings = const []]) {
     for (var i = 0; i < bindings.length; i++) {
-      final paramName = 'raw_${i + 1}';
+      final paramName = 'p${i + 1}';
       this.bindings[paramName] = bindings[i];
       query = query.replaceFirst('?', ':$paramName');
     }
