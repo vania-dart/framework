@@ -56,10 +56,10 @@ class RequestFile {
   /// Store the file via your Storage layer.
   /// - `destPath` should include trailing slash if desired.
   Future<String> store({
-    required String destPath,
+    String path = '',
     required String name,
   }) =>
-      Storage.put(destPath, name, stream);
+      Storage.put(path, name, stream);
 
   /// Move the file into a local path on disk.
   /// Creates directories as needed.

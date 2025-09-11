@@ -6,6 +6,7 @@ import 'package:vania/src/storage/s3_storage.dart';
 import 'storage_driver.dart';
 
 import 'package:vania/src/utils/helper.dart' show env;
+import 'package:path/path.dart' as path;
 
 class Storage {
   static final Storage _singleton = Storage._internal();
@@ -38,18 +39,31 @@ class Storage {
     return await Storage()._driver.json(file);
   }
 
-  static Future<String> put(String directory, String file, dynamic content) {
+  static Future<String> put(
+    String directory,
+    String file,
+    dynamic content,
+  ) async {
     if (content == null) {
       throw Exception("Content can't be null");
     }
 
-    if (!(content is List<int> || content is String)) {
-      throw Exception('Content must be a list of int or a string.');
-    }
+    String fullPath = path.join(directory, file);
 
-    directory = directory.endsWith("/") ? directory : "$directory/";
-    String path = '$directory$file';
-    return Storage()._driver.put(path, content);
+    if (content is List<int>) {
+      return Storage()._driver.put(fullPath, content);
+    } else if (content is String) {
+      return Storage()._driver.put(fullPath, content);
+    } else if (content is Stream<List<int>>) {
+      final data = await content.fold<List<int>>([], (previous, element) {
+        previous.addAll(element);
+        return previous;
+      });
+      return Storage()._driver.put(fullPath, data);
+    } else {
+      throw Exception(
+          'Content must be a list of int, a string, or a Stream<List<int>>.');
+    }
   }
 
   static Future<String?> mimeType(String file) async {
