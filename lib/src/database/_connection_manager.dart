@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:vania/src/exception/database_exception.dart';
 
 import '../contract/database/_connectors/_database_connection.dart';
@@ -25,8 +27,10 @@ class ConnectionManager {
   bool get isConnected => connectionMap.isNotEmpty;
 
   DatabaseConnection? connection([String? connectionName]) {
-    final name = connectionName ?? defaultConnection;
-    return connectionMap[name];
+    if (connectionName == null || connectionName.isEmpty) {
+      connectionName = defaultConnection;
+    }
+    return connectionMap[connectionName];
   }
 
   Future<void> connect(DBConfig config, String connectionName) async {
@@ -40,6 +44,10 @@ class ConnectionManager {
         _monitor,
       );
       connectionMap[connectionName] = monitoredConnection;
+
+      if (!config.pool) {
+        await _checkDatabaseHealth(monitoredConnection);
+      }
     } on InvalidArgumentException catch (e) {
       Logger.log(e.message, type: Logger.ERROR);
       throw DatabaseException(
@@ -47,6 +55,14 @@ class ConnectionManager {
         e,
       );
     }
+  }
+
+  Future<void> _checkDatabaseHealth(DatabaseConnection connection) async {
+    Timer.periodic(Duration(minutes: 5), (timer) async {
+      try {
+        await connection.execute('SELECT 1;');
+      } catch (_) {}
+    });
   }
 
   Future<bool> transaction(
