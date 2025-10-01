@@ -1,4 +1,4 @@
-extension MapExtensions on Map<dynamic, dynamic> {
+extension MapExtensions on Map<String, dynamic> {
   /// Removes a parameter from a nested map structure based on a dot-separated key path.
   ///
   /// This method allows removing a value from a deeply nested map using a path described by a string of keys separated by dots.
@@ -65,13 +65,18 @@ extension MapExtensions on Map<dynamic, dynamic> {
   /// ```
   dynamic getParam(String keys) {
     List<String> parts = keys.split('.');
-    Map<dynamic, dynamic> data = this;
+    Map<String, dynamic> data = this;
     for (int i = 0; i < parts.length - 1; i++) {
       if (data[parts[i]] is Map) {
         data = data[parts[i]];
       } else {
-        return null; // Return null if the path breaks
+        return [];
       }
+    }
+    if (data[parts.last] is List) {
+      List<Map<String, dynamic>> list =
+          List.castFrom<dynamic, Map<String, dynamic>>(data[parts.last]);
+      return list;
     }
     return data[parts.last];
   }

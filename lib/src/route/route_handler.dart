@@ -7,9 +7,11 @@ import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/router.dart';
 import 'package:vania/src/route/set_static_path.dart';
 import 'package:vania/src/utils/functions.dart';
+import 'package:vania/src/utils/helper.dart' show env;
 
 final Map<String, RegExp> _regexCache = {};
-final _lookupCache = _LruCache<_LookupKey, RouteData?>(2000);
+final _lookupCache =
+    _LruCache<_LookupKey, RouteData?>(env<int>("ROUTE_LOOK_UP_SIZE", 2000));
 final Map<String, List<RouteData>> _staticRoutes = {};
 final List<RouteData> _dynamicRoutes = [];
 

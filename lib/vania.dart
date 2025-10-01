@@ -20,3 +20,5 @@ export 'src/exception/invalid_argument_exception.dart';
 export 'src/exception/throttle_exception.dart';
 export 'src/exception/validation_exception.dart';
 export 'src/exception/unauthenticated.dart';
+
+export 'src/contract/http/request/form_validation.dart';
