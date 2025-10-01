@@ -1,10 +1,20 @@
+## 1.1.0
+
+- Add(FormValidation): add support for request validation using FormValidation
+- Add(RequestHelper): introduce helper methods for accessing query strings, IP, and request data
+- Add(Database): add database health check for non-pooled connections
+- Add(Validation): implement builder pattern for defining validation rules (e.g. `field('name').required().string()`)
+- Update(Pagination): use `getParam()` for retrieving `page` parameter in pagination
+- Fix(RequestFile): handle `List<int>` stream in RequestFile.store
+- Improve(Exception): enhance exception handling and error messages
+
 ## 1.0.2+2
 
-- fix(querybuilder): fixed `postgres` params name
+- Fix(querybuilder): fixed `postgres` params name
 
 ## 1.0.2+1
 
-- fix(querybuilder): remove unnecessary `update_` prefix from update bindings
+- Fix(querybuilder): remove unnecessary `update_` prefix from update bindings
 
 ## 1.0.2
 

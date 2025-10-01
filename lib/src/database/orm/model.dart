@@ -550,7 +550,7 @@ abstract class Model extends QueryBuilderImpl {
     String? pageName,
     int? page,
   }) async {
-    int currentPage = page  ?? getParam<int>('page', 1)!;
+    int currentPage = page ?? getParam<int>('page', 1)!;
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
@@ -591,7 +591,7 @@ abstract class Model extends QueryBuilderImpl {
     String? pageName,
     int? page,
   ]) async {
-    int currentPage = page  ?? getParam<int>('page', 1)!;
+    int currentPage = page ?? getParam<int>('page', 1)!;
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
