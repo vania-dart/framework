@@ -7,6 +7,7 @@ import 'package:vania/src/localization_handler/localization.dart';
 import 'package:vania/src/view_engine/template_engine.dart';
 
 import '../http/session/session_manager.dart';
+import '../http/validation/field_validation.dart';
 
 String storagePath(String file) => 'storage/$file';
 
@@ -15,6 +16,8 @@ String publicPath(String file) => 'public/$file';
 String url(String path) => '${env<String>('APP_URL')}/$path';
 
 String assets(String src) => url(src);
+
+FieldValidation field(String fieldName) => FieldValidation(fieldName);
 
 bool can(String ability) => Gate().allows(ability);
 

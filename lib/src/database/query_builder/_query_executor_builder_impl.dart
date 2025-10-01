@@ -1,3 +1,5 @@
+import 'package:vania/src/utils/request_helper.dart' show getParam;
+
 import '../../contract/database/_connectors/_database_connection.dart';
 import '../../exception/invalid_argument_exception.dart';
 
@@ -327,7 +329,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     String? pageName,
     int? page,
   }) async {
-    int currentPage = page ?? 1;
+    int currentPage = page ?? getParam<int>('page', 1)!;
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
@@ -369,7 +371,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     String? pageName,
     int? page,
   ]) async {
-    int currentPage = page ?? 1;
+    int currentPage = page ?? getParam<int>('page', 1)!;
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;

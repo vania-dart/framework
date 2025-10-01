@@ -10,6 +10,7 @@ import 'package:vania/src/exception/invalid_argument_exception.dart';
 import 'package:vania/src/utils/_pluralize.dart';
 import 'package:vania/src/utils/functions.dart';
 
+import '../../utils/request_helper.dart' show getParam;
 import 'belongs_to.dart';
 import 'belongs_to_many.dart';
 import 'has_many.dart';
@@ -549,7 +550,7 @@ abstract class Model extends QueryBuilderImpl {
     String? pageName,
     int? page,
   }) async {
-    int currentPage = page ?? 1;
+    int currentPage = page  ?? getParam<int>('page', 1)!;
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;
@@ -590,7 +591,7 @@ abstract class Model extends QueryBuilderImpl {
     String? pageName,
     int? page,
   ]) async {
-    int currentPage = page ?? 1;
+    int currentPage = page  ?? getParam<int>('page', 1)!;
     int total = await count();
     final lastPage = (total / perPage).ceil();
     final offset = (currentPage - 1) * perPage;

@@ -6,6 +6,7 @@ import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/route_history.dart';
 
+import '../../exception/base_http_exception.dart';
 import '../../exception/invalid_argument_exception.dart';
 
 class ControllerHandler {
@@ -67,6 +68,8 @@ class ControllerHandler {
       _response(request, error.message, 500);
     } on QueryException catch (error) {
       _response(request, error.cause ?? '', 500);
+    } on BaseHttpResponseException catch (error) {
+      _response(request, error.message, error.code);
     } catch (error) {
       _response(request, error.toString());
     }

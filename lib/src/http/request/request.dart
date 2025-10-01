@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:vania/src/authentication/authentication.dart';
+import 'package:vania/src/contract/http/request/form_validation.dart';
 import 'package:vania/src/exception/validation_exception.dart';
 import 'package:vania/src/http/request/request_body.dart';
 import 'package:vania/src/http/request/request_file.dart';
@@ -12,11 +13,19 @@ import 'package:vania/src/http/validation/validator.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/view_engine/template_engine.dart';
 
-class Request {
-  final HttpRequest request;
-  final RouteData? route;
+import '../../exception/unauthorized_exception.dart';
+import '../validation/field_validation.dart';
 
-  Request.from({required this.request, this.route});
+class Request {
+  late HttpRequest request;
+  RouteData? route;
+
+  Request from({required HttpRequest request, RouteData? route}) {
+    this.request = request;
+    this.route = route;
+
+    return this;
+  }
 
   Map? get user => Auth().user();
 
@@ -339,13 +348,64 @@ class Request {
     dynamic rules, [
     Map<String, String> messages = const <String, String>{},
   ]) async {
-    assert(rules is Map<String, String> || rules is List<Validation>,
-        'Rules must be either Map<String, String> or List<Validation>.');
+    assert(
+        rules is Map<String, String> ||
+            rules is List<FieldValidation> ||
+            rules is List<Validation> ||
+            rules is FormValidation,
+        'Rules must be either Map<String, String> or List<Validation>. or FormRequest');
     TemplateEngine().sessionErrors.clear();
     if (rules is Map<String, String>) {
       await _validate(rules, messages);
+    } else if (rules is List<FieldValidation>) {
+      Map<String, String> ruleMessages = Map.from(messages);
+      final rulesMap = Map.fromEntries(rules.map((rule) {
+        ruleMessages.addAll(rule.toMapMessages);
+        return MapEntry(rule.fieldName, rule.toString());
+      }));
+      await _validate(rulesMap, ruleMessages);
+    } else if (rules is FormValidation) {
+      await _formRequestValidate(rules);
     } else {
       _validateChain(rules as List<Validation>);
+    }
+  }
+
+  Future<void> _formRequestValidate(FormValidation formRequest) async {
+    if (!formRequest.authorize()) {
+      throw UnauthorizedException(message: 'Access denied', code: 403);
+    }
+
+    final rules = formRequest.rules();
+    final Map<String, String> messages = formRequest.messages();
+
+    Validator validator = Validator(data: body);
+
+    if (formRequest.customRule().isNotEmpty) {
+      validator.customRule(formRequest.customRule());
+    }
+
+    Map<String, String> rulesMap = {};
+    if (rules is List<FieldValidation>) {
+      rulesMap = Map.fromEntries(rules.map((rule) {
+        messages.addAll(rule.toMapMessages);
+        return MapEntry(rule.fieldName, rule.toString());
+      }));
+    } else {
+      rulesMap = formRequest.rules();
+    }
+
+    if (messages.isNotEmpty) {
+      validator.setNewMessages(messages);
+    }
+
+    await validator.validate(rulesMap);
+    if (validator.hasError) {
+      bool isHtml = request.headers.value('accept').toString().contains('html');
+      if (isHtml) {
+        TemplateEngine().sessionErrors.addAll(validator.errors);
+      }
+      throw ValidationException(message: validator.errors);
     }
   }
 
@@ -381,7 +441,7 @@ class Request {
       for (ValidationRule rule in validation.rules) {
         if (!rule.validate(fieldValue, data)) {
           errors[validation.field] = rule.errorMessage;
-          break; // Stop at the first failed validation per field
+          break;
         }
       }
     }
