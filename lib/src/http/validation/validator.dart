@@ -288,5 +288,9 @@ class Validator {
       'message': 'The {field} is either invalid or unsupported extension',
       'function': Rules.regExp,
     },
+    'unique': <String, dynamic>{
+      'message': 'This {field} is exist',
+      'function': Rules.unique,
+    },
   };
 }

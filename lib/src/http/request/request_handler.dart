@@ -26,6 +26,8 @@ import 'package:vania/src/logger/logger.dart';
 import 'package:vania/src/utils/helper.dart';
 import 'request.dart';
 
+HttpRequest? globalHttpRequest;
+
 class RequestHandler {
   /// Handles HTTP requests, determining if the request is a WebSocket upgrade or
   /// a standard HTTP request. If it's a WebSocket request, it delegates handling
@@ -38,6 +40,8 @@ class RequestHandler {
   /// - [BaseHttpResponseException] if there is an issue with the HTTP response.
   /// - [InvalidArgumentException] if an invalid argument is encountered.
   Future handle(HttpRequest req) async {
+    globalHttpRequest = req;
+
     /// Check the incoming request is web socket or not
     if (env<bool>('APP_WEBSOCKET', false) &&
         WebSocketTransformer.isUpgradeRequest(req)) {
@@ -53,7 +57,7 @@ class RequestHandler {
         String requestMethod = req.method.toUpperCase();
 
         if (route != null) {
-          Request request = Request.from(request: req, route: route);
+          Request request = Request().from(request: req, route: route);
           await request.extractBody();
 
           if (isHtml) {
