@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../../contract/database/_connectors/_database_connection.dart';
 import '../../env_handler/env.dart';
+import '../../exception/database_exception.dart';
 import '../../exception/invalid_argument_exception.dart';
 import '../_connection_manager.dart';
 import '../_database_utils/_db_config.dart';
@@ -61,6 +62,10 @@ class MigrationConnection implements MigrationConnectionInterface {
       await _dbConnection!.execute(migrationSql);
     } on InvalidArgumentException catch (e) {
       stderr.writeln(e.message);
+      exit(1);
+    } on DatabaseException catch (e) {
+      stderr.writeln(e.message);
+      stderr.writeln(e.cause);
       exit(1);
     } catch (e) {
       stderr.write(e.toString());
