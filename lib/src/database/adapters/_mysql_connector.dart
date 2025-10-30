@@ -1,7 +1,8 @@
 import 'dart:convert';
 
-import 'package:mysql_dart/mysql_dart.dart';
-import 'package:vania/src/exception/database_exception.dart';
+import 'package:mysql_client/mysql_client.dart';
+
+import '../../exception/database_exception.dart';
 import '../_database_utils/_db_config.dart';
 import '../../contract/database/_connectors/_database_connection.dart';
 
