@@ -130,11 +130,16 @@ class HasApiTokens {
         subject: env<String?>('JWT_SUBJECT'),
       );
 
-      if (jwt.payload['type'] != expectedType) {
-        throw Unauthenticated(message: 'Invalid token');
+      final payload = jwt.payload;
+      if (payload is! Map<String, dynamic>) {
+        throw Unauthenticated(message: 'Invalid JWT payload type');
       }
 
-      return jwt.payload;
+      if (payload['type'] != expectedType) {
+        throw Unauthenticated(message: 'Invalid token type');
+      }
+
+      return payload;
     } on JWTExpiredException {
       rethrow;
     } on JWTException {
