@@ -1,3 +1,8 @@
+## 1.1.1
+
+- Fix(db): switch from mysql_dart to mysql_client to fix UTF-8 encoding issues
+- Chore update dependencies
+
 ## 1.1.0
 
 - Add(FormValidation): add support for request validation using FormValidation
