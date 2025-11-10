@@ -701,10 +701,11 @@ abstract class Model extends QueryBuilderImpl {
     if (!_relationsRegistered) {
       registerRelations();
       _relationsRegistered = true;
-      final rela = _relations[relation];
-      if (rela != null && rela is MorphTo) {
-        where(rela.morphType, '=', rela.type!);
-      }
+    }
+
+    final rela = _relations[relation];
+    if (rela != null && rela is MorphTo) {
+      where(rela.morphType, '=', rela.type!);
     }
 
     _withRelation.add(_RelationQuery(relation, callback));
@@ -712,11 +713,7 @@ abstract class Model extends QueryBuilderImpl {
   }
 
   void _clearWithRelation(_RelationQuery r) {
-    if (_withRelation.length == 1) {
-      _withRelation = [];
-    } else {
-      _withRelation.remove(r);
-    }
+    _withRelation = _withRelation.where((item) => item != r).toList();
   }
 
   Future<void> _eagerLoadRelation(
@@ -812,7 +809,9 @@ abstract class Model extends QueryBuilderImpl {
     List<Map<String, dynamic>> result,
   ) async {
     if (_withRelation.isNotEmpty) {
-      for (_RelationQuery relation in _withRelation) {
+      final relationsToLoad = List<_RelationQuery>.from(_withRelation);
+
+      for (_RelationQuery relation in relationsToLoad) {
         await _eagerLoadRelation(result, relation, (callBackResult) {
           result = callBackResult;
         });
