@@ -26,10 +26,7 @@ class ControllerHandler {
     }
   }
 
-  void create({
-    required RouteData route,
-    required Request request,
-  }) async {
+  void create({required RouteData route, required Request request}) async {
     List<dynamic> positionalArguments = [];
     if (route.params != null) {
       try {
@@ -54,11 +51,14 @@ class ControllerHandler {
 
       response.makeResponse(request.response);
     } on ValidationException catch (error) {
-      bool isHtml =
-          request.request.headers.value('accept').toString().contains('html');
+      bool isHtml = request.request.headers
+          .value('accept')
+          .toString()
+          .contains('html');
       if (isHtml) {
-        Response.redirect(RouteHistory().previousRoute)
-            .makeResponse(request.response);
+        Response.redirect(
+          RouteHistory().previousRoute,
+        ).makeResponse(request.response);
       } else {
         error.response(false).makeResponse(request.response);
       }
@@ -80,11 +80,6 @@ void _response(Request req, message, [statusCode = 500]) {
   if (req.headers['accept'].toString().contains('html')) {
     Response.html(message).makeResponse(req.response);
   } else {
-    Response.json(
-      {
-        "message": message,
-      },
-      statusCode,
-    ).makeResponse(req.response);
+    Response.json({"message": message}, statusCode).makeResponse(req.response);
   }
 }

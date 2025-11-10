@@ -50,10 +50,7 @@ class ConnectionManager {
       }
     } on InvalidArgumentException catch (e) {
       Logger.log(e.message, type: Logger.ERROR);
-      throw DatabaseException(
-        "Failed to connect to the database",
-        e,
-      );
+      throw DatabaseException("Failed to connect to the database", e);
     }
   }
 

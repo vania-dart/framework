@@ -12,8 +12,8 @@ import 'package:vania/src/utils/functions.dart';
 import 'dart:async';
 
 class CsrfMiddleware extends Middleware {
-  final SessionManager _sessionManager =
-      IoCContainer().resolve<SessionManager>();
+  final SessionManager _sessionManager = IoCContainer()
+      .resolve<SessionManager>();
 
   @override
   Future<void> handle(Request req) async {
@@ -23,37 +23,41 @@ class CsrfMiddleware extends Middleware {
       List<String> csrfExcept = ['api/*'];
       csrfExcept.addAll(Config().get('csrf_except') ?? []);
 
-      String uri =
-          Uri.parse(sanitizeRoutePath(req.uri.toString())).path.toLowerCase();
+      String uri = Uri.parse(
+        sanitizeRoutePath(req.uri.toString()),
+      ).path.toLowerCase();
       if (!_isUrlExcluded(uri, csrfExcept)) {
         String requestCookie = req.cookie('XSRF-TOKEN') ?? '';
         Map<String, dynamic> cookie = {};
         if (requestCookie.isNotEmpty) {
           cookie = jsonDecode(
-              utf8.decode(base64.decode(_fixBase64Padding(requestCookie))));
+            utf8.decode(base64.decode(_fixBase64Padding(requestCookie))),
+          );
         }
 
-        String? token = req.input('_csrf') ??
+        String? token =
+            req.input('_csrf') ??
             req.input('_token') ??
             req.header('X-CSRF-TOKEN');
         if (token == null || token.isEmpty) {
           if (req.isJson()) {
             throw PageExpiredException(
-                message:
-                    'Security Error: The CSRF token is missing or incorrect',
-                responseType: ResponseType.json);
+              message: 'Security Error: The CSRF token is missing or incorrect',
+              responseType: ResponseType.json,
+            );
           }
           throw PageExpiredException();
         }
 
-        final storedToken =
-            await _sessionManager.getSession<String?>('x_csrf_token');
+        final storedToken = await _sessionManager.getSession<String?>(
+          'x_csrf_token',
+        );
         if (storedToken == null || storedToken.isEmpty) {
           if (req.isJson()) {
             throw PageExpiredException(
-                message:
-                    'Security Error: The CSRF token is missing or incorrect',
-                responseType: ResponseType.json);
+              message: 'Security Error: The CSRF token is missing or incorrect',
+              responseType: ResponseType.json,
+            );
           }
           throw PageExpiredException();
         }
@@ -61,9 +65,9 @@ class CsrfMiddleware extends Middleware {
         if (storedToken != token) {
           if (req.isJson()) {
             throw PageExpiredException(
-                message:
-                    'Security Error: The CSRF token is missing or incorrect',
-                responseType: ResponseType.json);
+              message: 'Security Error: The CSRF token is missing or incorrect',
+              responseType: ResponseType.json,
+            );
           }
           throw PageExpiredException();
         }
@@ -75,9 +79,9 @@ class CsrfMiddleware extends Middleware {
         if (expectedCookie != cookie['token']) {
           if (req.isJson()) {
             throw PageExpiredException(
-                message:
-                    'Security Error: The CSRF token is missing or incorrect',
-                responseType: ResponseType.json);
+              message: 'Security Error: The CSRF token is missing or incorrect',
+              responseType: ResponseType.json,
+            );
           }
           throw PageExpiredException();
         }
@@ -95,18 +99,20 @@ class CsrfMiddleware extends Middleware {
   bool _isUrlExcluded(String path, List<String> csrfExcept) {
     final cleanPath = path.startsWith('/') ? path.substring(1) : path;
     for (var pattern in csrfExcept) {
-      final cleanPattern =
-          pattern.startsWith('/') ? pattern.substring(1) : pattern;
+      final cleanPattern = pattern.startsWith('/')
+          ? pattern.substring(1)
+          : pattern;
       if (cleanPattern.contains('*')) {
-        final regexStr =
-            cleanPattern.replaceAll('*', '.*').replaceAll('/', '\\/');
+        final regexStr = cleanPattern
+            .replaceAll('*', '.*')
+            .replaceAll('/', '\\/');
         final regex = RegExp('^$regexStr\$', caseSensitive: false);
         if (regex.hasMatch(cleanPath)) {
           return true;
         }
-      } else if (cleanPath
-          .toLowerCase()
-          .startsWith(cleanPattern.toLowerCase())) {
+      } else if (cleanPath.toLowerCase().startsWith(
+        cleanPattern.toLowerCase(),
+      )) {
         return true;
       }
     }

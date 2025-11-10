@@ -23,8 +23,9 @@ class Router {
   List<RouteData> get routes => List.unmodifiable(_routes);
 
   static String url(String name, [Map<String, dynamic>? params]) {
-    RouteData routeData =
-        Router()._routes.where((route) => route.name == name).first;
+    RouteData routeData = Router()._routes
+        .where((route) => route.name == name)
+        .first;
 
     if (params == null) {
       return '${env<String>('APP_URL')}/${routeData.path}';
@@ -45,8 +46,9 @@ class Router {
       Router()._prefix = null;
       return;
     }
-    Router()._prefix =
-        prefix.endsWith("/") ? prefix.substring(0, prefix.length - 1) : prefix;
+    Router()._prefix = prefix.endsWith("/")
+        ? prefix.substring(0, prefix.length - 1)
+        : prefix;
   }
 
   bool _getRequestVar(String input) {
@@ -74,15 +76,17 @@ class Router {
     }
 
     final normalizedPath = _normalizePath(path);
-    _routes.add(RouteData(
-      method: method.name,
-      path: normalizedPath,
-      action: action,
-      prefix: _prefix,
-      paramTypes: paramTypes,
-      regex: regex,
-      hasRequest: hasRequest,
-    ));
+    _routes.add(
+      RouteData(
+        method: method.name,
+        path: normalizedPath,
+        action: action,
+        prefix: _prefix,
+        paramTypes: paramTypes,
+        regex: regex,
+        hasRequest: hasRequest,
+      ),
+    );
     return this;
   }
 
@@ -106,7 +110,7 @@ class Router {
     if (middleware != null && _routes.isNotEmpty) {
       _routes.last.preMiddleware = [
         ..._routes.last.preMiddleware,
-        ...middleware
+        ...middleware,
       ];
     }
     return this;
@@ -115,11 +119,13 @@ class Router {
   Router prefix([String? prefix]) {
     if (prefix != null && _routes.isNotEmpty) {
       final route = _routes.last;
-      final basePath =
-          route.path.startsWith('/') ? route.path.substring(1) : route.path;
+      final basePath = route.path.startsWith('/')
+          ? route.path.substring(1)
+          : route.path;
 
-      route.path =
-          prefix.endsWith("/") ? "$prefix$basePath" : "$prefix/$basePath";
+      route.path = prefix.endsWith("/")
+          ? "$prefix$basePath"
+          : "$prefix/$basePath";
     }
     return this;
   }
@@ -247,44 +253,40 @@ class Router {
     String? domain,
     String regex = r'\d+(.\d+)?',
   }) {
-    Router.get(path, controller.index)
-        .middleware(middleware)
-        .domain(domain)
-        .prefix(prefix);
+    Router.get(
+      path,
+      controller.index,
+    ).middleware(middleware).domain(domain).prefix(prefix);
 
-    Router.get("$path/create", controller.create)
-        .middleware(middleware)
-        .domain(domain)
-        .prefix(prefix);
+    Router.get(
+      "$path/create",
+      controller.create,
+    ).middleware(middleware).domain(domain).prefix(prefix);
 
-    Router.post(path, controller.store)
-        .middleware(middleware)
-        .domain(domain)
-        .prefix(prefix);
+    Router.post(
+      path,
+      controller.store,
+    ).middleware(middleware).domain(domain).prefix(prefix);
 
-    Router.get("$path/{id}", controller.show)
-        .middleware(middleware)
-        .domain(domain)
-        .prefix(prefix)
-        .where('id', regex);
+    Router.get(
+      "$path/{id}",
+      controller.show,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
 
-    Router.get("$path/{id}/edit", controller.edit)
-        .middleware(middleware)
-        .domain(domain)
-        .prefix(prefix)
-        .where('id', regex);
+    Router.get(
+      "$path/{id}/edit",
+      controller.edit,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
 
-    Router.put("$path/{id}", controller.update)
-        .middleware(middleware)
-        .domain(domain)
-        .prefix(prefix)
-        .where('id', regex);
+    Router.put(
+      "$path/{id}",
+      controller.update,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
 
-    Router.delete("$path/{id}", controller.destroy)
-        .middleware(middleware)
-        .domain(domain)
-        .prefix(prefix)
-        .where('id', regex);
+    Router.delete(
+      "$path/{id}",
+      controller.destroy,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
   }
 
   static void websocket(
@@ -302,7 +304,8 @@ class Router {
     }
 
     eventCallback(
-        WebSocketHandler().websocketRoute(fullPath, middleware: middleware));
+      WebSocketHandler().websocketRoute(fullPath, middleware: middleware),
+    );
   }
 
   static void group(
@@ -350,8 +353,9 @@ class Router {
 
   static String _joinPrefixes(String basePrefix, String newPrefix) {
     final base = basePrefix.endsWith('/') ? basePrefix : '$basePrefix/';
-    final prefix =
-        newPrefix.startsWith('/') ? newPrefix.substring(1) : newPrefix;
+    final prefix = newPrefix.startsWith('/')
+        ? newPrefix.substring(1)
+        : newPrefix;
     return '$base$prefix'.replaceAll(RegExp(r'//'), '/');
   }
 }

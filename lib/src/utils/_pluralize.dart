@@ -52,7 +52,7 @@ class Pluralize {
     'crisis': 'crises',
     'appendix': 'appendices',
     'barracks': 'barracks',
-    'headquarters': 'headquarters'
+    'headquarters': 'headquarters',
   };
 
   String make(String singular) {

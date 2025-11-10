@@ -15,14 +15,13 @@ class MorphMany extends MorphRelation {
     List<Map<String, dynamic>> models,
     List<Map<String, dynamic>> results,
     String relation,
-  ) =>
-      matchMorphMany(
-        models,
-        results,
-        relation,
-        localKey,
-        morphKey,
-        morphType,
-        type ?? related.runtimeType.toString().toLowerCase(),
-      );
+  ) => matchMorphMany(
+    models,
+    results,
+    relation,
+    localKey,
+    morphKey,
+    morphType,
+    type ?? related.runtimeType.toString().toLowerCase(),
+  );
 }

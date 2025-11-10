@@ -23,6 +23,7 @@ class IoCContainer {
       return _factories[T]!() as T;
     }
     throw Exception(
-        'Service of type $T is not registered in the IoC container.');
+      'Service of type $T is not registered in the IoC container.',
+    );
   }
 }

@@ -95,16 +95,12 @@ abstract class QueryBuilder
   }
 
   @protected
-  String formatValue(
-    dynamic value,
-  ) {
+  String formatValue(dynamic value) {
     if (value is num) return value.toString();
     return "'$value'";
   }
 
-  QueryBuilder groupBy(
-    List<String> groups,
-  );
+  QueryBuilder groupBy(List<String> groups);
   QueryBuilder having(
     String column, [
     String? operator,
@@ -118,32 +114,18 @@ abstract class QueryBuilder
     String boolean = 'and',
     bool not = false,
   });
-  QueryBuilder inRandomOrder([
-    dynamic seed,
-  ]);
-  QueryBuilder latest([
-    String column = 'created_at',
-  ]);
+  QueryBuilder inRandomOrder([dynamic seed]);
+  QueryBuilder latest([String column = 'created_at']);
 
   QueryBuilder limit(int value);
   QueryBuilder offset(int value);
 
-  QueryBuilder orderBy(
-    String column, [
-    String direction = 'ASC',
-  ]);
+  QueryBuilder orderBy(String column, [String direction = 'ASC']);
 
-  QueryBuilder orderByAsc(
-    String column,
-  );
+  QueryBuilder orderByAsc(String column);
 
-  QueryBuilder orderByDesc(
-    String column,
-  );
-  QueryBuilder reorder([
-    String? column,
-    String? direction,
-  ]);
+  QueryBuilder orderByDesc(String column);
+  QueryBuilder reorder([String? column, String? direction]);
 
   QueryBuilder skip(int value);
 

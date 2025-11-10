@@ -26,14 +26,16 @@ class MigrationRunner {
 
       stopwatch.stop();
       stderr.writeln(
-          ' Migration $migrationName executed ....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
+        ' Migration $migrationName executed ....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m',
+      );
     } catch (e) {
       stopwatch.stop();
       if (e is QueryException) {
         stderr.write(e.cause);
       }
       stderr.writeln(
-          '❌ Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m');
+        '❌ Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m',
+      );
       exit(1);
     }
   }
@@ -51,9 +53,7 @@ class MigrationRunner {
 
   Future<void> run(List<String> args) async {
     if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
+      stderr.writeln('Database connection not established');
       exit(1);
     }
     if (args.contains('--fresh')) {
@@ -81,7 +81,9 @@ class MigrationRunner {
   }
 
   Future<void> _runDown(
-      String migrationName, Function migrationCallback) async {
+    String migrationName,
+    Function migrationCallback,
+  ) async {
     final stopwatch = Stopwatch()..start();
 
     try {
@@ -90,34 +92,35 @@ class MigrationRunner {
 
       stopwatch.stop();
       stderr.writeln(
-          ' Migration $migrationName rolled back....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
+        ' Migration $migrationName rolled back....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m',
+      );
     } catch (e) {
       stopwatch.stop();
       stderr.writeln(
-          ' Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m');
+        ' Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m',
+      );
       exit(1);
     }
   }
 
   Future<bool> _isMigrationExecuted(String migrationName) async {
     if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
+      stderr.writeln('Database connection not established');
       exit(1);
     }
 
     try {
       final snakeCaseName = toSnakeCase(migrationName);
-      final result = await MigrationConnection()
-          .connection!
-          .select("SELECT id FROM migrations WHERE migration='$snakeCaseName'");
+      final result = await MigrationConnection().connection!.select(
+        "SELECT id FROM migrations WHERE migration='$snakeCaseName'",
+      );
 
       return result.isNotEmpty;
     } catch (e) {
       if (e is QueryException) {
-        stderr
-            .writeln('❌ Failed to check if migration is executed: ${e.cause}');
+        stderr.writeln(
+          '❌ Failed to check if migration is executed: ${e.cause}',
+        );
       } else {
         stderr.writeln('❌ Failed to check if migration is executed: $e');
       }
@@ -126,11 +129,11 @@ class MigrationRunner {
   }
 
   Future<void> _recordMigrationWithBatch(
-      String migrationName, int batch) async {
+    String migrationName,
+    int batch,
+  ) async {
     if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
+      stderr.writeln('Database connection not established');
       exit(1);
     }
 
@@ -160,9 +163,7 @@ class MigrationRunner {
 
   Future<void> _removeMigrationRecord(String migrationName) async {
     if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
+      stderr.writeln('Database connection not established');
       exit(1);
     }
 
@@ -198,9 +199,7 @@ class MigrationRunner {
 
   Future<int> _getCurrentBatchNumber() async {
     if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
+      stderr.writeln('Database connection not established');
       exit(1);
     }
 
@@ -287,8 +286,8 @@ class MigrationRunner {
 
     try {
       if (MigrationConnection().adapter != null) {
-        String migrationSql =
-            MigrationConnection().adapter!.getMigrationsTableSql();
+        String migrationSql = MigrationConnection().adapter!
+            .getMigrationsTableSql();
         await MigrationConnection().connection!.execute(migrationSql);
         stderr.writeln('✅ Migration repository installed successfully!');
       } else {
@@ -410,9 +409,7 @@ class MigrationRunner {
 
   Future<List<String>> _getAllMigrationsInReverseOrder() async {
     if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
+      stderr.writeln('Database connection not established');
       exit(1);
     }
 
@@ -438,9 +435,7 @@ class MigrationRunner {
 
   Future<List<String>> _getLastNMigrations(int n) async {
     if (MigrationConnection().connection == null) {
-      stderr.writeln(
-        'Database connection not established',
-      );
+      stderr.writeln('Database connection not established');
       exit(1);
     }
 

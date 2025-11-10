@@ -25,10 +25,7 @@ class Throttle extends Middleware {
     this.headers,
     this.bypassInDevelopment = true,
   }) {
-    _throttle = ThrottleRequests(
-      maxAttempts: maxAttempts,
-      duration: duration,
-    );
+    _throttle = ThrottleRequests(maxAttempts: maxAttempts, duration: duration);
   }
 
   @override
@@ -48,10 +45,7 @@ class Throttle extends Middleware {
       throw ThrottleException(
         message: customMessage ?? 'Too Many Requests. Please try again later.',
         code: HttpStatus.tooManyRequests,
-        headers: {
-          'Retry-After': retryAfter.inSeconds.toString(),
-          ...?headers,
-        },
+        headers: {'Retry-After': retryAfter.inSeconds.toString(), ...?headers},
       );
     }
   }
@@ -72,7 +66,9 @@ class Throttle extends Middleware {
   void _addRateLimitHeaders(HttpResponse response, int remaining) {
     response.headers.add('X-RateLimit-Limit', maxAttempts.toString());
     response.headers.add('X-RateLimit-Remaining', remaining.toString());
-    response.headers
-        .add('X-RateLimit-Reset', _throttle.resetTime().toIso8601String());
+    response.headers.add(
+      'X-RateLimit-Reset',
+      _throttle.resetTime().toIso8601String(),
+    );
   }
 }

@@ -101,9 +101,12 @@ class Request {
 
   Future<Request> extractBody() async {
     _extractCookies();
-    final whereMethod = ['post', 'patch', 'put', 'delete']
-        .where((method) => method == request.method.toLowerCase())
-        .toList();
+    final whereMethod = [
+      'post',
+      'patch',
+      'put',
+      'delete',
+    ].where((method) => method == request.method.toLowerCase()).toList();
     if (whereMethod.isNotEmpty) {
       body = await RequestBody.extractBody(request: request);
     }
@@ -228,7 +231,8 @@ class Request {
     return _all[key];
   }
 
-  bool hasFile(String key) => (_all[key].toString().isNotEmpty &&
+  bool hasFile(String key) =>
+      (_all[key].toString().isNotEmpty &&
       (file(key) != null || files(key) != null));
 
   List<RequestFile>? files(String key) {
@@ -276,10 +280,7 @@ class Request {
     }
   }
 
-  dynamic query([
-    String? key,
-    String? defaultVal,
-  ]) {
+  dynamic query([String? key, String? defaultVal]) {
     if (key == null) {
       return _query.values;
     }
@@ -349,20 +350,23 @@ class Request {
     Map<String, String> messages = const <String, String>{},
   ]) async {
     assert(
-        rules is Map<String, String> ||
-            rules is List<FieldValidation> ||
-            rules is List<Validation> ||
-            rules is FormValidation,
-        'Rules must be either Map<String, String> or List<Validation>. or FormRequest');
+      rules is Map<String, String> ||
+          rules is List<FieldValidation> ||
+          rules is List<Validation> ||
+          rules is FormValidation,
+      'Rules must be either Map<String, String> or List<Validation>. or FormRequest',
+    );
     TemplateEngine().sessionErrors.clear();
     if (rules is Map<String, String>) {
       await _validate(rules, messages);
     } else if (rules is List<FieldValidation>) {
       Map<String, String> ruleMessages = Map.from(messages);
-      final rulesMap = Map.fromEntries(rules.map((rule) {
-        ruleMessages.addAll(rule.toMapMessages);
-        return MapEntry(rule.fieldName, rule.toString());
-      }));
+      final rulesMap = Map.fromEntries(
+        rules.map((rule) {
+          ruleMessages.addAll(rule.toMapMessages);
+          return MapEntry(rule.fieldName, rule.toString());
+        }),
+      );
       await _validate(rulesMap, ruleMessages);
     } else if (rules is FormValidation) {
       await _formRequestValidate(rules);
@@ -387,10 +391,12 @@ class Request {
 
     Map<String, String> rulesMap = {};
     if (rules is List<FieldValidation>) {
-      rulesMap = Map.fromEntries(rules.map((rule) {
-        messages.addAll(rule.toMapMessages);
-        return MapEntry(rule.fieldName, rule.toString());
-      }));
+      rulesMap = Map.fromEntries(
+        rules.map((rule) {
+          messages.addAll(rule.toMapMessages);
+          return MapEntry(rule.fieldName, rule.toString());
+        }),
+      );
     } else {
       rulesMap = formRequest.rules();
     }
@@ -436,8 +442,9 @@ class Request {
     Map<String, String> errors = {};
     final data = all();
     for (Validation validation in validations) {
-      dynamic fieldValue =
-          data.containsKey(validation.field) ? data[validation.field] : null;
+      dynamic fieldValue = data.containsKey(validation.field)
+          ? data[validation.field]
+          : null;
       for (ValidationRule rule in validation.rules) {
         if (!rule.validate(fieldValue, data)) {
           errors[validation.field] = rule.errorMessage;

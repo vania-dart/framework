@@ -38,33 +38,48 @@ class CteDefinition {
 
     if (isRecursive && !config.supportsFeature(CteFeature.recursive)) {
       throw UnsupportedCteFeatureException(
-          CteFeature.recursive, config.databaseType, name);
+        CteFeature.recursive,
+        config.databaseType,
+        name,
+      );
     }
 
     if (isMaterialized && !config.supportsFeature(CteFeature.materialized)) {
       throw UnsupportedCteFeatureException(
-          CteFeature.materialized, config.databaseType, name);
+        CteFeature.materialized,
+        config.databaseType,
+        name,
+      );
     }
 
     if (isNotMaterialized &&
         !config.supportsFeature(CteFeature.notMaterialized)) {
       throw UnsupportedCteFeatureException(
-          CteFeature.notMaterialized, config.databaseType, name);
+        CteFeature.notMaterialized,
+        config.databaseType,
+        name,
+      );
     }
 
     if (isRecursive && recursiveQuery == null) {
       throw InvalidCteConfigurationException(
-          'Recursive CTE must have recursive query', name);
+        'Recursive CTE must have recursive query',
+        name,
+      );
     }
 
     if (isMaterialized && isNotMaterialized) {
       throw InvalidCteConfigurationException(
-          'CTE cannot be both materialized and not materialized', name);
+        'CTE cannot be both materialized and not materialized',
+        name,
+      );
     }
 
     if (isRecursive && (isMaterialized || isNotMaterialized)) {
       throw InvalidCteConfigurationException(
-          'Recursive CTE cannot have materialization options', name);
+        'Recursive CTE cannot have materialization options',
+        name,
+      );
     }
 
     if (columns != null && columns!.isNotEmpty) {
@@ -75,21 +90,26 @@ class CteDefinition {
       Set<String> uniqueColumns = columns!.map((c) => c.toLowerCase()).toSet();
       if (uniqueColumns.length != columns!.length) {
         throw InvalidCteConfigurationException(
-            'CTE columns must be unique', name);
+          'CTE columns must be unique',
+          name,
+        );
       }
     }
   }
 
   String toSql(
-      IdentifierEscapingStrategy escapingStrategy, CteConfiguration config) {
+    IdentifierEscapingStrategy escapingStrategy,
+    CteConfiguration config,
+  ) {
     validate(config);
 
     String escapedName = escapingStrategy.escape(name);
     String sql = escapedName;
 
     if (columns != null && columns!.isNotEmpty) {
-      List<String> escapedColumns =
-          columns!.map((col) => escapingStrategy.escape(col)).toList();
+      List<String> escapedColumns = columns!
+          .map((col) => escapingStrategy.escape(col))
+          .toList();
       sql += ' (${escapedColumns.join(', ')})';
     }
 
@@ -112,8 +132,8 @@ class CteDefinition {
     Map<String, dynamic> allBindings = {};
 
     if (query is QueryBuilderAccessor) {
-      Map<String, dynamic> queryBindings =
-          (query as QueryBuilderAccessor).accessBindings();
+      Map<String, dynamic> queryBindings = (query as QueryBuilderAccessor)
+          .accessBindings();
       allBindings.addAll(queryBindings);
     }
 

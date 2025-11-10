@@ -20,9 +20,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<bool> insert(
-    Map<String, dynamic> values,
-  ) async {
+  Future<bool> insert(Map<String, dynamic> values) async {
     try {
       if (values.isEmpty) {
         throw InvalidArgumentException(
@@ -35,11 +33,13 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       final paramBindings = <String, dynamic>{};
 
       // Create parameter placeholders
-      final placeholders = values.keys.map((key) {
-        final paramName = _nextParamName();
-        paramBindings[paramName] = values[key];
-        return ":$paramName";
-      }).join(", ");
+      final placeholders = values.keys
+          .map((key) {
+            final paramName = _nextParamName();
+            paramBindings[paramName] = values[key];
+            return ":$paramName";
+          })
+          .join(", ");
 
       final query =
           "INSERT INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
@@ -51,10 +51,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future insertGetId(
-    Map<String, dynamic> values, [
-    String? sequence,
-  ]) async {
+  Future insertGetId(Map<String, dynamic> values, [String? sequence]) async {
     try {
       if (values.isEmpty) {
         throw InvalidArgumentException(
@@ -66,11 +63,13 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       final columns = values.keys.toList();
       final paramBindings = <String, dynamic>{};
 
-      final placeholders = values.keys.map((key) {
-        final paramName = _nextParamName();
-        paramBindings[paramName] = values[key];
-        return ":$paramName";
-      }).join(", ");
+      final placeholders = values.keys
+          .map((key) {
+            final paramName = _nextParamName();
+            paramBindings[paramName] = values[key];
+            return ":$paramName";
+          })
+          .join(", ");
 
       final query =
           "INSERT INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
@@ -82,9 +81,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<bool> insertMany(
-    List<Map<String, dynamic>> valuesList,
-  ) async {
+  Future<bool> insertMany(List<Map<String, dynamic>> valuesList) async {
     try {
       if (valuesList.isEmpty) {
         throw InvalidArgumentException(
@@ -110,11 +107,13 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
 
       // Create parameter placeholders for each row
       for (var values in valuesList) {
-        final placeholders = columns.map((column) {
-          final paramName = _nextParamName();
-          paramBindings[paramName] = values[column];
-          return ":$paramName";
-        }).join(", ");
+        final placeholders = columns
+            .map((column) {
+              final paramName = _nextParamName();
+              paramBindings[paramName] = values[column];
+              return ":$paramName";
+            })
+            .join(", ");
 
         valueGroups.add("($placeholders)");
       }
@@ -140,9 +139,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<bool> insertOrIgnore(
-    Map<String, dynamic> values,
-  ) async {
+  Future<bool> insertOrIgnore(Map<String, dynamic> values) async {
     try {
       if (values.isEmpty) {
         throw InvalidArgumentException(
@@ -152,11 +149,13 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       conn = await getConnection();
       final columns = values.keys.toList();
       final paramBindings = <String, dynamic>{};
-      final placeholders = values.keys.map((key) {
-        final paramName = _nextParamName();
-        paramBindings[paramName] = values[key];
-        return ":$paramName";
-      }).join(", ");
+      final placeholders = values.keys
+          .map((key) {
+            final paramName = _nextParamName();
+            paramBindings[paramName] = values[key];
+            return ":$paramName";
+          })
+          .join(", ");
 
       final query =
           "INSERT IGNORE INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
@@ -168,10 +167,7 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<bool> insertUsing(
-    List<String> columns,
-    QueryBuilder subQuery,
-  ) async {
+  Future<bool> insertUsing(List<String> columns, QueryBuilder subQuery) async {
     try {
       String cols = columns.join(", ");
       String subSql = subQuery.toRawSql();
@@ -201,11 +197,13 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       final columns = values.keys.toList();
       final paramBindings = <String, dynamic>{};
 
-      final placeholders = values.keys.map((key) {
-        final paramName = _nextParamName();
-        paramBindings[paramName] = values[key];
-        return ":$paramName";
-      }).join(", ");
+      final placeholders = values.keys
+          .map((key) {
+            final paramName = _nextParamName();
+            paramBindings[paramName] = values[key];
+            return ":$paramName";
+          })
+          .join(", ");
 
       String sql =
           "INSERT INTO $getTable (${columns.join(', ')}) VALUES ($placeholders)";
@@ -218,11 +216,13 @@ abstract mixin class InsertQueryBuilderImpl implements QueryBuilder {
       }
 
       if (update.isNotEmpty) {
-        final updateClauses = update.entries.map((entry) {
-          final paramName = _nextParamName();
-          paramBindings[paramName] = entry.value;
-          return "${entry.key} = :$paramName";
-        }).join(", ");
+        final updateClauses = update.entries
+            .map((entry) {
+              final paramName = _nextParamName();
+              paramBindings[paramName] = entry.value;
+              return "${entry.key} = :$paramName";
+            })
+            .join(", ");
 
         sql += " ON DUPLICATE KEY UPDATE $updateClauses";
       }

@@ -18,19 +18,19 @@ class SeederRunner {
   SeederRunner._internal();
 
   DBConfig _config(Map<String, dynamic> database) => DBConfig(
-        driver: database['driver'] ?? '',
-        host: database['host'] ?? '',
-        port: database['port'] ?? '',
-        database: database['database'] ?? '',
-        username: database['username'] ?? '',
-        password: database['password'] ?? '',
-        sslMode: database['sslmode'] ?? '',
-        collation: database['collation'] ?? '',
-        pool: database['pool'] ?? false,
-        poolSize: database['poolsize'] ?? 0,
-        filePath: database['file_path'] ?? '',
-        openInMemorySQLite: database['openInMemorySQLite'] ?? false,
-      );
+    driver: database['driver'] ?? '',
+    host: database['host'] ?? '',
+    port: database['port'] ?? '',
+    database: database['database'] ?? '',
+    username: database['username'] ?? '',
+    password: database['password'] ?? '',
+    sslMode: database['sslmode'] ?? '',
+    collation: database['collation'] ?? '',
+    pool: database['pool'] ?? false,
+    poolSize: database['poolsize'] ?? 0,
+    filePath: database['file_path'] ?? '',
+    openInMemorySQLite: database['openInMemorySQLite'] ?? false,
+  );
 
   Future<void> setup({
     required Map<String, dynamic> database,
@@ -57,7 +57,8 @@ class SeederRunner {
           await seeder.run();
           stopwatch.stop();
           stderr.writeln(
-              ' Seeder ${toSnakeCase(seeder.runtimeType.toString())} executed ....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m');
+            ' Seeder ${toSnakeCase(seeder.runtimeType.toString())} executed ....................................\x1B[32m ${stopwatch.elapsedMilliseconds}ms DONE\x1B[0m',
+          );
         } on QueryException catch (e) {
           stopwatch.stop();
           stderr.write(e.cause);
@@ -66,8 +67,9 @@ class SeederRunner {
         }
       }
       await ConnectionManager().connection(database['default'])!.close();
-      stderr
-          .write('\x1B[32m All database seeders executed successfully \x1B[0m');
+      stderr.write(
+        '\x1B[32m All database seeders executed successfully \x1B[0m',
+      );
       exit(0);
     }
   }

@@ -52,8 +52,10 @@ class MySqlConnector implements DatabaseConnection {
   }
 
   @override
-  Future<bool> execute(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<bool> execute(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       await _connection.execute(query, bindings);
       return true;
@@ -66,8 +68,9 @@ class MySqlConnector implements DatabaseConnection {
   Future<T> transaction<T>(Future<T> Function() action) async {
     try {
       if (_isPool) {
-        return await (_connection as MySQLConnectionPool)
-            .transactional<T>((txConn) async {
+        return await (_connection as MySQLConnectionPool).transactional<T>((
+          txConn,
+        ) async {
           final previous = _connection;
           _connection = txConn;
           _isPool = false;
@@ -79,8 +82,9 @@ class MySqlConnector implements DatabaseConnection {
           }
         });
       } else {
-        return await (_connection as MySQLConnection)
-            .transactional<T>((txConn) async {
+        return await (_connection as MySQLConnection).transactional<T>((
+          txConn,
+        ) async {
           final previous = _connection;
           _connection = txConn;
           try {
@@ -96,17 +100,23 @@ class MySqlConnector implements DatabaseConnection {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> select(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<List<Map<String, dynamic>>> select(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final IResultSet results;
 
       if (_isPool) {
-        results =
-            await (_connection as MySQLConnectionPool).execute(query, bindings);
+        results = await (_connection as MySQLConnectionPool).execute(
+          query,
+          bindings,
+        );
       } else {
-        results =
-            await (_connection as MySQLConnection).execute(query, bindings);
+        results = await (_connection as MySQLConnection).execute(
+          query,
+          bindings,
+        );
       }
       if (results.rows.isEmpty) {
         return [];
@@ -131,16 +141,22 @@ class MySqlConnector implements DatabaseConnection {
   }
 
   @override
-  Future insert(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future insert(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final IResultSet results;
       if (_isPool) {
-        results =
-            await (_connection as MySQLConnectionPool).execute(query, bindings);
+        results = await (_connection as MySQLConnectionPool).execute(
+          query,
+          bindings,
+        );
       } else {
-        results =
-            await (_connection as MySQLConnection).execute(query, bindings);
+        results = await (_connection as MySQLConnection).execute(
+          query,
+          bindings,
+        );
       }
       return results.lastInsertID;
     } catch (e) {

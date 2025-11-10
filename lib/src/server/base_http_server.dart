@@ -31,9 +31,7 @@ class BaseHttpServer {
   ///
   /// Throws an error if the server fails to start.
 
-  Future<HttpServer> startServer({
-    Function? onError,
-  }) async {
+  Future<HttpServer> startServer({Function? onError}) async {
     String host = env<String>('APP_HOST', InternetAddress.anyIPv6.host);
     int port = env<int>('APP_PORT', 8000);
 

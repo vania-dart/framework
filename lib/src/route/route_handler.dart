@@ -10,8 +10,9 @@ import 'package:vania/src/utils/functions.dart';
 import 'package:vania/src/utils/helper.dart' show env;
 
 final Map<String, RegExp> _regexCache = {};
-final _lookupCache =
-    _LruCache<_LookupKey, RouteData?>(env<int>("ROUTE_LOOK_UP_SIZE", 2000));
+final _lookupCache = _LruCache<_LookupKey, RouteData?>(
+  env<int>("ROUTE_LOOK_UP_SIZE", 2000),
+);
 final Map<String, List<RouteData>> _staticRoutes = {};
 final List<RouteData> _dynamicRoutes = [];
 
@@ -67,8 +68,9 @@ void initializeRoutes() {
   final router = Router();
   for (var route in router.routes) {
     final method = route.method.toLowerCase();
-    final normalizedPath =
-        _normalizePath(_normalizePrefix(route.prefix) + route.path);
+    final normalizedPath = _normalizePath(
+      _normalizePrefix(route.prefix) + route.path,
+    );
     route.regex?.forEach((param, pattern) {
       _regexCache.putIfAbsent(pattern, () => RegExp(pattern));
     });
@@ -128,8 +130,9 @@ RouteData? _findMatchingRoute(
   final staticList = _staticRoutes[method] ?? [];
 
   for (final route in staticList) {
-    String fullPath =
-        _normalizePath(_normalizePrefix(route.prefix) + route.path);
+    String fullPath = _normalizePath(
+      _normalizePrefix(route.prefix) + route.path,
+    );
     if (fullPath.endsWith('/')) {
       fullPath = fullPath.substring(0, fullPath.length - 1);
     }
@@ -139,8 +142,9 @@ RouteData? _findMatchingRoute(
     }
   }
 
-  for (final route
-      in _dynamicRoutes.where((r) => r.method.toLowerCase() == method)) {
+  for (final route in _dynamicRoutes.where(
+    (r) => r.method.toLowerCase() == method,
+  )) {
     if (!_domainMatches(domain, route.domain)) continue;
     final result = _matchDynamic(requestPath, route, domain);
     if (result != null) return result;
@@ -180,8 +184,9 @@ RouteData _applyDomainParams(RouteData route, String domain) {
   );
 
   if (route.domain != null && route.domain!.contains('{')) {
-    final placeholder =
-        RegExp(r'{([^}]+)}').firstMatch(route.domain!)!.group(1)!;
+    final placeholder = RegExp(
+      r'{([^}]+)}',
+    ).firstMatch(route.domain!)!.group(1)!;
     copy.params![placeholder] = domain.split('.').first;
   }
 
@@ -190,8 +195,9 @@ RouteData _applyDomainParams(RouteData route, String domain) {
 
 /// Matches dynamic (parameterized) routes and validates params
 RouteData? _matchDynamic(String requestPath, RouteData route, String domain) {
-  final patternPath =
-      _normalizePath(_normalizePrefix(route.prefix) + route.path);
+  final patternPath = _normalizePath(
+    _normalizePrefix(route.prefix) + route.path,
+  );
   final reqParts = _normalizePath(requestPath).split('/');
   final patternParts = patternPath.split('/');
 

@@ -12,12 +12,11 @@ class HasMany extends Relation {
     List<Map<String, dynamic>> models,
     List<Map<String, dynamic>> results,
     String relation,
-  ) =>
-      matchMany(
-        models,
-        results,
-        relation,
-        localKey,
-        foreignKey ?? '${related.runtimeType.toString()}_id',
-      );
+  ) => matchMany(
+    models,
+    results,
+    relation,
+    localKey,
+    foreignKey ?? '${related.runtimeType.toString()}_id',
+  );
 }

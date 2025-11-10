@@ -1,7 +1,1 @@
-enum CteFeature {
-  materialized,
-
-  notMaterialized,
-
-  recursive,
-}
+enum CteFeature { materialized, notMaterialized, recursive }

@@ -62,7 +62,8 @@ class Storage {
       return Storage()._driver.put(fullPath, data);
     } else {
       throw Exception(
-          'Content must be a list of int, a string, or a Stream<List<int>>.');
+        'Content must be a list of int, a string, or a Stream<List<int>>.',
+      );
     }
   }
 

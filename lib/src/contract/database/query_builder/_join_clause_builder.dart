@@ -1,10 +1,7 @@
 part of 'query_builder.dart';
 
 abstract interface class JoinClauseBuilder {
-  QueryBuilder crossJoin(
-    String table, [
-    List<dynamic> bindings = const [],
-  ]);
+  QueryBuilder crossJoin(String table, [List<dynamic> bindings = const []]);
 
   QueryBuilder join(
     String table,

@@ -64,7 +64,7 @@ class CommandsClient<K, V> implements Commands<K, V> {
     return res.isInteger && res.integerValue == 1;
   }
 
-// key-value operation(String) commands
+  // key-value operation(String) commands
 
   @override
   Future<bool> exists(K key) async {
@@ -79,8 +79,9 @@ class CommandsClient<K, V> implements Commands<K, V> {
   @override
   Future<bool> expire(K key, Duration duration) async {
     final keyString = keyCodec.encode<K>(key);
-    _connection
-        .sendCommand(Resp(['EXPIRE', keyString, '${duration.inSeconds}']));
+    _connection.sendCommand(
+      Resp(['EXPIRE', keyString, '${duration.inSeconds}']),
+    );
     final res = await _connection.receive();
     res.throwIfError();
 
@@ -156,8 +157,9 @@ class CommandsClient<K, V> implements Commands<K, V> {
   Future<bool> setEx(K key, int ttl, V value) async {
     final keyString = keyCodec.encode<K>(key);
     final valueString = valueCodec.encode<V>(value);
-    _connection
-        .sendCommand(Resp(['SETEX', keyString, ttl.toString(), valueString]));
+    _connection.sendCommand(
+      Resp(['SETEX', keyString, ttl.toString(), valueString]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
 
@@ -246,7 +248,8 @@ class CommandsClient<K, V> implements Commands<K, V> {
   Future<V?> getRange(K key, int start, int end) async {
     final keyString = keyCodec.encode<K>(key);
     _connection.sendCommand(
-        Resp(['GETRANGE', keyString, start.toString(), end.toString()]));
+      Resp(['GETRANGE', keyString, start.toString(), end.toString()]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
     final str = res.stringValue;
@@ -291,8 +294,9 @@ class CommandsClient<K, V> implements Commands<K, V> {
   @override
   Future<double?> incrByFloat(K key, double increment) async {
     final keyString = keyCodec.encode<K>(key);
-    _connection
-        .sendCommand(Resp(['INCRBYFLOAT', keyString, increment.toString()]));
+    _connection.sendCommand(
+      Resp(['INCRBYFLOAT', keyString, increment.toString()]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
     return res.doubleValue;
@@ -339,7 +343,8 @@ class CommandsClient<K, V> implements Commands<K, V> {
   Future<int?> setBit(K key, int offset, int value) async {
     final keyString = keyCodec.encode<K>(key);
     _connection.sendCommand(
-        Resp(['SETBIT', keyString, offset.toString(), value.toString()]));
+      Resp(['SETBIT', keyString, offset.toString(), value.toString()]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
     return res.integerValue;
@@ -349,8 +354,9 @@ class CommandsClient<K, V> implements Commands<K, V> {
   Future<bool> pSetEx(K key, int ttl, V value) async {
     final keyString = keyCodec.encode<K>(key);
     final valueString = valueCodec.encode<V>(value);
-    _connection
-        .sendCommand(Resp(['PSETEX', keyString, ttl.toString(), valueString]));
+    _connection.sendCommand(
+      Resp(['PSETEX', keyString, ttl.toString(), valueString]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
     final s = res.stringValue;
@@ -375,7 +381,8 @@ class CommandsClient<K, V> implements Commands<K, V> {
     final keyString = keyCodec.encode<K>(key);
     final valueString = valueCodec.encode<V>(value);
     _connection.sendCommand(
-        Resp(['SETRANGE', keyString, offset.toString(), valueString]));
+      Resp(['SETRANGE', keyString, offset.toString(), valueString]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
     return res.integerValue;
@@ -410,13 +417,14 @@ class CommandsClient<K, V> implements Commands<K, V> {
     return l.last.stringValue;
   }
 
-// List operation commands
+  // List operation commands
 
   @override
   Future<List<V>> lrange(K key, int startIndex, int endIndex) async {
     final keyString = keyCodec.encode<K>(key);
-    _connection.sendCommand(Resp(
-        ['LRANGE', keyString, startIndex.toString(), endIndex.toString()]));
+    _connection.sendCommand(
+      Resp(['LRANGE', keyString, startIndex.toString(), endIndex.toString()]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
 
@@ -458,8 +466,9 @@ class CommandsClient<K, V> implements Commands<K, V> {
   Future<bool> lset(K key, int index, V value) async {
     final keyString = keyCodec.encode<K>(key);
     final valueString = valueCodec.encode<V>(value);
-    _connection
-        .sendCommand(Resp(['LSET', keyString, index.toString(), valueString]));
+    _connection.sendCommand(
+      Resp(['LSET', keyString, index.toString(), valueString]),
+    );
     final res = await _connection.receive();
     res.throwIfError();
 
@@ -532,8 +541,10 @@ class RedisClient {
     String? username,
     String? password,
   }) async {
-    final rpc =
-        await RedisProtocolClient.createConnection(host: host, port: port);
+    final rpc = await RedisProtocolClient.createConnection(
+      host: host,
+      port: port,
+    );
 
     if (password != null) {
       await _auth(rpc, username: username, password: password);
@@ -559,10 +570,7 @@ class RedisClient {
       res.throwIfError();
     } on RedisException catch (e) {
       Logger.log(
-        jsonEncode({
-          'error': 'RedisException',
-          'message': e.message,
-        }),
+        jsonEncode({'error': 'RedisException', 'message': e.message}),
         type: Logger.ERROR,
       );
     }

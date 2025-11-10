@@ -9,8 +9,10 @@ import 'package:vania/vania.dart' show env;
 class RequestBody {
   const RequestBody();
 
-  static final int _maxBodySizeBytes =
-      env<int>('MAX_BODY_SIZE', 10 * 1024 * 1024);
+  static final int _maxBodySizeBytes = env<int>(
+    'MAX_BODY_SIZE',
+    10 * 1024 * 1024,
+  );
 
   static Future<Map<String, dynamic>> extractBody({
     required HttpRequest request,

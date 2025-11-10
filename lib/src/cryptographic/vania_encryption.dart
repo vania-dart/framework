@@ -19,12 +19,15 @@ class VaniaEncryption {
   /// Returns:
   /// A Base64 encoded string representing the encrypted text.
   static Future<String> encryptString(
-      String plainText, String passphrase) async {
+    String plainText,
+    String passphrase,
+  ) async {
     try {
       plainText = base64.encode(utf8.encode(plainText));
 
-      final keyBytes =
-          utf8.encode(passphrase.padRight(32, '0').substring(0, 32));
+      final keyBytes = utf8.encode(
+        passphrase.padRight(32, '0').substring(0, 32),
+      );
       final secretKey = SecretKey(keyBytes);
 
       final plainBytes = utf8.encode(plainText);
@@ -62,10 +65,13 @@ class VaniaEncryption {
   /// The original plaintext if decryption is successful, or an empty
   /// string if decryption fails.
   static Future<String> decryptString(
-      String encryptedText, String passphrase) async {
+    String encryptedText,
+    String passphrase,
+  ) async {
     try {
-      final keyBytes =
-          utf8.encode(passphrase.padRight(32, '0').substring(0, 32));
+      final keyBytes = utf8.encode(
+        passphrase.padRight(32, '0').substring(0, 32),
+      );
       final secretKey = SecretKey(keyBytes);
 
       // Decode the base64 encrypted text
@@ -75,11 +81,7 @@ class VaniaEncryption {
       final mac = encryptedBytes.sublist(encryptedBytes.length - 16);
       final cipherText = encryptedBytes.sublist(12, encryptedBytes.length - 16);
 
-      final secretBox = SecretBox(
-        cipherText,
-        nonce: nonce,
-        mac: Mac(mac),
-      );
+      final secretBox = SecretBox(cipherText, nonce: nonce, mac: Mac(mac));
 
       final aesGcm = AesGcm.with256bits();
       final decryptedBytes = await aesGcm.decrypt(

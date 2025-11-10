@@ -15,7 +15,10 @@ class CteCache {
   }
 
   void updateCache(
-      String withClause, Map<String, dynamic> bindings, int hashCode) {
+    String withClause,
+    Map<String, dynamic> bindings,
+    int hashCode,
+  ) {
     _cachedWithClause = withClause;
     _cachedBindings = Map.from(bindings);
     _cteHashCode = hashCode;

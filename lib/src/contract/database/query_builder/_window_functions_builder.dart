@@ -1,23 +1,11 @@
 part of 'query_builder.dart';
 
 abstract interface class WindowFunctionsBuilder {
-  QueryBuilder rowNumber({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  });
+  QueryBuilder rowNumber({String? partitionBy, String? orderBy, String? as});
 
-  QueryBuilder rank({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  });
+  QueryBuilder rank({String? partitionBy, String? orderBy, String? as});
 
-  QueryBuilder denseRank({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  });
+  QueryBuilder denseRank({String? partitionBy, String? orderBy, String? as});
 
   QueryBuilder lag(
     String column, {
@@ -58,17 +46,9 @@ abstract interface class WindowFunctionsBuilder {
     String? as,
   });
 
-  QueryBuilder percentRank({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  });
+  QueryBuilder percentRank({String? partitionBy, String? orderBy, String? as});
 
-  QueryBuilder cumeDist({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  });
+  QueryBuilder cumeDist({String? partitionBy, String? orderBy, String? as});
 
   QueryBuilder windowSum(
     String column, {

@@ -46,10 +46,12 @@ class Schema implements SchemaInterface {
 
       if (type == ColumnIndex.indexKey) {
         _indexes.add(
-            'INDEX `$indexName` (${columns.map((e) => "`$e`").join(', ')})');
+          'INDEX `$indexName` (${columns.map((e) => "`$e`").join(', ')})',
+        );
       } else {
         _indexes.add(
-            '${type.name} INDEX `$indexName` (${columns.map((e) => "`$e`").join(', ')})');
+          '${type.name} INDEX `$indexName` (${columns.map((e) => "`$e`").join(', ')})',
+        );
       }
     });
   }
@@ -85,8 +87,9 @@ class Schema implements SchemaInterface {
     }
 
     String nullableStr = nullable ? 'NULL' : 'NOT NULL';
-    columnDefinition
-        .write(' ' * (20 - columnDefinition.length % 20) + nullableStr);
+    columnDefinition.write(
+      ' ' * (20 - columnDefinition.length % 20) + nullableStr,
+    );
 
     if (unique) {
       columnDefinition.write(' UNIQUE');
@@ -94,8 +97,9 @@ class Schema implements SchemaInterface {
 
     if (defaultValue != null) {
       RegExp funcRegex = RegExp(
-          r'^(CURRENT_TIMESTAMP|NOW\(\)|UUID\(\)|RAND\(\))$',
-          caseSensitive: false);
+        r'^(CURRENT_TIMESTAMP|NOW\(\)|UUID\(\)|RAND\(\))$',
+        caseSensitive: false,
+      );
       if (funcRegex.hasMatch(defaultValue.toString())) {
         columnDefinition.write(" DEFAULT $defaultValue");
 
@@ -147,7 +151,8 @@ class Schema implements SchemaInterface {
       _indexes.add('INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
     } else {
       _indexes.add(
-          '${type.name.toUpperCase()} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})');
+        '${type.name.toUpperCase()} INDEX `$name` (${columns.map((e) => "`$e`").join(',')})',
+      );
     }
   }
 
@@ -201,7 +206,9 @@ class Schema implements SchemaInterface {
   }
 
   void addCompositeUniqueConstraint(
-      String constraintName, List<String> columns) {
+    String constraintName,
+    List<String> columns,
+  ) {
     if (_compositeUniqueConstraints.containsKey(constraintName)) {
       _compositeUniqueConstraints[constraintName]!.addAll(columns);
     } else {
@@ -210,7 +217,10 @@ class Schema implements SchemaInterface {
   }
 
   void addCompositeIndex(
-      String indexName, String columnName, ColumnIndex type) {
+    String indexName,
+    String columnName,
+    ColumnIndex type,
+  ) {
     if (_compositeIndexes.containsKey(indexName)) {
       _compositeIndexes[indexName]!['columns'].add(columnName);
     } else {
@@ -225,8 +235,9 @@ class Schema implements SchemaInterface {
     _finalizeColumnDefinitions();
 
     final query = StringBuffer();
-    String createClause =
-        ifNotExists ? 'CREATE TABLE IF NOT EXISTS' : 'CREATE TABLE';
+    String createClause = ifNotExists
+        ? 'CREATE TABLE IF NOT EXISTS'
+        : 'CREATE TABLE';
 
     query.writeln('$createClause `$tableName` (');
 

@@ -18,8 +18,9 @@ class SessionManager {
 
   Map<String, dynamic> get allSessions => _allSessions;
 
-  final Duration _sessionLifeTime =
-      Duration(seconds: env<int>('SESSION_LIFETIME', 9000));
+  final Duration _sessionLifeTime = Duration(
+    seconds: env<int>('SESSION_LIFETIME', 9000),
+  );
   bool secureSession = env<bool>('SECURE_SESSION', true);
 
   /// Generates a new session ID.
@@ -50,7 +51,9 @@ class SessionManager {
   /// attributes such as domain, expiration, SameSite policy, and HTTP-only flag
   /// to mitigate CSRF attacks.
   Future<void> createXsrfToken(
-      HttpRequest request, HttpResponse response) async {
+    HttpRequest request,
+    HttpResponse response,
+  ) async {
     Cookie requestCookie = request.cookies.firstWhere(
       (cookie) => cookie.name == 'XSRF-TOKEN',
       orElse: () => Cookie('XSRF-TOKEN', ''),
@@ -106,13 +109,9 @@ class SessionManager {
   String _computeCsrfCookieValue(String token, String iv) {
     var hmac = Hmac(sha512, utf8.encode(iv));
     final Digest digest = hmac.convert(utf8.encode(token));
-    return base64.encode(utf8.encode(
-      jsonEncode(
-        {
-          'token': base64.encode(digest.bytes),
-        },
-      ),
-    ));
+    return base64.encode(
+      utf8.encode(jsonEncode({'token': base64.encode(digest.bytes)})),
+    );
   }
 
   /// Starts a new session or retrieves an existing session from the request.
@@ -133,10 +132,7 @@ class SessionManager {
   ///
   /// Returns:
   /// A string representing the session.
-  Future<void> sessionStart(
-    HttpRequest request,
-    HttpResponse response,
-  ) async {
+  Future<void> sessionStart(HttpRequest request, HttpResponse response) async {
     _request = null;
     _request ??= request;
     final cookie = request.cookies.firstWhere(
@@ -209,8 +205,9 @@ class SessionManager {
   Future<void> setSession(String key, dynamic value) async {
     final sessionId = getSessionId();
     if (sessionId != null) {
-      Map<String, dynamic>? session =
-          await SessionFileStore().retrieveSession(sessionId);
+      Map<String, dynamic>? session = await SessionFileStore().retrieveSession(
+        sessionId,
+      );
       if (session != null) {
         session.addAll({key: value});
       } else {
@@ -233,8 +230,9 @@ class SessionManager {
   Future<void> deleteSession(String key) async {
     final String? sessionId = getSessionId();
     if (sessionId != null) {
-      Map<String, dynamic>? session =
-          await SessionFileStore().retrieveSession(sessionId);
+      Map<String, dynamic>? session = await SessionFileStore().retrieveSession(
+        sessionId,
+      );
       if (session != null) {
         session.remove(key);
         _allSessions = session;

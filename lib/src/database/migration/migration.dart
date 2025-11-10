@@ -27,22 +27,28 @@ abstract class Migration {
   @mustBeOverridden
   Future<void> down();
 
-  TableDefinition create(String tableName, Function(Schema) callback,
-      [bool ifNotExists = false]) {
+  TableDefinition create(
+    String tableName,
+    Function(Schema) callback, [
+    bool ifNotExists = false,
+  ]) {
     _schemaBuilder.reset();
     _schemaBuilder.setTableName(tableName);
 
     Future<void> createFunction() async {
       callback(_schemaBuilder);
 
-      String sql = _schemaBuilder.generateCreateTableSql(tableName,
-          ifNotExists: ifNotExists);
+      String sql = _schemaBuilder.generateCreateTableSql(
+        tableName,
+        ifNotExists: ifNotExists,
+      );
 
       if (_adapter != null && _adapter.driverName == 'pgsql') {
         final postgresAdapter = _adapter as dynamic;
         if (postgresAdapter.executeStatements != null) {
-          await postgresAdapter.executeStatements(sql,
-              (List<String> statements) async {
+          await postgresAdapter.executeStatements(sql, (
+            List<String> statements,
+          ) async {
             for (String statement in statements) {
               await _connection.connection!.execute(statement);
             }
@@ -57,33 +63,40 @@ abstract class Migration {
       try {
         await _connection.connection!.execute(sql);
       } on QueryException catch (e) {
-        stderr.writeln(
-          'Error executing statement: $sql\nError: ${e.cause}',
-        );
+        stderr.writeln('Error executing statement: $sql\nError: ${e.cause}');
         exit(0);
       }
     }
 
-    return TableDefinition(tableName, createFunction,
-        connection: _connection, adapter: _adapter);
+    return TableDefinition(
+      tableName,
+      createFunction,
+      connection: _connection,
+      adapter: _adapter,
+    );
   }
 
   @Deprecated('createTableIfNotExists will be deprecated in version 1.1.0')
   TableDefinition createTableIfNotExists(
-      String tableName, Function(Schema) callback) {
+    String tableName,
+    Function(Schema) callback,
+  ) {
     _schemaBuilder.reset();
     _schemaBuilder.setTableName(tableName);
 
     Future<void> createFunction() async {
       callback(_schemaBuilder);
 
-      String sql =
-          _schemaBuilder.generateCreateTableSql(tableName, ifNotExists: true);
+      String sql = _schemaBuilder.generateCreateTableSql(
+        tableName,
+        ifNotExists: true,
+      );
       if (_adapter != null && _adapter.driverName == 'pgsql') {
         final postgresAdapter = _adapter as dynamic;
         if (postgresAdapter.executeStatements != null) {
-          await postgresAdapter.executeStatements(sql,
-              (String statement) async {
+          await postgresAdapter.executeStatements(sql, (
+            String statement,
+          ) async {
             try {
               await _connection.connection!.execute(statement);
             } on QueryException catch (e) {
@@ -103,15 +116,17 @@ abstract class Migration {
       try {
         await _connection.connection!.execute(sql);
       } on QueryException catch (e) {
-        stderr.writeln(
-          'Error executing statement: $sql\nError: ${e.cause}',
-        );
+        stderr.writeln('Error executing statement: $sql\nError: ${e.cause}');
         exit(0);
       }
     }
 
-    return TableDefinition(tableName, createFunction,
-        connection: _connection, adapter: _adapter);
+    return TableDefinition(
+      tableName,
+      createFunction,
+      connection: _connection,
+      adapter: _adapter,
+    );
   }
 
   TableDefinition alterColumn(
@@ -136,15 +151,17 @@ abstract class Migration {
         }
         await _connection.connection!.execute(sql);
       } on QueryException catch (e) {
-        stderr.writeln(
-          '${e.cause}',
-        );
+        stderr.writeln('${e.cause}');
         exit(0);
       }
     }
 
-    return TableDefinition(table, createFunction,
-        connection: _connection, adapter: _adapter);
+    return TableDefinition(
+      table,
+      createFunction,
+      connection: _connection,
+      adapter: _adapter,
+    );
   }
 
   Future<void> drop(String tableName) async {
@@ -166,9 +183,7 @@ abstract class Migration {
     try {
       await _connection.connection!.execute(sql);
     } on QueryException catch (e) {
-      stderr.writeln(
-        'Error executing statement: $sql\nError: ${e.cause}',
-      );
+      stderr.writeln('Error executing statement: $sql\nError: ${e.cause}');
       exit(0);
     }
   }
@@ -189,9 +204,7 @@ abstract class Migration {
     try {
       await _connection.connection!.execute(sql);
     } on QueryException catch (e) {
-      stderr.writeln(
-        'Error executing statement: $sql\nError: ${e.cause}',
-      );
+      stderr.writeln('Error executing statement: $sql\nError: ${e.cause}');
       exit(0);
     }
   }
@@ -204,9 +217,7 @@ abstract class Migration {
     try {
       await _connection.connection!.execute(sql);
     } on QueryException catch (e) {
-      stderr.writeln(
-        'Error executing statement: $sql\nError: ${e.cause}',
-      );
+      stderr.writeln('Error executing statement: $sql\nError: ${e.cause}');
       exit(0);
     }
   }

@@ -7,9 +7,12 @@ class UnsupportedCteFeatureException extends CteException {
 
   final DatabaseType databaseType;
 
-  UnsupportedCteFeatureException(this.feature, this.databaseType,
-      [String? cteName])
-      : super(
-            'Feature ${feature.name} is not supported in ${databaseType.name}',
-            cteName);
+  UnsupportedCteFeatureException(
+    this.feature,
+    this.databaseType, [
+    String? cteName,
+  ]) : super(
+         'Feature ${feature.name} is not supported in ${databaseType.name}',
+         cteName,
+       );
 }

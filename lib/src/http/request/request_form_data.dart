@@ -24,8 +24,10 @@ class RequestFormData {
 
     // split request stream into MimeMultipart parts
     final transformer = MimeMultipartTransformer(boundary);
-    final parts =
-        await request.cast<List<int>>().transform(transformer).toList();
+    final parts = await request
+        .cast<List<int>>()
+        .transform(transformer)
+        .toList();
 
     for (final part in parts) {
       final disposition = part.headers['content-disposition'];
@@ -44,10 +46,9 @@ class RequestFormData {
       final filename = params['filename'];
       if (filename == null || filename.isEmpty) {
         // text field
-        final raw = utf8.decode(await part.fold<List<int>>(
-          <int>[],
-          (buf, b) => buf..addAll(b),
-        ));
+        final raw = utf8.decode(
+          await part.fold<List<int>>(<int>[], (buf, b) => buf..addAll(b)),
+        );
         final value = int.tryParse(raw) ?? raw;
         if (name.endsWith('[]')) {
           final key = name.substring(0, name.length - 2);

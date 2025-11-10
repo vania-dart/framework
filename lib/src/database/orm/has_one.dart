@@ -13,12 +13,11 @@ class HasOne extends Relation {
     List<Map<String, dynamic>> models,
     List<Map<String, dynamic>> results,
     String relation,
-  ) =>
-      matchOneOrMany(
-        models,
-        results,
-        relation,
-        localKey,
-        foreignKey ?? '${related.runtimeType.toString().toLowerCase()}_id',
-      );
+  ) => matchOneOrMany(
+    models,
+    results,
+    relation,
+    localKey,
+    foreignKey ?? '${related.runtimeType.toString().toLowerCase()}_id',
+  );
 }

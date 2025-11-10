@@ -14,15 +14,7 @@ class RedisError {
 }
 
 /// Redis protocol type
-enum RespType {
-  STRING,
-  ARRAY,
-  INTEGER,
-  DOUBLE,
-  ERROR,
-  NULL,
-  UNKNOWN,
-}
+enum RespType { STRING, ARRAY, INTEGER, DOUBLE, ERROR, NULL, UNKNOWN }
 
 /// Redis protocol data
 class Resp {
@@ -47,7 +39,7 @@ class Resp {
     if (value is List) {
       final data = [
         '*${value.length}$_CRLF',
-        ...value.map((e) => _serializeValue(e, isBulkString: true))
+        ...value.map((e) => _serializeValue(e, isBulkString: true)),
       ].join('');
       return data;
     }
@@ -215,10 +207,7 @@ _DeserializeResult? _deserializeError(List<String> s, int startIndex) {
 
   return _DeserializeResult(
     startIndex + 1,
-    RedisError(
-      prefix: prefix,
-      message: message,
-    ),
+    RedisError(prefix: prefix, message: message),
   );
 }
 

@@ -34,12 +34,14 @@ void main() {
       expect(result, isA<double>());
     });
 
-    test('should return an integer when rounding integers with zero decimals',
-        () {
-      var result = 100.toFixed(0);
-      expect(result, equals(100));
-      expect(result, isA<int>());
-    });
+    test(
+      'should return an integer when rounding integers with zero decimals',
+      () {
+        var result = 100.toFixed(0);
+        expect(result, equals(100));
+        expect(result, isA<int>());
+      },
+    );
 
     test('should handle negative numbers correctly', () {
       expect((-123.456).toFixed(2), equals(-123.46));

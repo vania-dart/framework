@@ -109,8 +109,10 @@ class S3Storage implements StorageDriver {
 
     final bytes = await getAsBytes(file);
     if (bytes != null) {
-      return lookupMimeType(file,
-          headerBytes: bytes.sublist(0, min(4096, bytes.length)));
+      return lookupMimeType(
+        file,
+        headerBytes: bytes.sublist(0, min(4096, bytes.length)),
+      );
     }
     return null;
   }
@@ -191,8 +193,9 @@ class S3Storage implements StorageDriver {
       if (response.statusCode != 200) return null;
 
       final metadata = _CachedMetadata(
-        contentLength:
-            int.tryParse(response.headers.value('content-length') ?? ''),
+        contentLength: int.tryParse(
+          response.headers.value('content-length') ?? '',
+        ),
         contentType: response.headers.value('content-type'),
         lastModified: response.headers.value('last-modified'),
       );
@@ -215,11 +218,8 @@ class _CachedMetadata {
   final String? lastModified;
   final DateTime cacheTime;
 
-  _CachedMetadata({
-    this.contentLength,
-    this.contentType,
-    this.lastModified,
-  }) : cacheTime = DateTime.now();
+  _CachedMetadata({this.contentLength, this.contentType, this.lastModified})
+    : cacheTime = DateTime.now();
 
   bool get isExpired =>
       DateTime.now().difference(cacheTime) > S3Storage._metadataCacheDuration;

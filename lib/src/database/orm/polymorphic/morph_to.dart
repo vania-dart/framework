@@ -16,12 +16,6 @@ class MorphTo extends MorphRelation {
     List<Map<String, dynamic>> results,
     String relation,
   ) {
-    return matchMorphToOne(
-      models,
-      results,
-      relation,
-      morphKey,
-      localKey,
-    );
+    return matchMorphToOne(models, results, relation, morphKey, localKey);
   }
 }

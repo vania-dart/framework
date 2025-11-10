@@ -13,12 +13,11 @@ class BelongsTo extends Relation {
     List<Map<String, dynamic>> models,
     List<Map<String, dynamic>> results,
     String relation,
-  ) =>
-      matchOneOrMany(
-        models,
-        results,
-        relation,
-        foreignKey ?? '${related.runtimeType.toString()}_id',
-        localKey,
-      );
+  ) => matchOneOrMany(
+    models,
+    results,
+    relation,
+    foreignKey ?? '${related.runtimeType.toString()}_id',
+    localKey,
+  );
 }

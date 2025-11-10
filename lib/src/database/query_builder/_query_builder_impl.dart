@@ -60,8 +60,7 @@ class QueryBuilderImpl extends QueryBuilder
   Future<bool> transaction(
     Future<bool> Function() action, [
     String? conditionName,
-  ]) =>
-      ConnectionManager().transaction(action, conditionName);
+  ]) => ConnectionManager().transaction(action, conditionName);
 
   @override
   Stream<DatabaseAlert> alerts() => ConnectionManager().alerts;
@@ -198,9 +197,7 @@ class QueryBuilderImpl extends QueryBuilder
   }
 
   @override
-  QueryBuilder latest([
-    String column = 'created_at',
-  ]) {
+  QueryBuilder latest([String column = 'created_at']) {
     return orderByDesc(column);
   }
 
@@ -217,10 +214,7 @@ class QueryBuilderImpl extends QueryBuilder
   }
 
   @override
-  QueryBuilder orderBy(
-    String column, [
-    String direction = 'ASC',
-  ]) {
+  QueryBuilder orderBy(String column, [String direction = 'ASC']) {
     _orderBy.add("$column $direction");
     return this;
   }
@@ -236,10 +230,7 @@ class QueryBuilderImpl extends QueryBuilder
   }
 
   @override
-  QueryBuilder reorder([
-    String? column,
-    String? direction,
-  ]) {
+  QueryBuilder reorder([String? column, String? direction]) {
     _orderBy.clear();
     if (column != null) {
       _orderBy.add("$column ${direction ?? 'asc'}");

@@ -36,8 +36,11 @@ class FileCacheDriver implements CacheDriver {
   }
 
   @override
-  Future<void> put(String key, dynamic value,
-      {Duration duration = const Duration(hours: 1)}) async {
+  Future<void> put(
+    String key,
+    dynamic value, {
+    Duration duration = const Duration(hours: 1),
+  }) async {
     final file = _getCacheFile(key);
     await _ensureCacheDirectory();
 
@@ -57,10 +60,7 @@ class FileCacheDriver implements CacheDriver {
     final file = _getCacheFile(key);
     await _ensureCacheDirectory();
 
-    final cache = {
-      'value': value,
-      'expiration': null,
-    };
+    final cache = {'value': value, 'expiration': null};
 
     await file.writeAsString(jsonEncode(cache));
   }

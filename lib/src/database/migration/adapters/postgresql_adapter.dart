@@ -37,7 +37,9 @@ class PostgreSqlAdapter implements DatabaseAdapterInterface {
   }
 
   Future<void> executeStatements(
-      String query, Future<void> Function(List<String>) executor) async {
+    String query,
+    Future<void> Function(List<String>) executor,
+  ) async {
     List<String> statements = adaptQueryToStatements(query);
     await executor(statements);
   }
@@ -98,12 +100,16 @@ class PostgreSqlAdapter implements DatabaseAdapterInterface {
       final cols = parts[1];
       final typeKey = parts.length > 2 ? parts[2] : '';
 
-      final colList =
-          cols.split(',').map((c) => '"${c.trim()}"').toList().join(', ');
+      final colList = cols
+          .split(',')
+          .map((c) => '"${c.trim()}"')
+          .toList()
+          .join(', ');
 
       final prefix = typeKey.isNotEmpty ? '$typeKey ' : '';
 
-      final stmt = 'CREATE ${prefix}INDEX IF NOT EXISTS "$name" '
+      final stmt =
+          'CREATE ${prefix}INDEX IF NOT EXISTS "$name" '
           'ON "$_currentTableName" ($colList)';
       statements.add(stmt);
     }

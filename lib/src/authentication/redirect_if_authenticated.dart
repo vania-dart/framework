@@ -12,10 +12,7 @@ class RedirectIfAuthenticated extends Middleware {
   Future handle(Request req) async {
     bool loggedIn = await getSession<bool?>('logged_in') ?? false;
     if (loggedIn) {
-      throw RedirectException(
-        message: path,
-        responseType: ResponseType.html,
-      );
+      throw RedirectException(message: path, responseType: ResponseType.html);
     }
   }
 }

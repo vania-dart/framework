@@ -18,8 +18,10 @@ abstract class SeederFactory {
     return data;
   }
 
-  List<Map<String, dynamic>> makeMany(int count,
-      [Map<String, dynamic>? attributes]) {
+  List<Map<String, dynamic>> makeMany(
+    int count, [
+    Map<String, dynamic>? attributes,
+  ]) {
     return List.generate(count, (index) => make(attributes));
   }
 
@@ -27,8 +29,10 @@ abstract class SeederFactory {
     return make(attributes);
   }
 
-  List<Map<String, dynamic>> createMany(int count,
-      [Map<String, dynamic>? attributes]) {
+  List<Map<String, dynamic>> createMany(
+    int count, [
+    Map<String, dynamic>? attributes,
+  ]) {
     return makeMany(count, attributes);
   }
 
@@ -65,8 +69,12 @@ abstract class SeederFactory {
     if (includeNumbers) chars += numbers;
     if (includeSymbols) chars += symbols;
 
-    return String.fromCharCodes(Iterable.generate(
-        length, (_) => chars.codeUnitAt(_random.nextInt(chars.length))));
+    return String.fromCharCodes(
+      Iterable.generate(
+        length,
+        (_) => chars.codeUnitAt(_random.nextInt(chars.length)),
+      ),
+    );
   }
 
   String randomEmail() {
@@ -85,11 +93,13 @@ abstract class SeederFactory {
       'live.com',
       'msn.com',
       'fastmail.com',
-      'tutanota.com'
+      'tutanota.com',
     ];
-    final username =
-        randomString(8, includeNumbers: true, includeSymbols: false)
-            .toLowerCase();
+    final username = randomString(
+      8,
+      includeNumbers: true,
+      includeSymbols: false,
+    ).toLowerCase();
     final domain = randomElement(domains);
     return '$username@$domain';
   }
@@ -196,7 +206,7 @@ abstract class SeederFactory {
       'Carter',
       'Harper',
       'Sebastian',
-      'Evelyn'
+      'Evelyn',
     ];
     final lastNames = [
       'Smith',
@@ -324,7 +334,7 @@ abstract class SeederFactory {
       'Alexander',
       'Hamilton',
       'Graham',
-      'Reynolds'
+      'Reynolds',
     ];
 
     return '${randomElement(firstNames)} ${randomElement(lastNames)}';
@@ -419,14 +429,16 @@ abstract class SeederFactory {
       'anim',
       'id',
       'est',
-      'laborum'
+      'laborum',
     ];
 
     final result = <String>[];
     for (int i = 0; i < sentences; i++) {
       final sentenceLength = randomInt(5, 15);
-      final sentence =
-          List.generate(sentenceLength, (_) => randomElement(words));
+      final sentence = List.generate(
+        sentenceLength,
+        (_) => randomElement(words),
+      );
       sentence[0] = sentence[0][0].toUpperCase() + sentence[0].substring(1);
       result.add('${sentence.join(' ')}.');
     }
@@ -434,8 +446,11 @@ abstract class SeederFactory {
     return result.join(' ');
   }
 
-  double randomPrice(
-      [double min = 1.0, double max = 1000.0, int decimals = 2]) {
+  double randomPrice([
+    double min = 1.0,
+    double max = 1000.0,
+    int decimals = 2,
+  ]) {
     return double.parse(randomDouble(min, max).toStringAsFixed(decimals));
   }
 

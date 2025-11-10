@@ -46,12 +46,12 @@ class WebSocketHandler implements WebSocketEvent {
       routePath: routePath,
     );
 
-    websocket.add(jsonEncode({
-      'event': 'connected',
-      'payload': {
-        'session_id': sessionId,
-      },
-    }));
+    websocket.add(
+      jsonEncode({
+        'event': 'connected',
+        'payload': {'session_id': sessionId},
+      }),
+    );
 
     try {
       if (_middleware[_websocketRoute] != null) {
@@ -61,12 +61,12 @@ class WebSocketHandler implements WebSocketEvent {
         );
       }
     } on WebSocketException catch (e) {
-      websocket.add(jsonEncode({
-        'event': 'error',
-        'payload': {
-          'message': e.message,
-        },
-      }));
+      websocket.add(
+        jsonEncode({
+          'event': 'error',
+          'payload': {'message': e.message},
+        }),
+      );
       return;
     }
 
@@ -75,57 +75,61 @@ class WebSocketHandler implements WebSocketEvent {
       Function.apply(openFunction, <dynamic>[client]);
     }
 
-    websocket.listen((data) async {
-      Map<String, dynamic> payload = jsonDecode(data);
-      String event = '${routePath}_${payload[webScoketEventKey]}';
+    websocket.listen(
+      (data) async {
+        Map<String, dynamic> payload = jsonDecode(data);
+        String event = '${routePath}_${payload[webScoketEventKey]}';
 
-      /// client join the room
-      if (event == '${routePath}_$webSocketJoinRoomEventName') {
-        String? roomId = payload[webSocketRoomKey].toString();
-        if (roomId.isNotEmpty) {
-          _session.joinRoom(sessionId, '${routePath}_$roomId');
+        /// client join the room
+        if (event == '${routePath}_$webSocketJoinRoomEventName') {
+          String? roomId = payload[webSocketRoomKey].toString();
+          if (roomId.isNotEmpty) {
+            _session.joinRoom(sessionId, '${routePath}_$roomId');
+          }
+          return;
         }
-        return;
-      }
 
-      /// client left the room
-      if (event == webSocketLeftRoomEventName) {
-        String? roomId = payload[webSocketRoomKey].toString();
-        if (roomId.isNotEmpty) {
-          _session.leftRoom(sessionId, '${routePath}_$roomId');
+        /// client left the room
+        if (event == webSocketLeftRoomEventName) {
+          String? roomId = payload[webSocketRoomKey].toString();
+          if (roomId.isNotEmpty) {
+            _session.leftRoom(sessionId, '${routePath}_$roomId');
+          }
+          return;
         }
-        return;
-      }
 
-      /// websocket response
-      /// ```
-      /// event.on('event',function(WebSocketClient client,message){
-      ///   response
-      ///  });
-      /// ```
-      dynamic message = payload[webSocketMessageKey];
+        /// websocket response
+        /// ```
+        /// event.on('event',function(WebSocketClient client,message){
+        ///   response
+        ///  });
+        /// ```
+        dynamic message = payload[webSocketMessageKey];
 
-      Function? controller = _events[event];
+        Function? controller = _events[event];
 
-      if (controller == null) {
-        return;
-      }
-      Function.apply(controller, <dynamic>[client, message]);
-    }, onDone: () {
-      Function? openFunction = _events['${routePath}_disconnect'];
-      if (openFunction != null) {
-        Function.apply(openFunction, <dynamic>[client]);
-      }
+        if (controller == null) {
+          return;
+        }
+        Function.apply(controller, <dynamic>[client, message]);
+      },
+      onDone: () {
+        Function? openFunction = _events['${routePath}_disconnect'];
+        if (openFunction != null) {
+          Function.apply(openFunction, <dynamic>[client]);
+        }
 
-      _session.removeSession(sessionId);
-    }, onError: (_) {
-      Function? openFunction = _events['${routePath}_error'];
-      if (openFunction != null) {
-        Function.apply(openFunction, <dynamic>[client]);
-      }
+        _session.removeSession(sessionId);
+      },
+      onError: (_) {
+        Function? openFunction = _events['${routePath}_error'];
+        if (openFunction != null) {
+          Function.apply(openFunction, <dynamic>[client]);
+        }
 
-      _session.removeSession(sessionId);
-    });
+        _session.removeSession(sessionId);
+      },
+    );
   }
 
   ///  Listener

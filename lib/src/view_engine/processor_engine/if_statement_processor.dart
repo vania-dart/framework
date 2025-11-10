@@ -63,8 +63,9 @@ class IfStatementProcessor implements AbsProcessor {
         buffer.write(template.substring(startPos));
         break;
       }
-      final ifConditionExpr =
-          template.substring(startPos + 5, ifStartClose).trim();
+      final ifConditionExpr = template
+          .substring(startPos + 5, ifStartClose)
+          .trim();
       int blockStart = ifStartClose + 2;
       int searchPos = blockStart;
       int nested = 0;
@@ -121,8 +122,11 @@ class IfStatementProcessor implements AbsProcessor {
   ///
   /// - Returns: A string with the expanded content for the first true condition or the `else` block.
 
-  String _expandIfBlock(String ifConditionExpr, String ifBlockContent,
-      Map<String, dynamic> context) {
+  String _expandIfBlock(
+    String ifConditionExpr,
+    String ifBlockContent,
+    Map<String, dynamic> context,
+  ) {
     var cursor = 0;
     var currentCondition = ifConditionExpr;
     final segments = <_ConditionalSegment>[];
@@ -131,8 +135,9 @@ class IfStatementProcessor implements AbsProcessor {
     final elseRegex = RegExp(r'\{@\s*else\s*@\}');
 
     while (true) {
-      final matchElseIf =
-          elseIfRegex.firstMatch(ifBlockContent.substring(cursor));
+      final matchElseIf = elseIfRegex.firstMatch(
+        ifBlockContent.substring(cursor),
+      );
       final matchElse = elseRegex.firstMatch(ifBlockContent.substring(cursor));
 
       final elseIfPos = (matchElseIf == null) ? -1 : cursor + matchElseIf.start;
@@ -158,38 +163,46 @@ class IfStatementProcessor implements AbsProcessor {
 
       if (nextPos == -1) {
         final block = ifBlockContent.substring(cursor);
-        segments.add(_ConditionalSegment(
-          condition: currentCondition,
-          content: block,
-          isConditionSegment: true,
-        ));
+        segments.add(
+          _ConditionalSegment(
+            condition: currentCondition,
+            content: block,
+            isConditionSegment: true,
+          ),
+        );
         break;
       } else {
         final block = ifBlockContent.substring(cursor, nextPos);
-        segments.add(_ConditionalSegment(
-          condition: currentCondition,
-          content: block,
-          isConditionSegment: true,
-        ));
+        segments.add(
+          _ConditionalSegment(
+            condition: currentCondition,
+            content: block,
+            isConditionSegment: true,
+          ),
+        );
 
         if (isElseIf) {
-          final elseIfMatch =
-              elseIfRegex.firstMatch(ifBlockContent.substring(nextPos));
+          final elseIfMatch = elseIfRegex.firstMatch(
+            ifBlockContent.substring(nextPos),
+          );
           if (elseIfMatch == null) break;
           currentCondition = elseIfMatch.group(1)!.trim();
           cursor = nextPos + elseIfMatch.end;
         } else {
-          final elseMatch =
-              elseRegex.firstMatch(ifBlockContent.substring(nextPos));
+          final elseMatch = elseRegex.firstMatch(
+            ifBlockContent.substring(nextPos),
+          );
           if (elseMatch == null) break;
           final elseStart = nextPos + elseMatch.end;
           final elseContent = ifBlockContent.substring(elseStart);
 
-          segments.add(_ConditionalSegment(
-            condition: '',
-            content: elseContent,
-            isConditionSegment: false,
-          ));
+          segments.add(
+            _ConditionalSegment(
+              condition: '',
+              content: elseContent,
+              isConditionSegment: false,
+            ),
+          );
           break;
         }
       }

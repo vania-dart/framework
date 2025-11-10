@@ -45,7 +45,9 @@ class SessionFileStore {
       "expiration": expiration,
     };
     final String content = await VaniaEncryption.encryptString(
-        json.encode(sessionData), _secretKey);
+      json.encode(sessionData),
+      _secretKey,
+    );
 
     final raf = await file.open(mode: FileMode.write);
     try {
@@ -91,8 +93,10 @@ class SessionFileStore {
       await raf.close();
     }
 
-    final String decrypted =
-        await VaniaEncryption.decryptString(fileContent, _secretKey);
+    final String decrypted = await VaniaEncryption.decryptString(
+      fileContent,
+      _secretKey,
+    );
     if (decrypted.isEmpty) {
       return null;
     }
@@ -100,8 +104,8 @@ class SessionFileStore {
     int expiration = int.tryParse(data['expiration'].toString()) ?? 0;
 
     if (!DateTime.now().toUtc().isBefore(
-          DateTime.fromMillisecondsSinceEpoch(expiration),
-        )) {
+      DateTime.fromMillisecondsSinceEpoch(expiration),
+    )) {
       await file.delete();
       return null;
     }

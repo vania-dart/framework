@@ -13,9 +13,7 @@ abstract class QueryExecutorBuilder {
   ]);
   Future<int> count([String columns = '*']);
   Future<bool> doesntExist();
-  Future<void> each(
-    void Function(Map<String, dynamic>) callback,
-  );
+  Future<void> each(void Function(Map<String, dynamic>) callback);
   Future<bool> exists();
   Future<Map<String, dynamic>?> find(
     dynamic id, {
@@ -28,9 +26,7 @@ abstract class QueryExecutorBuilder {
     String byColumnName = 'id',
     List<String> columns = const ['*'],
   });
-  Future<Map<String, dynamic>?> first([
-    List<String> columns,
-  ]);
+  Future<Map<String, dynamic>?> first([List<String> columns]);
   Future<Map<String, dynamic>?> firstOrFail([
     List<String> columns = const ['*'],
   ]);
@@ -40,17 +36,13 @@ abstract class QueryExecutorBuilder {
     dynamic value,
     List<String> columns = const ['*'],
   ]);
-  Future<List<Map<String, dynamic>>> get([
-    List<String> columns,
-  ]);
+  Future<List<Map<String, dynamic>>> get([List<String> columns]);
 
   Stream<Iterable<Map<String, dynamic>>> lazy([
     int chunk = 1000,
     String column,
   ]);
-  Stream<Map<String, dynamic>> cursor([
-    int chunk = 1000,
-  ]);
+  Stream<Map<String, dynamic>> cursor([int chunk = 1000]);
   Future<dynamic> max(String column);
   Future<dynamic> min(String column);
   Future<Map<String, dynamic>> paginate({
@@ -59,10 +51,7 @@ abstract class QueryExecutorBuilder {
     String? pageName,
     int? page,
   });
-  Future<dynamic> pluck(
-    String column, [
-    String? key,
-  ]);
+  Future<dynamic> pluck(String column, [String? key]);
   Future<Map<String, dynamic>> simplePaginate([
     int perPage,
     List<String> columns,

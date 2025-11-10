@@ -28,10 +28,7 @@ class WebsocketSession {
   /// add new websocket session to the active sessions
   void addNewSession(String sessionId, WebSocket ws) {
     _activeSessions.addAll({
-      sessionId: SessionInfo(
-        sessionId: sessionId,
-        websocket: ws,
-      )
+      sessionId: SessionInfo(sessionId: sessionId, websocket: ws),
     });
   }
 

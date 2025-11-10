@@ -29,12 +29,14 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   }) async {
     if (sourceData.isEmpty) {
       throw InvalidArgumentException(
-          'Source data cannot be empty for merge operation');
+        'Source data cannot be empty for merge operation',
+      );
     }
 
     if (matchOn.isEmpty) {
       throw InvalidArgumentException(
-          'Match columns cannot be empty for merge operation');
+        'Match columns cannot be empty for merge operation',
+      );
     }
 
     try {
@@ -45,28 +47,33 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
       final valueGroups = <String>[];
 
       for (var row in sourceData) {
-        final placeholders = sourceColumns.map((column) {
-          final paramName = _nextParamName();
-          paramBindings[paramName] = row[column];
-          return ":$paramName";
-        }).join(", ");
+        final placeholders = sourceColumns
+            .map((column) {
+              final paramName = _nextParamName();
+              paramBindings[paramName] = row[column];
+              return ":$paramName";
+            })
+            .join(", ");
         valueGroups.add("($placeholders)");
       }
 
       final sourceClause =
           "(VALUES ${valueGroups.join(', ')}) AS source(${sourceColumns.join(', ')})";
 
-      final matchConditions =
-          matchOn.map((col) => "$getTable.$col = source.$col").join(' AND ');
+      final matchConditions = matchOn
+          .map((col) => "$getTable.$col = source.$col")
+          .join(' AND ');
 
       String mergeSQL =
           "MERGE INTO $getTable USING $sourceClause ON $matchConditions";
 
       if (whenMatched == ConflictAction.update) {
-        final columnsToUpdate = updateColumns ??
+        final columnsToUpdate =
+            updateColumns ??
             sourceColumns.where((col) => !matchOn.contains(col)).toList();
-        final updateSets =
-            columnsToUpdate.map((col) => "$col = source.$col").join(', ');
+        final updateSets = columnsToUpdate
+            .map((col) => "$col = source.$col")
+            .join(', ');
         mergeSQL += " WHEN MATCHED THEN UPDATE SET $updateSets";
       } else if (whenMatched == ConflictAction.delete) {
         mergeSQL += " WHEN MATCHED THEN DELETE";
@@ -74,8 +81,9 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
 
       if (whenNotMatched != ConflictAction.ignore) {
         final columnsToInsert = insertColumns ?? sourceColumns;
-        final insertValues =
-            columnsToInsert.map((col) => "source.$col").join(', ');
+        final insertValues = columnsToInsert
+            .map((col) => "source.$col")
+            .join(', ');
         mergeSQL +=
             " WHEN NOT MATCHED THEN INSERT (${columnsToInsert.join(', ')}) VALUES ($insertValues)";
       }
@@ -102,7 +110,8 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   }) async {
     if (data.isEmpty) {
       throw InvalidArgumentException(
-          'Data cannot be empty for bulk insert operation');
+        'Data cannot be empty for bulk insert operation',
+      );
     }
 
     try {
@@ -115,11 +124,13 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
         final valueGroups = <String>[];
 
         for (var row in batch) {
-          final placeholders = columns.map((column) {
-            final paramName = _nextParamName();
-            paramBindings[paramName] = row[column];
-            return ":$paramName";
-          }).join(", ");
+          final placeholders = columns
+              .map((column) {
+                final paramName = _nextParamName();
+                paramBindings[paramName] = row[column];
+                return ":$paramName";
+              })
+              .join(", ");
           valueGroups.add("($placeholders)");
         }
 
@@ -131,10 +142,12 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
               "INSERT IGNORE INTO $getTable (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}";
         } else if (conflictAction == ConflictAction.update &&
             conflictColumns != null) {
-          final updateCols = updateColumns ??
+          final updateCols =
+              updateColumns ??
               columns.where((col) => !conflictColumns.contains(col)).toList();
-          final updateSets =
-              updateCols.map((col) => "$col = VALUES($col)").join(', ');
+          final updateSets = updateCols
+              .map((col) => "$col = VALUES($col)")
+              .join(', ');
           sql += " ON DUPLICATE KEY UPDATE $updateSets";
         } else if (conflictAction == ConflictAction.replace) {
           sql =
@@ -160,7 +173,8 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   }) async {
     if (updates.isEmpty) {
       throw InvalidArgumentException(
-          'Updates cannot be empty for bulk update operation');
+        'Updates cannot be empty for bulk update operation',
+      );
     }
 
     try {
@@ -169,7 +183,8 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
       for (int i = 0; i < updates.length; i += batchSize) {
         final batch = updates.skip(i).take(batchSize).toList();
 
-        final columns = updateColumns ??
+        final columns =
+            updateColumns ??
             batch.first.keys.where((key) => key != matchColumn).toList();
         final paramBindings = <String, dynamic>{};
 
@@ -188,8 +203,9 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
           for (var column in columns) {
             final valueParamName = _nextParamName();
             paramBindings[valueParamName] = row[column];
-            caseClauses[column]!
-                .add("WHEN :$matchParamName THEN :$valueParamName");
+            caseClauses[column]!.add(
+              "WHEN :$matchParamName THEN :$valueParamName",
+            );
           }
         }
 
@@ -227,7 +243,8 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   }) async {
     if (column == null || values == null || values.isEmpty) {
       throw InvalidArgumentException(
-          'Column and values must be provided for bulk delete operation');
+        'Column and values must be provided for bulk delete operation',
+      );
     }
 
     try {
@@ -237,11 +254,13 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
         final batch = values.skip(i).take(batchSize).toList();
         final paramBindings = <String, dynamic>{};
 
-        final placeholders = batch.map((value) {
-          final paramName = _nextParamName();
-          paramBindings[paramName] = value;
-          return ":$paramName";
-        }).join(', ');
+        final placeholders = batch
+            .map((value) {
+              final paramName = _nextParamName();
+              paramBindings[paramName] = value;
+              return ":$paramName";
+            })
+            .join(', ');
 
         final sql = "DELETE FROM $getTable WHERE $column IN ($placeholders)";
 
@@ -261,7 +280,8 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   }) async {
     if (conditions.isEmpty) {
       throw InvalidArgumentException(
-          'Conditions cannot be empty for bulk delete operation');
+        'Conditions cannot be empty for bulk delete operation',
+      );
     }
 
     try {
@@ -299,8 +319,10 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   Future<void> batchProcess({
     required int batchSize,
     required Future<void> Function(
-            List<Map<String, dynamic>> batch, int batchNumber)
-        processor,
+      List<Map<String, dynamic>> batch,
+      int batchNumber,
+    )
+    processor,
     List<String> columns = const ['*'],
   }) async {
     int batchNumber = 1;
@@ -330,8 +352,9 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   Future<void> chunkedProcess({
     required int chunkSize,
     required Future<List<Map<String, dynamic>>> Function(
-            List<Map<String, dynamic>> chunk)
-        processor,
+      List<Map<String, dynamic>> chunk,
+    )
+    processor,
     String? destination,
     List<String> columns = const ['*'],
   }) async {
@@ -371,7 +394,8 @@ abstract mixin class BulkOperationsBuilderImpl implements QueryBuilder {
   }) async {
     if (data.isEmpty) {
       throw InvalidArgumentException(
-          'Data cannot be empty for parallel bulk insert operation');
+        'Data cannot be empty for parallel bulk insert operation',
+      );
     }
 
     try {

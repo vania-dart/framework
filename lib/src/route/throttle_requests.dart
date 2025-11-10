@@ -3,10 +3,7 @@ class ThrottleRequests {
   final Duration duration;
   final Map<String, _ThrottleData> _requests = {};
 
-  ThrottleRequests({
-    required this.maxAttempts,
-    required this.duration,
-  });
+  ThrottleRequests({required this.maxAttempts, required this.duration});
 
   bool request(String identifier) {
     _cleanup();
@@ -60,7 +57,8 @@ class ThrottleRequests {
   void _cleanup() {
     final now = DateTime.now();
     _requests.removeWhere(
-        (_, data) => now.difference(data.firstAttempt) >= duration);
+      (_, data) => now.difference(data.firstAttempt) >= duration,
+    );
   }
 }
 
@@ -68,8 +66,5 @@ class _ThrottleData {
   DateTime firstAttempt;
   int attempts;
 
-  _ThrottleData({
-    required this.firstAttempt,
-    required this.attempts,
-  });
+  _ThrottleData({required this.firstAttempt, required this.attempts});
 }

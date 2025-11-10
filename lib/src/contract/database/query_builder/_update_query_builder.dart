@@ -15,14 +15,9 @@ abstract interface class UpdateQueryBuilder {
     Map<String, int> increments, [
     Map<String, dynamic> extra = const {},
   ]);
-  Future<bool> update(
-    Map<String, dynamic> values,
-  );
+  Future<bool> update(Map<String, dynamic> values);
 
-  Future<bool> updateMany(
-    List<Map<String, dynamic>> updates,
-    String column,
-  );
+  Future<bool> updateMany(List<Map<String, dynamic>> updates, String column);
 
   Future<bool> updateOrInsert(
     Map<String, dynamic> search,

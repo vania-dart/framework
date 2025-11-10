@@ -24,16 +24,19 @@ class Localization {
     Directory languagePath = Directory(env('APP_LANG_PATH', 'lib/lang'));
 
     if (languagePath.existsSync()) {
-      for (var entity
-          in languagePath.listSync(recursive: true, followLinks: false)) {
+      for (var entity in languagePath.listSync(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (entity is Directory) {
           final segments = entity.uri.pathSegments.where((s) => s.isNotEmpty);
           final subdirName = segments.last.toLowerCase();
           final fileMap = <String, dynamic>{};
-          for (var file in entity
-              .listSync(recursive: false)
-              .whereType<File>()
-              .where((f) => f.path.toLowerCase().endsWith('.json'))) {
+          for (var file
+              in entity
+                  .listSync(recursive: false)
+                  .whereType<File>()
+                  .where((f) => f.path.toLowerCase().endsWith('.json'))) {
             try {
               final content = file.readAsStringSync();
               final decoded = json.decode(content);

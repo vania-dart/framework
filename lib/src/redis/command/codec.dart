@@ -17,10 +17,7 @@ class RedisCodec<T> {
   final RedisEncoder<T> encoder;
   final RedisDecoder<T> decoder;
 
-  RedisCodec({
-    required this.encoder,
-    required this.decoder,
-  });
+  RedisCodec({required this.encoder, required this.decoder});
 }
 
 /// builtin String to String encoder

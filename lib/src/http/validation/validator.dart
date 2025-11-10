@@ -77,8 +77,11 @@ class Validator {
       String rule = entry.value;
 
       if (_isNestedValidation(field)) {
-        NestedValidation v =
-            NestedValidation(data: data, field: field, rule: rule);
+        NestedValidation v = NestedValidation(
+          data: data,
+          field: field,
+          rule: rule,
+        );
         for (ValidationItem item in v.fieldsToValidate) {
           await _validateItem(item);
         }
@@ -102,8 +105,12 @@ class Validator {
 
     List<String> rulesForEachName = item.rule.split('|');
     for (String rule in rulesForEachName) {
-      String? error =
-          await _applyMatchingRule(item.field, item.name, item.value, rule);
+      String? error = await _applyMatchingRule(
+        item.field,
+        item.name,
+        item.value,
+        rule,
+      );
       if (error != null) {
         _errors[item.field] = error;
         break;
@@ -126,8 +133,11 @@ class Validator {
       return null;
     }
 
-    var result =
-        Function.apply(match['function'], <dynamic>[data, value, args]);
+    var result = Function.apply(match['function'], <dynamic>[
+      data,
+      value,
+      args,
+    ]);
 
     if (result is Future<bool>) {
       result = await result;
@@ -152,145 +162,145 @@ class Validator {
 
   final Map<String, Map<String, dynamic>> _matchingRules =
       <String, Map<String, dynamic>>{
-    'required': <String, dynamic>{
-      'message': 'The {field} is required',
-      'function': Rules.isRequired,
-    },
-    'email': <String, dynamic>{
-      'message': 'The {field} is not a valid email',
-      'function': Rules.isEmail,
-    },
-    'string': <String, dynamic>{
-      'message': 'The {field} must be a string',
-      'function': Rules.isString,
-    },
-    'numeric': <String, dynamic>{
-      'message': 'The {field} must be a number',
-      'function': Rules.isNumeric,
-    },
-    'ip': <String, dynamic>{
-      'message': 'The {field} must be an ip address',
-      'function': Rules.isIp,
-    },
-    'boolean': <String, dynamic>{
-      'message': 'The {field} must be a boolean',
-      'function': Rules.isBoolean,
-    },
-    'integer': <String, dynamic>{
-      'message': 'The {field} must be an integer',
-      'function': Rules.isInteger,
-    },
-    'double': <String, dynamic>{
-      'message': 'The {field} must be a double',
-      'function': Rules.isDouble,
-    },
-    'array': <String, dynamic>{
-      'message': 'The {field} must be an array',
-      'function': Rules.isArray,
-    },
-    'json': <String, dynamic>{
-      'message': 'The {field} is not a valid json',
-      'function': Rules.isJson,
-    },
-    'alpha': <String, dynamic>{
-      'message': 'The {field} must be an alphabetic',
-      'function': Rules.isAlpha,
-    },
-    'alpha_dash': <String, dynamic>{
-      'message': 'The {field} must be only alphabetic and dash',
-      'function': Rules.isAlphaDash,
-    },
-    'alpha_numeric': <String, dynamic>{
-      'message': 'The {field} must be only alphabetic and number',
-      'function': Rules.isAlphaNumeric,
-    },
-    'date': <String, dynamic>{
-      'message': 'The {field} must be a date',
-      'function': Rules.isDate,
-    },
-    'url': <String, dynamic>{
-      'message': 'The {field} must be a url',
-      'function': Rules.isUrl,
-    },
-    'uuid': <String, dynamic>{
-      'message': 'The {field} is invalid uuid',
-      'function': Rules.isUUID,
-    },
-    'min_length': <String, dynamic>{
-      'message': 'The {field} must be at least %s character',
-      'function': Rules.minLength,
-    },
-    'max_length': <String, dynamic>{
-      'message': 'The {field} may not be greater than %s character',
-      'function': Rules.maxLength,
-    },
-    'length_between': <String, dynamic>{
-      'message': 'The {field} must be between %s and %s character',
-      'function': Rules.lengthBetween,
-    },
-    'between': <String, dynamic>{
-      'message': 'The {field} must be between %s and %s',
-      'function': Rules.between,
-    },
-    'in': <String, dynamic>{
-      'message': 'The selected {field} is invalid. Valid options are %s',
-      'function': Rules.inArray,
-    },
-    'not_in': <String, dynamic>{
-      'message': 'The {field} field cannot be {value}',
-      'function': Rules.notInArray,
-    },
-    'start_with': <String, dynamic>{
-      'message': 'The {field} must start with %s',
-      'function': Rules.startWith,
-    },
-    'end_with': <String, dynamic>{
-      'message': 'The {field} must end with %s',
-      'function': Rules.endWith,
-    },
-    'greater_than': <String, dynamic>{
-      'message': 'The {field} must be greater than %s',
-      'function': Rules.greaterThan,
-    },
-    'less_than': <String, dynamic>{
-      'message': 'The {field} must be less than %s',
-      'function': Rules.lessThan,
-    },
-    'min': <String, dynamic>{
-      'message': 'The {field} must be greater than or equal %s',
-      'function': Rules.min,
-    },
-    'max': <String, dynamic>{
-      'message': 'The {field} must be less than or equal %s',
-      'function': Rules.max,
-    },
-    'confirmed': <String, dynamic>{
-      'message': 'The two password did not match',
-      'function': Rules.confirmed,
-    },
-    'required_if': <String, dynamic>{
-      'message': 'The {field} is required',
-      'function': Rules.requiredIf,
-    },
-    'required_if_not': <String, dynamic>{
-      'message': 'The {field} is required',
-      'function': Rules.requiredIfNot,
-    },
-    'image': <String, dynamic>{
-      'message': 'The {field} is either invalid or unsupported extension',
-      'function': Rules.isImage,
-    },
-    'file': <String, dynamic>{
-      'message': 'The {field} is either invalid or unsupported extension',
-      'function': Rules.isFile,
-    },
-    'reg_exp': <String, dynamic>{
-      'message': 'The {field} is either invalid or unsupported extension',
-      'function': Rules.regExp,
-    },
-    'unique': <String, dynamic>{
-      'message': 'This {field} is exist',
-      'function': Rules.unique,
-    },
-  };
+        'required': <String, dynamic>{
+          'message': 'The {field} is required',
+          'function': Rules.isRequired,
+        },
+        'email': <String, dynamic>{
+          'message': 'The {field} is not a valid email',
+          'function': Rules.isEmail,
+        },
+        'string': <String, dynamic>{
+          'message': 'The {field} must be a string',
+          'function': Rules.isString,
+        },
+        'numeric': <String, dynamic>{
+          'message': 'The {field} must be a number',
+          'function': Rules.isNumeric,
+        },
+        'ip': <String, dynamic>{
+          'message': 'The {field} must be an ip address',
+          'function': Rules.isIp,
+        },
+        'boolean': <String, dynamic>{
+          'message': 'The {field} must be a boolean',
+          'function': Rules.isBoolean,
+        },
+        'integer': <String, dynamic>{
+          'message': 'The {field} must be an integer',
+          'function': Rules.isInteger,
+        },
+        'double': <String, dynamic>{
+          'message': 'The {field} must be a double',
+          'function': Rules.isDouble,
+        },
+        'array': <String, dynamic>{
+          'message': 'The {field} must be an array',
+          'function': Rules.isArray,
+        },
+        'json': <String, dynamic>{
+          'message': 'The {field} is not a valid json',
+          'function': Rules.isJson,
+        },
+        'alpha': <String, dynamic>{
+          'message': 'The {field} must be an alphabetic',
+          'function': Rules.isAlpha,
+        },
+        'alpha_dash': <String, dynamic>{
+          'message': 'The {field} must be only alphabetic and dash',
+          'function': Rules.isAlphaDash,
+        },
+        'alpha_numeric': <String, dynamic>{
+          'message': 'The {field} must be only alphabetic and number',
+          'function': Rules.isAlphaNumeric,
+        },
+        'date': <String, dynamic>{
+          'message': 'The {field} must be a date',
+          'function': Rules.isDate,
+        },
+        'url': <String, dynamic>{
+          'message': 'The {field} must be a url',
+          'function': Rules.isUrl,
+        },
+        'uuid': <String, dynamic>{
+          'message': 'The {field} is invalid uuid',
+          'function': Rules.isUUID,
+        },
+        'min_length': <String, dynamic>{
+          'message': 'The {field} must be at least %s character',
+          'function': Rules.minLength,
+        },
+        'max_length': <String, dynamic>{
+          'message': 'The {field} may not be greater than %s character',
+          'function': Rules.maxLength,
+        },
+        'length_between': <String, dynamic>{
+          'message': 'The {field} must be between %s and %s character',
+          'function': Rules.lengthBetween,
+        },
+        'between': <String, dynamic>{
+          'message': 'The {field} must be between %s and %s',
+          'function': Rules.between,
+        },
+        'in': <String, dynamic>{
+          'message': 'The selected {field} is invalid. Valid options are %s',
+          'function': Rules.inArray,
+        },
+        'not_in': <String, dynamic>{
+          'message': 'The {field} field cannot be {value}',
+          'function': Rules.notInArray,
+        },
+        'start_with': <String, dynamic>{
+          'message': 'The {field} must start with %s',
+          'function': Rules.startWith,
+        },
+        'end_with': <String, dynamic>{
+          'message': 'The {field} must end with %s',
+          'function': Rules.endWith,
+        },
+        'greater_than': <String, dynamic>{
+          'message': 'The {field} must be greater than %s',
+          'function': Rules.greaterThan,
+        },
+        'less_than': <String, dynamic>{
+          'message': 'The {field} must be less than %s',
+          'function': Rules.lessThan,
+        },
+        'min': <String, dynamic>{
+          'message': 'The {field} must be greater than or equal %s',
+          'function': Rules.min,
+        },
+        'max': <String, dynamic>{
+          'message': 'The {field} must be less than or equal %s',
+          'function': Rules.max,
+        },
+        'confirmed': <String, dynamic>{
+          'message': 'The two password did not match',
+          'function': Rules.confirmed,
+        },
+        'required_if': <String, dynamic>{
+          'message': 'The {field} is required',
+          'function': Rules.requiredIf,
+        },
+        'required_if_not': <String, dynamic>{
+          'message': 'The {field} is required',
+          'function': Rules.requiredIfNot,
+        },
+        'image': <String, dynamic>{
+          'message': 'The {field} is either invalid or unsupported extension',
+          'function': Rules.isImage,
+        },
+        'file': <String, dynamic>{
+          'message': 'The {field} is either invalid or unsupported extension',
+          'function': Rules.isFile,
+        },
+        'reg_exp': <String, dynamic>{
+          'message': 'The {field} is either invalid or unsupported extension',
+          'function': Rules.regExp,
+        },
+        'unique': <String, dynamic>{
+          'message': 'This {field} is exist',
+          'function': Rules.unique,
+        },
+      };
 }

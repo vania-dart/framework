@@ -40,10 +40,7 @@ class WebSocketClientImpl implements WebSocketClient {
   void emit(String event, dynamic payload) {
     SessionInfo? info = session.getWebSocketInfo(id);
     if (info != null) {
-      info.websocket.add(jsonEncode({
-        'event': event,
-        'payload': payload,
-      }));
+      info.websocket.add(jsonEncode({'event': event, 'payload': payload}));
     }
   }
 
@@ -59,10 +56,7 @@ class WebSocketClientImpl implements WebSocketClient {
     for (String member in members) {
       SessionInfo? info = session.getWebSocketInfo(member);
       if (info != null) {
-        info.websocket.add(jsonEncode({
-          'event': event,
-          'payload': payload,
-        }));
+        info.websocket.add(jsonEncode({'event': event, 'payload': payload}));
       }
     }
   }
@@ -75,10 +69,7 @@ class WebSocketClientImpl implements WebSocketClient {
   void to(String clientId, String event, dynamic payload) {
     SessionInfo? info = session.getWebSocketInfo(clientId);
     if (info != null) {
-      info.websocket.add(jsonEncode({
-        'event': event,
-        'payload': payload,
-      }));
+      info.websocket.add(jsonEncode({'event': event, 'payload': payload}));
     }
   }
 
@@ -92,10 +83,7 @@ class WebSocketClientImpl implements WebSocketClient {
     sessions.removeWhere((item) => item.sessionId == id);
     sessions.shuffle();
     for (SessionInfo session in sessions) {
-      session.websocket.add(jsonEncode({
-        'event': event,
-        'payload': payload,
-      }));
+      session.websocket.add(jsonEncode({'event': event, 'payload': payload}));
     }
   }
 

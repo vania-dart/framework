@@ -1,6 +1,4 @@
 class QueryException implements Exception {
   final String? cause;
-  QueryException([
-    this.cause,
-  ]);
+  QueryException([this.cause]);
 }
