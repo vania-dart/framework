@@ -158,17 +158,22 @@ class Auth {
 
     if (!customToken) {
       Map<String, dynamic> payload = HasApiTokens().verify(
-          token.replaceFirst('Bearer ', ''), _userGuard, 'refresh_token');
+        token.replaceFirst('Bearer ', ''),
+        _userGuard,
+        'refresh_token',
+      );
 
-      Model? authenticatable =
-          Config().get('auth')['guards'][_userGuard]['provider'];
+      Model? authenticatable = Config().get(
+        'auth',
+      )['guards'][_userGuard]['provider'];
 
       if (authenticatable == null) {
         throw InvalidArgumentException('Authenticatable class not found');
       }
 
-      Map? user =
-          await authenticatable.query.where('id', '=', payload['id']).first();
+      Map? user = await authenticatable.query
+          .where('id', '=', payload['id'])
+          .first();
 
       if (user == null) {
         throw Unauthenticated(message: 'Invalid token');
@@ -193,10 +198,9 @@ class Auth {
   ///
   /// Returns true if the operation was successful.
   Future<bool> deleteTokens(dynamic userId) async {
-    await PersonalAccessToken()
-        .query
-        .where('tokenable_id', '=', userId)
-        .update({'deleted_at': DateTime.now()});
+    await PersonalAccessToken().query.where('tokenable_id', '=', userId).update(
+      {'deleted_at': DateTime.now()},
+    );
 
     return true;
   }
@@ -210,8 +214,7 @@ class Auth {
   /// Returns a Future that resolves to true if the operation was successful.
   ///
   Future<bool> deleteCurrentToken(String token) async {
-    await PersonalAccessToken()
-        .query
+    await PersonalAccessToken().query
         .where('token', '=', md5.convert(utf8.encode(token)))
         .update({'deleted_at': DateTime.now()});
     return true;
@@ -239,16 +242,18 @@ class Auth {
     Map<String, dynamic>? user,
     bool isCustomToken = false,
   }) async {
-    Map<String, dynamic> payload = HasApiTokens()
-        .verify(token.replaceFirst('Bearer ', ''), _userGuard, 'access_token');
+    Map<String, dynamic> payload = HasApiTokens().verify(
+      token.replaceFirst('Bearer ', ''),
+      _userGuard,
+      'access_token',
+    );
 
     if (isCustomToken) {
       _user[_userGuard] = payload;
       _loggedIn = true;
       return true;
     } else {
-      Map<String, dynamic>? exists = await PersonalAccessToken()
-          .query
+      Map<String, dynamic>? exists = await PersonalAccessToken().query
           .where('token', '=', md5.convert(utf8.encode(token)))
           .whereNull('deleted_at')
           .first(['id']);
@@ -257,20 +262,21 @@ class Auth {
         throw Unauthenticated(message: 'Invalid token');
       }
 
-      await PersonalAccessToken()
-          .query
+      await PersonalAccessToken().query
           .where('token', '=', md5.convert(utf8.encode(token)))
           .update({'last_used_at': DateTime.now()});
 
       if (user == null) {
-        Model? authenticatable =
-            Config().get('auth')['guards'][_userGuard]['provider'];
+        Model? authenticatable = Config().get(
+          'auth',
+        )['guards'][_userGuard]['provider'];
 
         if (authenticatable == null) {
           throw InvalidArgumentException('Authenticatable class not found');
         }
-        user =
-            await authenticatable.query.where('id', '=', payload['id']).first();
+        user = await authenticatable.query
+            .where('id', '=', payload['id'])
+            .first();
       }
 
       if (user != null) {

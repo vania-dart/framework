@@ -5,8 +5,5 @@ class Content {
   /// The Blade view that should be rendered for the mailable.
   final String? html;
 
-  const Content({
-    this.text,
-    this.html,
-  });
+  const Content({this.text, this.html});
 }

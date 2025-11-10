@@ -6,15 +6,7 @@ import 'package:vania/src/http/response/stream_file.dart';
 import 'package:vania/src/route/route_history.dart';
 import 'package:vania/src/view_engine/template_engine.dart';
 
-enum ResponseType {
-  json,
-  none,
-  redirect,
-  html,
-  sse,
-  streamFile,
-  download,
-}
+enum ResponseType { json, none, redirect, html, sse, streamFile, download }
 
 class Response {
   @protected
@@ -118,14 +110,12 @@ class Response {
   }
 
   static Response redirect(String location) => Response(
-      responseType: ResponseType.redirect,
-      data: location,
-      httpStatusCode: HttpStatus.found);
+    responseType: ResponseType.redirect,
+    data: location,
+    httpStatusCode: HttpStatus.found,
+  );
 
-  static Response json(
-    dynamic jsonData, [
-    int statusCode = HttpStatus.ok,
-  ]) =>
+  static Response json(dynamic jsonData, [int statusCode = HttpStatus.ok]) =>
       Response(
         data: jsonData,
         responseType: ResponseType.json,
@@ -136,63 +126,52 @@ class Response {
     dynamic jsonData, {
     int statusCode = HttpStatus.ok,
     Map<String, String> headers = const {},
-  }) =>
-      Response(
-        data: jsonData,
-        responseType: ResponseType.json,
-        httpStatusCode: statusCode,
-        headers: headers,
-      );
+  }) => Response(
+    data: jsonData,
+    responseType: ResponseType.json,
+    httpStatusCode: statusCode,
+    headers: headers,
+  );
 
   static Response html(
     dynamic htmlData, {
     Map<String, String> headers = const {},
-  }) =>
-      Response(
-        data: htmlData,
-        responseType: ResponseType.html,
-        headers: headers,
-      );
+  }) => Response(
+    data: htmlData,
+    responseType: ResponseType.html,
+    headers: headers,
+  );
 
   static Response file(
     String fileName,
     Uint8List bytes, {
     Map<String, String> headers = const {},
-  }) =>
-      Response(
-        data: {
-          "fileName": fileName,
-          "bytes": bytes,
-        },
-        responseType: ResponseType.streamFile,
-        headers: headers,
-      );
+  }) => Response(
+    data: {"fileName": fileName, "bytes": bytes},
+    responseType: ResponseType.streamFile,
+    headers: headers,
+  );
 
   static Response sse(
     Stream<dynamic> eventStream, {
     int statusCode = HttpStatus.ok,
     Map<String, String> headers = const {},
-  }) =>
-      Response(
-        data: eventStream,
-        responseType: ResponseType.sse,
-        httpStatusCode: statusCode,
-        headers: headers,
-      );
+  }) => Response(
+    data: eventStream,
+    responseType: ResponseType.sse,
+    httpStatusCode: statusCode,
+    headers: headers,
+  );
 
   static Response download(
     String fileName,
     Uint8List bytes, {
     Map<String, String> headers = const {},
-  }) =>
-      Response(
-        data: {
-          "fileName": fileName,
-          "bytes": bytes,
-        },
-        responseType: ResponseType.download,
-        headers: headers,
-      );
+  }) => Response(
+    data: {"fileName": fileName, "bytes": bytes},
+    responseType: ResponseType.download,
+    headers: headers,
+  );
 
   static Response back([String? key, String? message]) {
     String previousRoute = RouteHistory().previousRoute;

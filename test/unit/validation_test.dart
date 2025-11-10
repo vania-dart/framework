@@ -32,20 +32,16 @@ void main() {
     });
 
     test('Validation password confirmed', () {
-      Validator validator = Validator(data: {
-        'password': '12345678',
-        'password_confirmation': '112233445566',
-      });
+      Validator validator = Validator(
+        data: {'password': '12345678', 'password_confirmation': '112233445566'},
+      );
       validator.validate(<String, String>{'password': 'confirmed'}).then((_) {
         expect(validator.errors['password'], 'The two password did not match');
       });
     });
 
     test('Validation required if', () {
-      Validator validator = Validator(data: {
-        'username': '',
-        'type': 'login',
-      });
+      Validator validator = Validator(data: {'username': '', 'type': 'login'});
       validator.validate({'username': 'required_if:type,login'}).then((_) {
         expect(validator.errors['username'], 'The username is required');
       });

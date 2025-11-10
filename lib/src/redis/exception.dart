@@ -12,5 +12,5 @@ class RedisException implements Exception {
 /// Convert error exception class
 class RedisConvertException extends RedisException {
   const RedisConvertException(String message)
-      : super('convert error: $message');
+    : super('convert error: $message');
 }

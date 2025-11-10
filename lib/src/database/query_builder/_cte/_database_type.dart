@@ -1,5 +1,1 @@
-enum DatabaseType {
-  postgresql,
-  mysql,
-  sqlite,
-}
+enum DatabaseType { postgresql, mysql, sqlite }

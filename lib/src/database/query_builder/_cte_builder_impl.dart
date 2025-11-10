@@ -37,15 +37,20 @@ abstract mixin class CteBuilderImpl implements QueryBuilder {
   CteConfiguration get cteConfiguration => _config;
 
   @override
-  QueryBuilder withCte(String name, QueryBuilder subQuery,
-      {List<String>? columns}) {
+  QueryBuilder withCte(
+    String name,
+    QueryBuilder subQuery, {
+    List<String>? columns,
+  }) {
     _validateAndAddCte(name, subQuery, columns: columns);
     return this;
   }
 
   @override
-  QueryBuilder withMultiple(Map<String, QueryBuilder> ctes,
-      {Map<String, List<String>>? columnsMap}) {
+  QueryBuilder withMultiple(
+    Map<String, QueryBuilder> ctes, {
+    Map<String, List<String>>? columnsMap,
+  }) {
     if (ctes.isEmpty) {
       throw InvalidArgumentException('CTEs map cannot be empty');
     }
@@ -74,7 +79,10 @@ abstract mixin class CteBuilderImpl implements QueryBuilder {
   }) {
     if (!_config.supportsFeature(CteFeature.recursive)) {
       throw UnsupportedCteFeatureException(
-          CteFeature.recursive, _config.databaseType, name);
+        CteFeature.recursive,
+        _config.databaseType,
+        name,
+      );
     }
 
     _validateAndAddCte(
@@ -88,11 +96,17 @@ abstract mixin class CteBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder withMaterialized(String name, QueryBuilder subQuery,
-      {List<String>? columns}) {
+  QueryBuilder withMaterialized(
+    String name,
+    QueryBuilder subQuery, {
+    List<String>? columns,
+  }) {
     if (!_config.supportsFeature(CteFeature.materialized)) {
       throw UnsupportedCteFeatureException(
-          CteFeature.materialized, _config.databaseType, name);
+        CteFeature.materialized,
+        _config.databaseType,
+        name,
+      );
     }
 
     _validateAndAddCte(name, subQuery, isMaterialized: true, columns: columns);
@@ -100,15 +114,25 @@ abstract mixin class CteBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder withNotMaterialized(String name, QueryBuilder subQuery,
-      {List<String>? columns}) {
+  QueryBuilder withNotMaterialized(
+    String name,
+    QueryBuilder subQuery, {
+    List<String>? columns,
+  }) {
     if (!_config.supportsFeature(CteFeature.notMaterialized)) {
       throw UnsupportedCteFeatureException(
-          CteFeature.notMaterialized, _config.databaseType, name);
+        CteFeature.notMaterialized,
+        _config.databaseType,
+        name,
+      );
     }
 
-    _validateAndAddCte(name, subQuery,
-        isNotMaterialized: true, columns: columns);
+    _validateAndAddCte(
+      name,
+      subQuery,
+      isNotMaterialized: true,
+      columns: columns,
+    );
     return this;
   }
 
@@ -174,7 +198,8 @@ abstract mixin class CteBuilderImpl implements QueryBuilder {
     int recursiveCount = _ctes.where((cte) => cte.isRecursive).length;
     if (recursiveCount > _config.maxCteDepth) {
       throw InvalidCteConfigurationException(
-          'Too many recursive CTEs: $recursiveCount (max: ${_config.maxCteDepth})');
+        'Too many recursive CTEs: $recursiveCount (max: ${_config.maxCteDepth})',
+      );
     }
   }
 
@@ -278,8 +303,9 @@ abstract mixin class CteBuilderImpl implements QueryBuilder {
   @protected
   bool removeCte(String name) {
     String lowerName = name.toLowerCase();
-    final index =
-        _ctes.indexWhere((cte) => cte.name.toLowerCase() == lowerName);
+    final index = _ctes.indexWhere(
+      (cte) => cte.name.toLowerCase() == lowerName,
+    );
     if (index != -1) {
       _ctes.removeAt(index);
       _cteNames.remove(lowerName);
@@ -292,16 +318,18 @@ abstract mixin class CteBuilderImpl implements QueryBuilder {
   @protected
   List<Map<String, dynamic>> getCteInfo() {
     return _ctes
-        .map((cte) => {
-              'name': cte.name,
-              'isRecursive': cte.isRecursive,
-              'isMaterialized': cte.isMaterialized,
-              'isNotMaterialized': cte.isNotMaterialized,
-              'hasColumns': cte.columns != null && cte.columns!.isNotEmpty,
-              'columnCount': cte.columns?.length ?? 0,
-              'columns': cte.columns,
-              'hashCode': cte.hashCode,
-            })
+        .map(
+          (cte) => {
+            'name': cte.name,
+            'isRecursive': cte.isRecursive,
+            'isMaterialized': cte.isMaterialized,
+            'isNotMaterialized': cte.isNotMaterialized,
+            'hasColumns': cte.columns != null && cte.columns!.isNotEmpty,
+            'columnCount': cte.columns?.length ?? 0,
+            'columns': cte.columns,
+            'hashCode': cte.hashCode,
+          },
+        )
         .toList();
   }
 

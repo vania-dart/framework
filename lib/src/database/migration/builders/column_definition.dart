@@ -113,8 +113,10 @@ class ColumnDefinition {
   }
 
   /// Add index to column - NOW PROPERLY USED!
-  ColumnDefinition index(
-      [String? indexName, ColumnIndex type = ColumnIndex.indexKey]) {
+  ColumnDefinition index([
+    String? indexName,
+    ColumnIndex type = ColumnIndex.indexKey,
+  ]) {
     _indexName = indexName ?? 'idx_${_schema.tableName}_$_name';
     _indexType = type;
 
@@ -122,8 +124,12 @@ class ColumnDefinition {
     return this;
   }
 
-  ColumnDefinition foreignKey(String referencesTable, String referencesColumn,
-      {String onUpdate = 'CASCADE', String onDelete = 'CASCADE'}) {
+  ColumnDefinition foreignKey(
+    String referencesTable,
+    String referencesColumn, {
+    String onUpdate = 'CASCADE',
+    String onDelete = 'CASCADE',
+  }) {
     _foreignTable = referencesTable;
     _foreignColumn = referencesColumn;
     _onUpdate = onUpdate;
@@ -139,8 +145,10 @@ class ColumnDefinition {
     return this;
   }
 
-  ColumnDefinition generated(String expression,
-      {String virtuality = 'VIRTUAL'}) {
+  ColumnDefinition generated(
+    String expression, {
+    String virtuality = 'VIRTUAL',
+  }) {
     _expression = expression;
     _virtuality = virtuality;
     return this;
@@ -162,8 +170,9 @@ class ColumnDefinition {
     String? finalComment = _comment;
     if (_charset != null) {
       String charsetInfo = 'charset: $_charset';
-      finalComment =
-          _comment != null ? '$_comment ($charsetInfo)' : charsetInfo;
+      finalComment = _comment != null
+          ? '$_comment ($charsetInfo)'
+          : charsetInfo;
     }
 
     bool shouldBeUnique = _unique && _uniqueConstraintName == null;

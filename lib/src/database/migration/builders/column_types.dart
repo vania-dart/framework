@@ -7,22 +7,22 @@ export 'table_definition.dart';
 extension ColumnTypes on Schema {
   /// Add an auto-incrementing primary key column
   ColumnDefinition id([String name = 'id']) {
-    final definition = ColumnDefinition(this, name, 'BIGINT')
-        .length(20)
-        .unsigned()
-        .autoIncrement()
-        .notNull();
+    final definition = ColumnDefinition(
+      this,
+      name,
+      'BIGINT',
+    ).length(20).unsigned().autoIncrement().notNull();
     primary(name);
     return definition;
   }
 
   /// Add a big auto-incrementing column
   ColumnDefinition bigIncrements(String name) {
-    final definition = ColumnDefinition(this, name, 'BIGINT')
-        .length(20)
-        .unsigned()
-        .autoIncrement()
-        .notNull();
+    final definition = ColumnDefinition(
+      this,
+      name,
+      'BIGINT',
+    ).length(20).unsigned().autoIncrement().notNull();
     return definition;
   }
 

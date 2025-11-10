@@ -34,5 +34,5 @@ List<String> extensions = <String>[
   'svg',
   'webp',
   'tiff',
-  'ico'
+  'ico',
 ];

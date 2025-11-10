@@ -25,11 +25,7 @@ bool cannot(String ability) => Gate().denies(ability);
 
 T env<T>(String key, [dynamic defaultValue]) => Env.get<T>(key, defaultValue);
 
-String trans(
-  String key, {
-  Map<String, dynamic>? args,
-  String? locale,
-}) =>
+String trans(String key, {Map<String, dynamic>? args, String? locale}) =>
     Localization().trans(key, args, locale);
 void setLocale(String locale) => Localization().setLocale(locale);
 bool isLocale(String locale) => Localization().isLocale(locale);

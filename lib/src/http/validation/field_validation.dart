@@ -6,10 +6,10 @@ class FieldValidation {
   FieldValidation(this.fieldName);
 
   Map<String, String> get toMapMessages => _messages.map((key, message) {
-        final parts = key.split('.*.');
-        final ruleName = parts.isNotEmpty ? parts.last : key;
-        return MapEntry(ruleName, message);
-      });
+    final parts = key.split('.*.');
+    final ruleName = parts.isNotEmpty ? parts.last : key;
+    return MapEntry(ruleName, message);
+  });
 
   FieldValidation alpha({String? messages}) {
     _rules.add('alpha');

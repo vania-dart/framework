@@ -69,15 +69,17 @@ class PostgresConnector implements DatabaseConnection {
           ),
         );
       } else {
-        _connection = await Connection.open(endpoint,
-            settings: ConnectionSettings(
-              timeZone: config.timezone,
-              encoding: _getEncoding(config.collation),
-              sslMode: sslMode,
-              onOpen: (conn) async {
-                await _onOpen(conn, config);
-              },
-            ));
+        _connection = await Connection.open(
+          endpoint,
+          settings: ConnectionSettings(
+            timeZone: config.timezone,
+            encoding: _getEncoding(config.collation),
+            sslMode: sslMode,
+            onOpen: (conn) async {
+              await _onOpen(conn, config);
+            },
+          ),
+        );
       }
     } catch (e) {
       throw DatabaseException('Database connection failed', e);
@@ -85,8 +87,10 @@ class PostgresConnector implements DatabaseConnection {
   }
 
   @override
-  Future<bool> execute(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<bool> execute(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final result = await _connection.execute(
         Sql.named(query.replaceAll(':p', '@p')),
@@ -99,15 +103,14 @@ class PostgresConnector implements DatabaseConnection {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> select(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<List<Map<String, dynamic>>> select(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final sql = Sql.named(query.replaceAll(':p', '@p'));
 
-      final result = await _connection.execute(
-        sql,
-        parameters: bindings,
-      );
+      final result = await _connection.execute(sql, parameters: bindings);
       final rows = result.map((row) => row.toColumnMap()).toList();
       final maps = <Map<String, dynamic>>[];
       if (rows.isNotEmpty) {
@@ -115,8 +118,9 @@ class PostgresConnector implements DatabaseConnection {
           final map = <String, dynamic>{};
           for (final col in row.entries) {
             final key = col.key;
-            final value =
-                col.value is UndecodedBytes ? col.value.asString : col.value;
+            final value = col.value is UndecodedBytes
+                ? col.value.asString
+                : col.value;
             map.addAll({key: value});
           }
           maps.add(map);
@@ -129,8 +133,10 @@ class PostgresConnector implements DatabaseConnection {
   }
 
   @override
-  Future insert(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future insert(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final result = await _connection.execute(
         Sql.named(query.replaceAll(':p', '@p')),

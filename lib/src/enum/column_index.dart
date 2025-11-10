@@ -1,6 +1,1 @@
-enum ColumnIndex {
-  unique,
-  indexKey,
-  fulltext,
-  spatial,
-}
+enum ColumnIndex { unique, indexKey, fulltext, spatial }

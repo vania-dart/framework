@@ -28,8 +28,10 @@ class VariablesProcessor implements AbsProcessor {
       }
 
       if (_looksLikeVariablePath(rawExpression)) {
-        final value =
-            _fetchValueWithBracketNotation(rawExpression, context ?? {});
+        final value = _fetchValueWithBracketNotation(
+          rawExpression,
+          context ?? {},
+        );
         if (value != null) return value.toString();
       }
 
@@ -55,7 +57,9 @@ class VariablesProcessor implements AbsProcessor {
   /// Returns the filtered variable value as a string.
 
   String _handleVariableWithFilters(
-      String rawExpression, Map<String, dynamic> context) {
+    String rawExpression,
+    Map<String, dynamic> context,
+  ) {
     final parts = rawExpression.split('|').map((e) => e.trim()).toList();
     final variableName = parts.first;
     final filters = parts.length > 1 ? parts.sublist(1) : <String>[];
@@ -85,7 +89,9 @@ class VariablesProcessor implements AbsProcessor {
   /// The function returns `null` if any segment in the expression is `null`.
   ///
   dynamic _fetchValueWithBracketNotation(
-      String expression, Map<String, dynamic> context) {
+    String expression,
+    Map<String, dynamic> context,
+  ) {
     expression = _resolveBracketIndexVars(expression, context);
 
     final segments = expression.split('.');
@@ -99,7 +105,9 @@ class VariablesProcessor implements AbsProcessor {
   }
 
   String _resolveBracketIndexVars(
-      String expression, Map<String, dynamic> context) {
+    String expression,
+    Map<String, dynamic> context,
+  ) {
     final bracketVarRegex = RegExp(r'\[([^\[\]]+)\]');
     return expression.replaceAllMapped(bracketVarRegex, (m) {
       final inside = m.group(1)!;

@@ -16,18 +16,24 @@ void main() {
     });
 
     test('joins multiple elements with default separator and conjunction', () {
-      expect(['apple', 'orange', 'banana'].joinWithAnd(),
-          equals('apple, orange and banana'));
+      expect(
+        ['apple', 'orange', 'banana'].joinWithAnd(),
+        equals('apple, orange and banana'),
+      );
     });
 
     test('allows custom separator and conjunction', () {
-      expect(['apple', 'orange', 'banana'].joinWithAnd(' / ', 'or'),
-          equals('apple / orange or banana'));
+      expect(
+        ['apple', 'orange', 'banana'].joinWithAnd(' / ', 'or'),
+        equals('apple / orange or banana'),
+      );
     });
 
     test('considers only the last two elements for conjunction', () {
-      expect(['apple', 'orange', 'banana', 'mango'].joinWithAnd(),
-          equals('apple, orange, banana and mango'));
+      expect(
+        ['apple', 'orange', 'banana', 'mango'].joinWithAnd(),
+        equals('apple, orange, banana and mango'),
+      );
     });
   });
 }

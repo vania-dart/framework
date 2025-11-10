@@ -74,7 +74,8 @@ class Mailable implements Mail {
   Future<mailer.SendReport> send() async {
     final message = mailer.Message();
 
-    message.from = envelope().from ??
+    message.from =
+        envelope().from ??
         Address(
           env<String>('MAIL_FROM_ADDRESS', ''),
           env<String>('MAIL_FROM_NAME', ''),
@@ -113,13 +114,14 @@ class Mailable implements Mail {
       );
       return sendReport;
     } on SmtpMessageValidationException catch (e) {
-      stderr.writeln('Failed to send email:${e.problems.map((error) => {
-            message: error.msg,
-            error: error.code
-          }).toList()}');
-      throw Exception(e.problems
-          .map((error) => {message: error.msg, error: error.code})
-          .toList());
+      stderr.writeln(
+        'Failed to send email:${e.problems.map((error) => {message: error.msg, error: error.code}).toList()}',
+      );
+      throw Exception(
+        e.problems
+            .map((error) => {message: error.msg, error: error.code})
+            .toList(),
+      );
     } catch (e) {
       stderr.writeln('Failed to send email: $e');
       rethrow;

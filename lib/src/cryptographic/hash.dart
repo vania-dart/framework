@@ -51,8 +51,12 @@ class Hash {
     const charset =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
-    return String.fromCharCodes(Iterable.generate(
-        4, (_) => charset.codeUnitAt(random.nextInt(charset.length))));
+    return String.fromCharCodes(
+      Iterable.generate(
+        4,
+        (_) => charset.codeUnitAt(random.nextInt(charset.length)),
+      ),
+    );
   }
 
   /// Hashes the given [password] using the given [salt] and the APP_KEY or

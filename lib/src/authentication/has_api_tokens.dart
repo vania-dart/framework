@@ -45,11 +45,7 @@ class HasApiTokens {
     }
 
     final jwt = JWT(
-      {
-        'user': jsonEncode(_userPayload),
-        'type': 'access_token',
-        ...userId,
-      },
+      {'user': jsonEncode(_userPayload), 'type': 'access_token', ...userId},
       audience: env('JWT_AUDIENCE') == null
           ? null
           : Audience.one(env<String>('JWT_AUDIENCE')),
@@ -60,23 +56,25 @@ class HasApiTokens {
     Map<String, dynamic> payload = {};
     Duration expirationTime = expiresIn ?? const Duration(hours: 1);
 
-    String accessToken =
-        jwt.sign(SecretKey('$secretKey$guard'), expiresIn: expirationTime);
+    String accessToken = jwt.sign(
+      SecretKey('$secretKey$guard'),
+      expiresIn: expirationTime,
+    );
 
     payload['access_token'] = accessToken;
 
     if (withRefreshToken) {
-      final jwtRefresh = JWT({
-        ...userId,
-        'type': 'refresh_token',
-      });
-      String refreshToken = jwtRefresh.sign(SecretKey('$secretKey$guard'),
-          expiresIn: const Duration(days: 120));
+      final jwtRefresh = JWT({...userId, 'type': 'refresh_token'});
+      String refreshToken = jwtRefresh.sign(
+        SecretKey('$secretKey$guard'),
+        expiresIn: const Duration(days: 120),
+      );
       payload['refresh_token'] = refreshToken;
     }
 
-    payload['expires_in'] =
-        DateTime.now().add(expirationTime).toIso8601String();
+    payload['expires_in'] = DateTime.now()
+        .add(expirationTime)
+        .toIso8601String();
 
     return payload;
   }

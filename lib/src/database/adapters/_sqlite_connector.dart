@@ -27,8 +27,9 @@ class SQLiteConnector implements DatabaseConnection {
       if (config.openInMemorySQLite) {
         _connection = sqlite3.openInMemory();
       } else {
-        _connection = sqlite3
-            .open(config.filePath ?? '${env<String?>('APP_NAME', 'Vania')}.db');
+        _connection = sqlite3.open(
+          config.filePath ?? '${env<String?>('APP_NAME', 'Vania')}.db',
+        );
       }
     } catch (e) {
       throw DatabaseException('Database connection failed', e);
@@ -44,7 +45,9 @@ class SQLiteConnector implements DatabaseConnection {
   }
 
   List<dynamic> _convertBindingsToList(
-      Map<String, dynamic> bindings, String query) {
+    Map<String, dynamic> bindings,
+    String query,
+  ) {
     if (bindings.isEmpty) return [];
 
     final List<dynamic> result = [];
@@ -62,15 +65,14 @@ class SQLiteConnector implements DatabaseConnection {
   }
 
   String _convertNamedParamsToPositional(String query) {
-    return query.replaceAllMapped(
-      RegExp(r':(\w+)'),
-      (match) => '?',
-    );
+    return query.replaceAllMapped(RegExp(r':(\w+)'), (match) => '?');
   }
 
   @override
-  Future<bool> execute(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<bool> execute(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final positionalQuery = _convertNamedParamsToPositional(query);
       final params = _convertBindingsToList(bindings, query);
@@ -86,8 +88,10 @@ class SQLiteConnector implements DatabaseConnection {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> select(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<List<Map<String, dynamic>>> select(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final positionalQuery = _convertNamedParamsToPositional(query);
       final params = _convertBindingsToList(bindings, query);
@@ -114,8 +118,10 @@ class SQLiteConnector implements DatabaseConnection {
   }
 
   @override
-  Future insert(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future insert(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     try {
       final positionalQuery = _convertNamedParamsToPositional(query);
       final params = _convertBindingsToList(bindings, query);

@@ -20,8 +20,8 @@ class TableDefinition implements Future<void> {
     this._createFunction, {
     MigrationConnection? connection,
     DatabaseAdapterInterface? adapter,
-  })  : _connection = connection,
-        _adapter = adapter;
+  }) : _connection = connection,
+       _adapter = adapter;
 
   TableDefinition engine(String engine) {
     _engine = engine;
@@ -54,14 +54,18 @@ class TableDefinition implements Future<void> {
   }
 
   @override
-  Future<R> then<R>(FutureOr<R> Function(void value) onValue,
-      {Function? onError}) {
+  Future<R> then<R>(
+    FutureOr<R> Function(void value) onValue, {
+    Function? onError,
+  }) {
     return _getExecutionFuture().then(onValue, onError: onError);
   }
 
   @override
-  Future<void> catchError(Function onError,
-      {bool Function(Object error)? test}) {
+  Future<void> catchError(
+    Function onError, {
+    bool Function(Object error)? test,
+  }) {
     return _getExecutionFuture().catchError(onError, test: test);
   }
 

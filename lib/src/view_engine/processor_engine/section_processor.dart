@@ -59,8 +59,9 @@ class SectionProcessor implements AbsProcessor {
       dotAll: true,
     );
 
-    childTemplate =
-        childTemplate.replaceAllMapped(blockSectionPattern, (match) {
+    childTemplate = childTemplate.replaceAllMapped(blockSectionPattern, (
+      match,
+    ) {
       final sectionName = match.group(1) ?? '';
       final content = match.group(2) ?? '';
       sections[sectionName] = content;
@@ -72,8 +73,9 @@ class SectionProcessor implements AbsProcessor {
       dotAll: true,
     );
 
-    childTemplate =
-        childTemplate.replaceAllMapped(inlineSectionPattern, (match) {
+    childTemplate = childTemplate.replaceAllMapped(inlineSectionPattern, (
+      match,
+    ) {
       final sectionName = match.group(1) ?? '';
       final inlineContent = match.group(2) ?? '';
       sections[sectionName] = inlineContent;

@@ -7,31 +7,19 @@ abstract interface class WhereClausesBuilder {
     dynamic value,
     String boolean = 'and',
   ]);
-  QueryBuilder orWhereBetween(
-    String column,
-    List values, {
-    bool not = false,
-  });
+  QueryBuilder orWhereBetween(String column, List values, {bool not = false});
 
   QueryBuilder orWhereColumn(
-      String first, String operator, String secondColumn);
-
-  QueryBuilder orWhereDate(
-    String column,
+    String first,
     String operator,
-    dynamic value,
+    String secondColumn,
   );
 
-  QueryBuilder orWhereDay(
-    String column,
-    String operator,
-    dynamic value,
-  );
+  QueryBuilder orWhereDate(String column, String operator, dynamic value);
 
-  QueryBuilder orWhereExists(
-    QueryCallback callback, {
-    bool not = false,
-  });
+  QueryBuilder orWhereDay(String column, String operator, dynamic value);
+
+  QueryBuilder orWhereExists(QueryCallback callback, {bool not = false});
 
   QueryBuilder orWhereFullText(
     dynamic columns,
@@ -39,87 +27,45 @@ abstract interface class WhereClausesBuilder {
     Map<String, dynamic> options = const {},
   ]);
 
-  QueryBuilder orWhereHour(
-    String column,
-    String operator,
-    dynamic value,
-  );
+  QueryBuilder orWhereHour(String column, String operator, dynamic value);
 
-  QueryBuilder orWhereIn(
-    String column,
-    List values, {
-    bool not = false,
-  });
+  QueryBuilder orWhereIn(String column, List values, {bool not = false});
   QueryBuilder orWhereJsonContains(
     String column,
     dynamic value, {
     bool not = false,
   });
-  QueryBuilder orWhereJsonDoesntContain(
-    String column,
-    dynamic value,
-  );
-  QueryBuilder orWhereJsonLength(
-    String column,
-    String operator,
-    dynamic value,
-  );
+  QueryBuilder orWhereJsonDoesntContain(String column, dynamic value);
+  QueryBuilder orWhereJsonLength(String column, String operator, dynamic value);
 
   QueryBuilder orWhereLike(
     String column,
     dynamic value, {
     bool caseSensitive = false,
   });
-  QueryBuilder orWhereMonth(
-    String column,
-    String operator,
-    dynamic value,
-  );
-  QueryBuilder orWhereNotBetween(
-    String column,
-    List values,
-  );
-  QueryBuilder orWhereNotExists(
-    QueryCallback callback,
-  );
+  QueryBuilder orWhereMonth(String column, String operator, dynamic value);
+  QueryBuilder orWhereNotBetween(String column, List values);
+  QueryBuilder orWhereNotExists(QueryCallback callback);
 
-  QueryBuilder orWhereNotIn(
-    String column,
-    List values,
-  );
+  QueryBuilder orWhereNotIn(String column, List values);
   QueryBuilder orWhereNotLike(
     String column,
     dynamic value, {
     bool caseSensitive = false,
     String boolean = 'and',
   });
-  QueryBuilder orWhereNotNull(
-    String column,
-  );
-  QueryBuilder orWhereNull(
-    String column,
-  );
+  QueryBuilder orWhereNotNull(String column);
+  QueryBuilder orWhereNull(String column);
 
-  QueryBuilder orWhereRaw(
-    String sql, [
-    List<dynamic> bindings = const [],
-  ]);
+  QueryBuilder orWhereRaw(String sql, [List<dynamic> bindings = const []]);
   QueryBuilder orWhereRowValues(
     List<String> columns,
     String operator,
     List<dynamic> values,
   );
 
-  QueryBuilder orWhereTime(
-    String column,
-    String operator,
-    dynamic value,
-  );
-  QueryBuilder orWhereYear(
-    String column,
-    String operator,
-    dynamic value,
-  );
+  QueryBuilder orWhereTime(String column, String operator, dynamic value);
+  QueryBuilder orWhereYear(String column, String operator, dynamic value);
 
   QueryBuilder where(
     dynamic condition, [
@@ -127,10 +73,7 @@ abstract interface class WhereClausesBuilder {
     dynamic value,
     String boolean = 'and',
   ]);
-  QueryBuilder whereAfterToday(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereAfterToday(String column, {String boolean = 'and'});
 
   QueryBuilder whereAll(
     String column,
@@ -143,10 +86,7 @@ abstract interface class WhereClausesBuilder {
     String boolean = 'and',
   });
 
-  QueryBuilder whereBeforeToday(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereBeforeToday(String column, {String boolean = 'and'});
   QueryBuilder whereBetween(
     String column,
     List values, {
@@ -195,10 +135,7 @@ abstract interface class WhereClausesBuilder {
     dynamic query, [
     Map<String, dynamic> options = const {},
   ]);
-  QueryBuilder whereFuture(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereFuture(String column, {String boolean = 'and'});
 
   QueryBuilder whereGreaterThan(
     dynamic condition, [
@@ -287,16 +224,9 @@ abstract interface class WhereClausesBuilder {
     dynamic value,
     String boolean = 'and',
   ]);
-  QueryBuilder whereNotExists(
-    QueryCallback callback, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereNotExists(QueryCallback callback, {String boolean = 'and'});
 
-  QueryBuilder whereNotIn(
-    String column,
-    List values, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereNotIn(String column, List values, {String boolean = 'and'});
 
   QueryBuilder whereNotLike(
     String column,
@@ -305,28 +235,16 @@ abstract interface class WhereClausesBuilder {
     String boolean = 'and',
   });
 
-  QueryBuilder whereNotNull(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereNotNull(String column, {String boolean = 'and'});
 
-  QueryBuilder whereNowOrFuture(
-    String column, {
-    String boolean = 'and',
-  });
-  QueryBuilder whereNowOrPast(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereNowOrFuture(String column, {String boolean = 'and'});
+  QueryBuilder whereNowOrPast(String column, {String boolean = 'and'});
   QueryBuilder whereNull(
     String column, {
     String boolean = 'and',
     bool not = false,
   });
-  QueryBuilder wherePast(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder wherePast(String column, {String boolean = 'and'});
   QueryBuilder whereRaw(
     String sql, [
     List<dynamic> bindings = const [],
@@ -344,19 +262,10 @@ abstract interface class WhereClausesBuilder {
     dynamic value, {
     String boolean = 'and',
   });
-  QueryBuilder whereToday(
-    String column, {
-    String boolean = 'and',
-  });
-  QueryBuilder whereTodayOrAfter(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereToday(String column, {String boolean = 'and'});
+  QueryBuilder whereTodayOrAfter(String column, {String boolean = 'and'});
 
-  QueryBuilder whereTodayOrBefore(
-    String column, {
-    String boolean = 'and',
-  });
+  QueryBuilder whereTodayOrBefore(String column, {String boolean = 'and'});
   QueryBuilder whereYear(
     String column,
     String operator,
@@ -370,10 +279,7 @@ abstract interface class WhereClausesBuilder {
     String boolean = 'and',
   });
 
-  QueryBuilder orWhereHas(
-    String relation,
-    QueryCallback callback,
-  );
+  QueryBuilder orWhereHas(String relation, QueryCallback callback);
 
   QueryBuilder whereDoesntHave(
     String relation,
@@ -381,10 +287,7 @@ abstract interface class WhereClausesBuilder {
     String boolean = 'and',
   });
 
-  QueryBuilder orWhereDoesntHave(
-    String relation,
-    QueryCallback callback,
-  );
+  QueryBuilder orWhereDoesntHave(String relation, QueryCallback callback);
 
   QueryBuilder withSoftDeletes([String column = 'deleted_at']);
 }

@@ -16,12 +16,8 @@ class GreaterThan extends ValidationRule {
     return 'The $field be greater than $compare';
   }
 
-  GreaterThan copyWith({
-    num? compare,
-  }) {
-    return GreaterThan(
-      compare: compare ?? this.compare,
-    );
+  GreaterThan copyWith({num? compare}) {
+    return GreaterThan(compare: compare ?? this.compare);
   }
 
   Map<String, dynamic> toMap() {
@@ -33,9 +29,7 @@ class GreaterThan extends ValidationRule {
   }
 
   factory GreaterThan.fromMap(Map<String, dynamic> map) {
-    return GreaterThan(
-      compare: map['compare'] ?? 0,
-    );
+    return GreaterThan(compare: map['compare'] ?? 0);
   }
 
   String toJson() => json.encode(toMap());

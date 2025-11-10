@@ -23,7 +23,10 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }
 
   void _addWindowFunction(
-      String functionName, String overClause, String? alias) {
+    String functionName,
+    String overClause,
+    String? alias,
+  ) {
     String windowFunc = "$functionName $overClause";
     if (alias != null && alias.isNotEmpty) {
       windowFunc += " AS $alias";
@@ -34,37 +37,31 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder rowNumber({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  }) {
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+  QueryBuilder rowNumber({String? partitionBy, String? orderBy, String? as}) {
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("ROW_NUMBER()", overClause, as);
     return this;
   }
 
   @override
-  QueryBuilder rank({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  }) {
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+  QueryBuilder rank({String? partitionBy, String? orderBy, String? as}) {
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("RANK()", overClause, as);
     return this;
   }
 
   @override
-  QueryBuilder denseRank({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  }) {
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+  QueryBuilder denseRank({String? partitionBy, String? orderBy, String? as}) {
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("DENSE_RANK()", overClause, as);
     return this;
   }
@@ -80,7 +77,8 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for LAG function');
+        'Column name cannot be empty for LAG function',
+      );
     }
 
     String lagFunc = "LAG($column, $offset";
@@ -93,8 +91,10 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
     }
     lagFunc += ")";
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction(lagFunc, overClause, as);
     return this;
   }
@@ -110,7 +110,8 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for LEAD function');
+        'Column name cannot be empty for LEAD function',
+      );
     }
 
     String leadFunc = "LEAD($column, $offset";
@@ -123,8 +124,10 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
     }
     leadFunc += ")";
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction(leadFunc, overClause, as);
     return this;
   }
@@ -138,11 +141,14 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for FIRST_VALUE function');
+        'Column name cannot be empty for FIRST_VALUE function',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("FIRST_VALUE($column)", overClause, as);
     return this;
   }
@@ -156,11 +162,14 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for LAST_VALUE function');
+        'Column name cannot be empty for LAST_VALUE function',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("LAST_VALUE($column)", overClause, as);
     return this;
   }
@@ -174,35 +183,34 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (buckets <= 0) {
       throw InvalidArgumentException(
-          'Number of buckets must be greater than 0');
+        'Number of buckets must be greater than 0',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("NTILE($buckets)", overClause, as);
     return this;
   }
 
   @override
-  QueryBuilder percentRank({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  }) {
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+  QueryBuilder percentRank({String? partitionBy, String? orderBy, String? as}) {
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("PERCENT_RANK()", overClause, as);
     return this;
   }
 
   @override
-  QueryBuilder cumeDist({
-    String? partitionBy,
-    String? orderBy,
-    String? as,
-  }) {
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+  QueryBuilder cumeDist({String? partitionBy, String? orderBy, String? as}) {
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("CUME_DIST()", overClause, as);
     return this;
   }
@@ -216,11 +224,14 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for SUM window function');
+        'Column name cannot be empty for SUM window function',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("SUM($column)", overClause, as);
     return this;
   }
@@ -234,11 +245,14 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for AVG window function');
+        'Column name cannot be empty for AVG window function',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("AVG($column)", overClause, as);
     return this;
   }
@@ -252,11 +266,14 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for COUNT window function');
+        'Column name cannot be empty for COUNT window function',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("COUNT($column)", overClause, as);
     return this;
   }
@@ -270,11 +287,14 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for MAX window function');
+        'Column name cannot be empty for MAX window function',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("MAX($column)", overClause, as);
     return this;
   }
@@ -288,11 +308,14 @@ abstract mixin class WindowFunctionsBuilderImpl implements QueryBuilder {
   }) {
     if (column.isEmpty) {
       throw InvalidArgumentException(
-          'Column name cannot be empty for MIN window function');
+        'Column name cannot be empty for MIN window function',
+      );
     }
 
-    final overClause =
-        _buildOverClause(partitionBy: partitionBy, orderBy: orderBy);
+    final overClause = _buildOverClause(
+      partitionBy: partitionBy,
+      orderBy: orderBy,
+    );
     _addWindowFunction("MIN($column)", overClause, as);
     return this;
   }

@@ -25,7 +25,11 @@ class S3Client {
   }
 
   Uint8List _getSignatureKey(
-      String key, String date, String regionName, String serviceName) {
+    String key,
+    String date,
+    String regionName,
+    String serviceName,
+  ) {
     var kDate = _hmacSha256(Uint8List.fromList(utf8.encode('AWS4$key')), date);
     var kRegion = _hmacSha256(kDate, regionName);
     var kService = _hmacSha256(kRegion, serviceName);
@@ -55,25 +59,26 @@ class S3Client {
       'x-amz-date:$dateTime',
       '',
       signedHeaders,
-      hash
+      hash,
     ].join('\n');
 
     final stringToSign = [
       algorithm,
       dateTime,
       scope,
-      sha256.convert(utf8.encode(canonicalRequest)).toString()
+      sha256.convert(utf8.encode(canonicalRequest)).toString(),
     ].join('\n');
 
     final signingKey = _getSignatureKey(_secretKey, date, _region, service);
-    final signature = _hmacSha256(signingKey, stringToSign)
-        .map((e) => e.toRadixString(16).padLeft(2, '0'))
-        .join();
+    final signature = _hmacSha256(
+      signingKey,
+      stringToSign,
+    ).map((e) => e.toRadixString(16).padLeft(2, '0')).join();
 
     final authorizationHeader = [
       '$algorithm Credential=$_accessKey/$scope',
       'SignedHeaders=$signedHeaders',
-      'Signature=$signature'
+      'Signature=$signature',
     ].join(', ');
 
     return {

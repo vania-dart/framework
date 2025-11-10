@@ -262,7 +262,7 @@ class Singularize {
       'oases',
       'parentheses',
       'synopses',
-      'theses'
+      'theses',
     };
 
     if (irregularPlurals.contains(name)) return true;

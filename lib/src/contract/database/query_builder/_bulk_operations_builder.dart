@@ -1,14 +1,6 @@
 part of 'query_builder.dart';
 
-enum ConflictAction {
-  update,
-
-  ignore,
-
-  replace,
-
-  delete,
-}
+enum ConflictAction { update, ignore, replace, delete }
 
 abstract class BulkOperationsBuilder {
   Future<bool> merge(
@@ -53,16 +45,19 @@ abstract class BulkOperationsBuilder {
   Future<void> batchProcess({
     required int batchSize,
     required Future<void> Function(
-            List<Map<String, dynamic>> batch, int batchNumber)
-        processor,
+      List<Map<String, dynamic>> batch,
+      int batchNumber,
+    )
+    processor,
     List<String> columns = const ['*'],
   });
 
   Future<void> chunkedProcess({
     required int chunkSize,
     required Future<List<Map<String, dynamic>>> Function(
-            List<Map<String, dynamic>> chunk)
-        processor,
+      List<Map<String, dynamic>> chunk,
+    )
+    processor,
     String? destination,
     List<String> columns = const ['*'],
   });
@@ -75,7 +70,5 @@ abstract class BulkOperationsBuilder {
     List<String>? conflictColumns,
   });
 
-  Future<bool> transactionalBulkOperation(
-    Future<bool> Function() operations,
-  );
+  Future<bool> transactionalBulkOperation(Future<bool> Function() operations);
 }

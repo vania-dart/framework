@@ -1,12 +1,7 @@
 import 'dart:async';
 import 'package:meta/meta.dart';
 
-enum AlertType {
-  slowQuery,
-  highConnectionUsage,
-  connectionError,
-  deadlock,
-}
+enum AlertType { slowQuery, highConnectionUsage, connectionError, deadlock }
 
 class DatabaseAlert {
   final AlertType type;
@@ -73,15 +68,17 @@ class DatabaseMonitor {
 
     // Check for slow queries
     if (executionTime > slowQueryThreshold) {
-      _alertController.add(DatabaseAlert(
-        type: AlertType.slowQuery,
-        message: 'Slow query detected',
-        details: {
-          'sql': sql,
-          'execution_time': executionTime.inMilliseconds,
-          'threshold': slowQueryThreshold.inMilliseconds,
-        },
-      ));
+      _alertController.add(
+        DatabaseAlert(
+          type: AlertType.slowQuery,
+          message: 'Slow query detected',
+          details: {
+            'sql': sql,
+            'execution_time': executionTime.inMilliseconds,
+            'threshold': slowQueryThreshold.inMilliseconds,
+          },
+        ),
+      );
     }
 
     if (_queryMetrics[connectionId]!.length > 1000) {
@@ -93,15 +90,17 @@ class DatabaseMonitor {
     _connectionMetrics[connectionId] = metrics;
 
     if (metrics.usagePercentage > highConnectionUsageThreshold) {
-      _alertController.add(DatabaseAlert(
-        type: AlertType.highConnectionUsage,
-        message: 'High connection pool usage detected',
-        details: {
-          'usage_percentage': metrics.usagePercentage,
-          'active_connections': metrics.activeConnections,
-          'max_connections': metrics.maxConnections,
-        },
-      ));
+      _alertController.add(
+        DatabaseAlert(
+          type: AlertType.highConnectionUsage,
+          message: 'High connection pool usage detected',
+          details: {
+            'usage_percentage': metrics.usagePercentage,
+            'active_connections': metrics.activeConnections,
+            'max_connections': metrics.maxConnections,
+          },
+        ),
+      );
     }
   }
 
@@ -124,12 +123,13 @@ class DatabaseMonitor {
         (sum, metric) => sum + metric.executionTime,
       );
 
-      final peakTime = queries.map((m) => m.executionTime).reduce(
-            (max, time) => time > max ? time : max,
-          );
+      final peakTime = queries
+          .map((m) => m.executionTime)
+          .reduce((max, time) => time > max ? time : max);
 
-      final slowCount =
-          queries.where((m) => m.executionTime > slowQueryThreshold).length;
+      final slowCount = queries
+          .where((m) => m.executionTime > slowQueryThreshold)
+          .length;
 
       stats[entry.key] = PerformanceStats(
         averageQueryTime: totalTime ~/ queries.length,

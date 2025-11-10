@@ -46,14 +46,15 @@ class NestedValidation {
       if (fields.length == 1) {
         dynamic value = item.getParam(field);
 
-        fieldsToValidate.add(ValidationItem(
-          field: fieldNameWithPositionIndex,
-          name: field.split('.').last,
-          value: value,
-          rule: rule,
-        ));
+        fieldsToValidate.add(
+          ValidationItem(
+            field: fieldNameWithPositionIndex,
+            name: field.split('.').last,
+            value: value,
+            rule: rule,
+          ),
+        );
       }
-
       /// this mean we still need to get the actual field value
       else if (fields.length >= 2) {
         List<String> fieldsExceptMainField = fields.sublist(1);

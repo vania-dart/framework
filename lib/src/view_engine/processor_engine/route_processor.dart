@@ -22,13 +22,14 @@ class RouteProcessor implements AbsProcessor {
         slash = '/';
       }
 
-      List filteredRoute = Router()
-          .routes
+      List filteredRoute = Router().routes
           .where((e) => e.name?.toLowerCase() == routeName.toLowerCase())
           .toList();
       if (filteredRoute.isEmpty) {
         throw InternalServerError(
-            message: 'Route $routeName not found', code: 500);
+          message: 'Route $routeName not found',
+          code: 500,
+        );
       }
 
       String path = filteredRoute.first.path;

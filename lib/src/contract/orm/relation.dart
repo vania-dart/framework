@@ -14,7 +14,9 @@ abstract class Relation {
   });
 
   Map<String, List<Map<String, dynamic>>> buildDictionary(
-      List<Map<String, dynamic>> results, String key) {
+    List<Map<String, dynamic>> results,
+    String key,
+  ) {
     Map<String, List<Map<String, dynamic>>> dictionary = {};
 
     for (var result in results) {

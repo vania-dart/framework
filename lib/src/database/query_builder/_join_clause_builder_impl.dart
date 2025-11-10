@@ -3,10 +3,7 @@ import '../../contract/database/query_builder/query_builder.dart'
 
 abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
   @override
-  QueryBuilder crossJoin(
-    String table, [
-    List<dynamic> bindings = const [],
-  ]) {
+  QueryBuilder crossJoin(String table, [List<dynamic> bindings = const []]) {
     String clause = "CROSS JOIN $table";
     joins.add(clause);
     return this;
@@ -55,14 +52,7 @@ abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
     String? secondColumn,
     bool where = false,
   ]) {
-    return join(
-      table,
-      firstColumn,
-      operator,
-      secondColumn,
-      "LEFT",
-      where,
-    );
+    return join(table, firstColumn, operator, secondColumn, "LEFT", where);
   }
 
   @override
@@ -73,14 +63,7 @@ abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
     String? operator,
     String? secondColumn,
   ]) {
-    return joinSub(
-      subQuery,
-      as,
-      firstColumn,
-      operator,
-      secondColumn,
-      "LEFT",
-    );
+    return joinSub(subQuery, as, firstColumn, operator, secondColumn, "LEFT");
   }
 
   @override
@@ -90,12 +73,6 @@ abstract mixin class JoinClauseBuilderImpl implements QueryBuilder {
     String? operator,
     String? secondColumn,
   ]) {
-    return join(
-      table,
-      firstColumn,
-      operator,
-      secondColumn,
-      "RIGHT",
-    );
+    return join(table, firstColumn, operator, secondColumn, "RIGHT");
   }
 }

@@ -11,11 +11,7 @@ class Authenticate extends Middleware {
   final String? guard;
   final bool basic;
   final String loginPath;
-  Authenticate({
-    this.guard,
-    this.basic = false,
-    this.loginPath = '/login',
-  });
+  Authenticate({this.guard, this.basic = false, this.loginPath = '/login'});
 
   @mustCallSuper
   @override

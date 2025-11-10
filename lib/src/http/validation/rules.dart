@@ -4,7 +4,10 @@ import 'package:vania/src/http/request/request_file.dart';
 class Rules {
   /// Check field is required
   static bool isRequired(
-      Map<String, dynamic> data, dynamic value, String args) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String args,
+  ) {
     if (value == null) {
       return false;
     }
@@ -17,7 +20,8 @@ class Rules {
   /// Check field is email
   static bool isEmail(Map<String, dynamic> data, dynamic value, String args) {
     RegExp emailRegex = RegExp(
-        r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$');
+      r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$',
+    );
     return emailRegex.hasMatch(value.toString());
   }
 
@@ -92,14 +96,20 @@ class Rules {
 
   /// Check field is only with alphabetic, dash or underscore
   static bool isAlphaDash(
-      Map<String, dynamic> data, dynamic value, String args) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String args,
+  ) {
     RegExp alphaDashRegex = RegExp(r'^[a-zA-Z-_]+$');
     return alphaDashRegex.hasMatch(value.toString());
   }
 
   /// Check field is only with alphabetic, number
   static bool isAlphaNumeric(
-      Map<String, dynamic> data, dynamic value, String args) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String args,
+  ) {
     RegExp alphaNumericRegex = RegExp(r'^[a-zA-Z0-9]+$');
     return alphaNumericRegex.hasMatch(value.toString());
   }
@@ -127,7 +137,8 @@ class Rules {
   /// Check field is a valid uuid
   static bool isUUID(Map<String, dynamic> data, dynamic value, String args) {
     RegExp uuidRegex = RegExp(
-        r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    );
     return uuidRegex.hasMatch(value.toString());
   }
 
@@ -143,7 +154,10 @@ class Rules {
 
   /// Check field character is between given length
   static bool lengthBetween(
-      Map<String, dynamic> data, dynamic value, String values) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String values,
+  ) {
     List<String> parts = values.toString().split(',');
     num value1 = num.parse(parts[0]);
     num value2 = num.parse(parts[1]);
@@ -163,8 +177,10 @@ class Rules {
     List<String> parts = values.toString().split(',');
     String table = parts[0];
     String column = parts[1];
-    final exists =
-        await DB.table(table).whereEqualTo(column, value).doesntExist();
+    final exists = await DB
+        .table(table)
+        .whereEqualTo(column, value)
+        .doesntExist();
     return exists;
   }
 
@@ -182,14 +198,20 @@ class Rules {
 
   /// Check field is greater than given value
   static bool greaterThan(
-      Map<String, dynamic> data, dynamic value, String compare) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String compare,
+  ) {
     value = num.parse(value.toString());
     return value > num.parse(compare.toString());
   }
 
   /// Check field is less than given value
   static bool lessThan(
-      Map<String, dynamic> data, dynamic value, String compare) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String compare,
+  ) {
     value = num.parse(value.toString());
     return value < num.parse(compare.toString());
   }
@@ -220,7 +242,10 @@ class Rules {
 
   /// Check field start with given text
   static bool startWith(
-      Map<String, dynamic> data, dynamic value, String start) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String start,
+  ) {
     return value.toString().startsWith(start.toString());
   }
 
@@ -256,7 +281,10 @@ class Rules {
 
   /// Check field is required when condition is not matched
   static bool requiredIfNot(
-      Map<String, dynamic> data, dynamic value, String payload) {
+    Map<String, dynamic> data,
+    dynamic value,
+    String payload,
+  ) {
     List<String> parts = payload.toString().split(',');
     String secondField = parts[0];
     String secondFieldValueFromRule = parts[1].toString();
@@ -283,7 +311,7 @@ class Rules {
       'svg',
       'webp',
       'tiff',
-      'ico'
+      'ico',
     ];
     if (args.toString().isNotEmpty) {
       extensions = args.toString().split(',');

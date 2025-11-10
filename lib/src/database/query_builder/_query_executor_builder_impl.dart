@@ -9,14 +9,9 @@ import '../../contract/database/query_builder/query_builder.dart'
 abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   late DatabaseConnection conn;
   @override
-  Future<num> avg(
-    String column,
-  ) async {
+  Future<num> avg(String column) async {
     try {
-      String sql = build(
-        aggregateFunction: "AVG",
-        aggregateColumn: column,
-      );
+      String sql = build(aggregateFunction: "AVG", aggregateColumn: column);
       final bindings = getBindings();
       conn = await getConnection();
       var result = await conn.select(sql, bindings);
@@ -108,9 +103,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<void> each(
-    void Function(Map<String, dynamic> q) callback,
-  ) async {
+  Future<void> each(void Function(Map<String, dynamic> q) callback) async {
     var results = await get();
     for (var row in results) {
       callback(row);
@@ -164,11 +157,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     String byColumnName = 'id',
     List<String> columns = const [],
   }) async {
-    var result = await find(
-      id,
-      byColumnName: byColumnName,
-      columns: columns,
-    );
+    var result = await find(id, byColumnName: byColumnName, columns: columns);
     if (result == null) {
       throw InvalidArgumentException("Record with id $id not found.");
     }
@@ -176,9 +165,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Future<Map<String, dynamic>?> first([
-    List<String> columns = const [],
-  ]) async {
+  Future<Map<String, dynamic>?> first([List<String> columns = const []]) async {
     try {
       if (columns.isNotEmpty) {
         for (String column in columns) {
@@ -267,9 +254,7 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
   }
 
   @override
-  Stream<Map<String, dynamic>> cursor([
-    int chunk = 1000,
-  ]) async* {
+  Stream<Map<String, dynamic>> cursor([int chunk = 1000]) async* {
     try {
       int offset = 0;
 
@@ -339,15 +324,15 @@ abstract mixin class QueryExecutorBuilderImpl implements QueryBuilder {
     final hasMore = currentPage < lastPage;
 
     return PaginatedResult(
-            data: pageData,
-            currentPage: currentPage,
-            perPage: perPage,
-            total: total,
-            lastPage: lastPage,
-            isFirst: isFirst,
-            isLast: isLast,
-            hasMore: hasMore)
-        .toMap();
+      data: pageData,
+      currentPage: currentPage,
+      perPage: perPage,
+      total: total,
+      lastPage: lastPage,
+      isFirst: isFirst,
+      isLast: isLast,
+      hasMore: hasMore,
+    ).toMap();
   }
 
   @override

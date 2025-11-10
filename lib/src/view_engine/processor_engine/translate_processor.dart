@@ -29,11 +29,7 @@ class TranslateProcessor implements AbsProcessor {
       if (rawLocale != null) {
         locale = rawLocale.trim().replaceAll(stripQuotes, '');
       }
-      return trans(
-        key,
-        args: args,
-        locale: locale,
-      );
+      return trans(key, args: args, locale: locale);
     });
   }
 }

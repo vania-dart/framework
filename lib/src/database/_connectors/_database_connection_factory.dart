@@ -12,8 +12,8 @@ class DatabaseConnectionFactory {
       'pgsql' => PostgresConnector(config),
       'sqlite' => SQLiteConnector(config),
       _ => throw InvalidArgumentException(
-          "Unsupported driver [${config.driver}].",
-        ),
+        "Unsupported driver [${config.driver}].",
+      ),
     };
   }
 }

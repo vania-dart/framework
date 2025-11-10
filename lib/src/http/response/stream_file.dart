@@ -6,10 +6,7 @@ import 'package:mime/mime.dart';
 class StreamFile {
   final String fileName;
   final Uint8List bytes;
-  StreamFile({
-    required this.fileName,
-    required this.bytes,
-  });
+  StreamFile({required this.fileName, required this.bytes});
 
   ContentType? _contentType;
   Stream<List<int>>? _stream;

@@ -41,18 +41,18 @@ Future<void> initializeConfig(Map<String, dynamic> config) async {
 }
 
 DBConfig _config(Map<String, dynamic> database) => DBConfig(
-      driver: database['driver'] ?? '',
-      host: database['host'] ?? '',
-      port: database['port'] ?? '',
-      database: database['database'] ?? '',
-      username: database['username'] ?? '',
-      password: database['password'] ?? '',
-      sslMode: database['sslmode'] ?? '',
-      collation: database['collation'] ?? 'utf8',
-      timezone: database['timezone'] ?? 'UTC',
-      pool: database['pool'],
-      poolSize: database['poolsize'],
-      filePath: database['file_path'] ?? '',
-      schema: database['schema'] ?? 'public',
-      openInMemorySQLite: database['openInMemorySQLite'] ?? false,
-    );
+  driver: database['driver'] ?? '',
+  host: database['host'] ?? '',
+  port: database['port'] ?? '',
+  database: database['database'] ?? '',
+  username: database['username'] ?? '',
+  password: database['password'] ?? '',
+  sslMode: database['sslmode'] ?? '',
+  collation: database['collation'] ?? 'utf8',
+  timezone: database['timezone'] ?? 'UTC',
+  pool: database['pool'],
+  poolSize: database['poolsize'],
+  filePath: database['file_path'] ?? '',
+  schema: database['schema'] ?? 'public',
+  openInMemorySQLite: database['openInMemorySQLite'] ?? false,
+);

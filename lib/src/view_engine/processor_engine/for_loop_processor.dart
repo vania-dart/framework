@@ -49,8 +49,9 @@ class ForLoopProcessor extends AbsProcessor {
         break;
       }
 
-      final forExpression =
-          template.substring(startPos + 6, forStartClose).trim();
+      final forExpression = template
+          .substring(startPos + 6, forStartClose)
+          .trim();
 
       int loopContentStart = forStartClose + 2;
       int searchPos = loopContentStart;
@@ -109,7 +110,10 @@ class ForLoopProcessor extends AbsProcessor {
   /// `_runItemInListLoop`. Returns the expanded loop content as a string.
 
   String _expandLoop(
-      String forExpression, String loopBlock, Map<String, dynamic> context) {
+    String forExpression,
+    String loopBlock,
+    Map<String, dynamic> context,
+  ) {
     final cStylePattern = RegExp(
       r'^(\w+)\s*=\s*(.+?);\s*\1\s*([<>]=?|[<>])\s*(.+?);\s*(.+)$',
     );
@@ -168,11 +172,7 @@ class ForLoopProcessor extends AbsProcessor {
     final buffer = StringBuffer();
     for (var i = 0; i < listObj.length; i++) {
       final item = listObj[i];
-      final subCtx = {
-        ...context,
-        itemName: item,
-        'index': i,
-      };
+      final subCtx = {...context, itemName: item, 'index': i};
 
       buffer.write(TemplateEngine().renderString(loopBlock, subCtx));
     }
@@ -266,10 +266,7 @@ class ForLoopProcessor extends AbsProcessor {
 
     final buffer = StringBuffer();
     while (checkCondition(current)) {
-      final subCtx = {
-        ...context,
-        varName: current,
-      };
+      final subCtx = {...context, varName: current};
 
       buffer.write(TemplateEngine().renderString(loopBlock, subCtx));
       current = increment(current);

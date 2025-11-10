@@ -2,8 +2,10 @@ import 'dart:math';
 
 String toSnakeCase(String input) {
   if (input.isEmpty) return input;
-  final result = input.replaceAllMapped(RegExp(r'[A-Z]'),
-      (match) => (match.start > 0 ? '_' : '') + match.group(0)!.toLowerCase());
+  final result = input.replaceAllMapped(
+    RegExp(r'[A-Z]'),
+    (match) => (match.start > 0 ? '_' : '') + match.group(0)!.toLowerCase(),
+  );
   return result.toLowerCase();
 }
 
@@ -26,8 +28,8 @@ String randomString({
   bool numbers = false,
   bool special = false,
 }) {
-  List<String> strList =
-      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  List<String> strList = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      .split('');
 
   if (numbers) {
     strList.addAll('1234567890'.split(''));
@@ -40,8 +42,12 @@ String randomString({
   strList.shuffle();
   String chars = strList.join('');
   Random rnd = Random();
-  return String.fromCharCodes(Iterable.generate(
-      length, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
+  return String.fromCharCodes(
+    Iterable.generate(
+      length,
+      (_) => chars.codeUnitAt(rnd.nextInt(chars.length)),
+    ),
+  );
 }
 
 /// Generate a random number as a string of a given length
@@ -67,8 +73,12 @@ T randomInt<T>([int length = 6]) {
   strList.shuffle();
   String chars = strList.join('');
   Random rnd = Random();
-  String random = String.fromCharCodes(Iterable.generate(
-      length, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
+  String random = String.fromCharCodes(
+    Iterable.generate(
+      length,
+      (_) => chars.codeUnitAt(rnd.nextInt(chars.length)),
+    ),
+  );
 
   if (T is int) {
     return int.parse(random) as T;

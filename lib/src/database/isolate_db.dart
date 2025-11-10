@@ -25,10 +25,7 @@ class IsolateDB {
         openInMemorySQLite: dbConfig['openInMemorySQLite'] ?? false,
       );
       try {
-        await ConnectionManager().connect(
-          config,
-          dbConfig['driver'],
-        );
+        await ConnectionManager().connect(config, dbConfig['driver']);
         return await callback();
       } finally {
         await ConnectionManager().connection(dbConfig['driver'])?.close();

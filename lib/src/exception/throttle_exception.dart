@@ -21,8 +21,11 @@ class ThrottleException extends BaseHttpResponseException {
         : {'message': message};
 
     if (headers != null) {
-      return Response.jsonWithHeader(responseData,
-          statusCode: code, headers: headers!);
+      return Response.jsonWithHeader(
+        responseData,
+        statusCode: code,
+        headers: headers!,
+      );
     }
 
     return Response.json(responseData, code);

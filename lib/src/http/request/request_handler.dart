@@ -62,9 +62,10 @@ class RequestHandler {
 
           if (isHtml) {
             TemplateEngine().formData.addAll(request.all());
-            await IoCContainer()
-                .resolve<SessionManager>()
-                .sessionStart(req, req.response);
+            await IoCContainer().resolve<SessionManager>().sessionStart(
+              req,
+              req.response,
+            );
             RouteHistory().updateRouteHistory(req);
           }
           if (env<bool>('CSRF_PROTECTION_ENABLED', false)) {
@@ -77,10 +78,7 @@ class RequestHandler {
           }
 
           /// Controller and method handler
-          ControllerHandler().create(
-            route: route,
-            request: request,
-          );
+          ControllerHandler().create(route: route, request: request);
 
           if (env<bool>('APP_DEBUG')) {
             var endTime = DateTime.now();
@@ -89,7 +87,8 @@ class RequestHandler {
                 ? requestUri.padRight(118 - requestUri.length, '.')
                 : ''.padRight(118, '.');
             stderr.writeln(
-                '$starteRequest $requestMethod $requestedPath ~ ${duration}ms');
+              '$starteRequest $requestMethod $requestedPath ~ ${duration}ms',
+            );
           }
         }
       } on BaseHttpResponseException catch (error) {
@@ -119,11 +118,7 @@ class RequestHandler {
           return Response.redirect(error.message).makeResponse(req.response);
         }
 
-        error
-            .response(
-              isHtml,
-            )
-            .makeResponse(req.response);
+        error.response(isHtml).makeResponse(req.response);
       } on InvalidArgumentException catch (e) {
         Logger.log(e.message, type: Logger.ERROR);
         _response(req, e.message);
@@ -142,12 +137,9 @@ class RequestHandler {
     if (req.headers.value('accept').toString().contains('html')) {
       Response.html(message).makeResponse(req.response);
     } else {
-      Response.json(
-        {
-          "message": message,
-        },
-        statusCode,
-      ).makeResponse(req.response);
+      Response.json({
+        "message": message,
+      }, statusCode).makeResponse(req.response);
     }
   }
 }

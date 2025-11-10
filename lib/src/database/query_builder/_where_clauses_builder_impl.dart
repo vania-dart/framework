@@ -24,7 +24,8 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   @override
   String build({String? aggregateFunction, String? aggregateColumn}) {
     throw UnimplementedError(
-        'build() should be implemented by the concrete class');
+      'build() should be implemented by the concrete class',
+    );
   }
 
   @override
@@ -58,15 +59,8 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhereBetween(
-    String column,
-    List values, {
-    bool not = false,
-  }) {
-    _appendCondition(
-      _createBetweenCondition(column, values, not),
-      isOr: true,
-    );
+  QueryBuilder orWhereBetween(String column, List values, {bool not = false}) {
+    _appendCondition(_createBetweenCondition(column, values, not), isOr: true);
     return this;
   }
 
@@ -77,19 +71,12 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String secondColumn,
   ) {
     String condition = "$first $operator $secondColumn";
-    _appendCondition(
-      condition,
-      isOr: true,
-    );
+    _appendCondition(condition, isOr: true);
     return this;
   }
 
   @override
-  QueryBuilder orWhereDate(
-    String column,
-    String operator,
-    dynamic value,
-  ) {
+  QueryBuilder orWhereDate(String column, String operator, dynamic value) {
     _appendCondition(
       _createDateCondition(column, operator, value, "DATE"),
       isOr: true,
@@ -98,11 +85,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhereDay(
-    String column,
-    String operator,
-    dynamic value,
-  ) {
+  QueryBuilder orWhereDay(String column, String operator, dynamic value) {
     _appendCondition(
       _createDateCondition(column, operator, value, "DAY"),
       isOr: true,
@@ -111,10 +94,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhereExists(
-    QueryCallback callback, {
-    bool not = false,
-  }) {
+  QueryBuilder orWhereExists(QueryCallback callback, {bool not = false}) {
     QueryBuilder subQuery = QueryBuilderImpl();
     callback(subQuery);
     String condition = "${not ? 'NOT EXISTS' : 'EXISTS'} (${subQuery.toSql()})";
@@ -124,8 +104,11 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhereFullText(dynamic columns, dynamic query,
-      [Map<String, dynamic> options = const {}]) {
+  QueryBuilder orWhereFullText(
+    dynamic columns,
+    dynamic query, [
+    Map<String, dynamic> options = const {},
+  ]) {
     _appendCondition(
       _createFullTextCondition(columns, query, options),
       isOr: true,
@@ -134,28 +117,14 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhereHour(
-    String column,
-    String operator,
-    dynamic value,
-  ) {
-    _appendCondition(
-      _createHourCondition(column, operator, value),
-      isOr: true,
-    );
+  QueryBuilder orWhereHour(String column, String operator, dynamic value) {
+    _appendCondition(_createHourCondition(column, operator, value), isOr: true);
     return this;
   }
 
   @override
-  QueryBuilder orWhereIn(
-    String column,
-    List values, {
-    bool not = false,
-  }) {
-    _appendCondition(
-      _createInCondition(column, values, not),
-      isOr: true,
-    );
+  QueryBuilder orWhereIn(String column, List values, {bool not = false}) {
+    _appendCondition(_createInCondition(column, values, not), isOr: true);
     return this;
   }
 
@@ -165,16 +134,15 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     dynamic value, {
     bool not = false,
   }) {
-    _appendCondition(_createJsonContainsCondition(column, value, not),
-        isOr: true);
+    _appendCondition(
+      _createJsonContainsCondition(column, value, not),
+      isOr: true,
+    );
     return this;
   }
 
   @override
-  QueryBuilder orWhereJsonDoesntContain(
-    String column,
-    dynamic value,
-  ) {
+  QueryBuilder orWhereJsonDoesntContain(String column, dynamic value) {
     _appendCondition(
       _createJsonContainsCondition(column, value, true),
       isOr: true,
@@ -202,19 +170,19 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     bool caseSensitive = false,
   }) {
     _appendCondition(
-      _createLikeCondition(column, value,
-          not: false, caseSensitive: caseSensitive),
+      _createLikeCondition(
+        column,
+        value,
+        not: false,
+        caseSensitive: caseSensitive,
+      ),
       isOr: true,
     );
     return this;
   }
 
   @override
-  QueryBuilder orWhereMonth(
-    String column,
-    String operator,
-    dynamic value,
-  ) {
+  QueryBuilder orWhereMonth(String column, String operator, dynamic value) {
     _appendCondition(
       _createDateCondition(column, operator, value, "MONTH"),
       isOr: true,
@@ -224,26 +192,18 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
 
   @override
   QueryBuilder orWhereNotBetween(String column, List values) {
-    _appendCondition(
-      _createBetweenCondition(column, values, true),
-      isOr: true,
-    );
+    _appendCondition(_createBetweenCondition(column, values, true), isOr: true);
     return this;
   }
 
   @override
-  QueryBuilder orWhereNotExists(
-    QueryCallback callback,
-  ) {
+  QueryBuilder orWhereNotExists(QueryCallback callback) {
     return orWhereExists(callback, not: true);
   }
 
   @override
   QueryBuilder orWhereNotIn(String column, dynamic values) {
-    _appendCondition(
-      _createInCondition(column, values, true),
-      isOr: true,
-    );
+    _appendCondition(_createInCondition(column, values, true), isOr: true);
     return this;
   }
 
@@ -255,8 +215,12 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     _appendCondition(
-      _createLikeCondition(column, value,
-          not: true, caseSensitive: caseSensitive),
+      _createLikeCondition(
+        column,
+        value,
+        not: true,
+        caseSensitive: caseSensitive,
+      ),
       isOr: (boolean.toLowerCase() == 'or'),
     );
     return this;
@@ -264,27 +228,18 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
 
   @override
   QueryBuilder orWhereNotNull(String column) {
-    _appendCondition(
-      _createNullCondition(column, true),
-      isOr: true,
-    );
+    _appendCondition(_createNullCondition(column, true), isOr: true);
     return this;
   }
 
   @override
   QueryBuilder orWhereNull(String column) {
-    _appendCondition(
-      _createNullCondition(column, false),
-      isOr: true,
-    );
+    _appendCondition(_createNullCondition(column, false), isOr: true);
     return this;
   }
 
   @override
-  QueryBuilder orWhereRaw(
-    String sql, [
-    List<dynamic> rawBindings = const [],
-  ]) {
+  QueryBuilder orWhereRaw(String sql, [List<dynamic> rawBindings = const []]) {
     String processedSQL = _processRawSQL(sql, rawBindings);
     _appendCondition(processedSQL, isOr: true);
     return this;
@@ -304,11 +259,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhereTime(
-    String column,
-    String operator,
-    dynamic value,
-  ) {
+  QueryBuilder orWhereTime(String column, String operator, dynamic value) {
     _appendCondition(
       _createDateCondition(column, operator, value, "TIME"),
       isOr: true,
@@ -317,11 +268,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhereYear(
-    String column,
-    String operator,
-    dynamic value,
-  ) {
+  QueryBuilder orWhereYear(String column, String operator, dynamic value) {
     _appendCondition(
       _createDateCondition(column, operator, value, "YEAR"),
       isOr: true,
@@ -339,14 +286,18 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     if (condition is String) {
       final paramName = _nextParamName();
       bindings[paramName] = value;
-      _appendCondition("$condition $operator :$paramName",
-          isOr: (boolean.toLowerCase() == 'or'));
+      _appendCondition(
+        "$condition $operator :$paramName",
+        isOr: (boolean.toLowerCase() == 'or'),
+      );
     } else if (condition is QueryCallback) {
       QueryBuilderImpl nested = QueryBuilderImpl()
         ..paramCounter = _paramCounter;
       condition(nested);
-      _appendCondition("(${nested.toSql()})",
-          isOr: (boolean.toLowerCase() == 'or'));
+      _appendCondition(
+        "(${nested.toSql()})",
+        isOr: (boolean.toLowerCase() == 'or'),
+      );
       bindings.addAll(nested.getBindings());
     } else {
       throw InvalidArgumentException(
@@ -357,10 +308,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereAfterToday(
-    String column, {
-    String boolean = 'and',
-  }) {
+  QueryBuilder whereAfterToday(String column, {String boolean = 'and'}) {
     _appendCondition(
       "DATE($column) > CURDATE()",
       isOr: (boolean.toLowerCase() == 'or'),
@@ -375,9 +323,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     if (values.isEmpty) {
-      throw InvalidArgumentException(
-        "The list of values must not be empty.",
-      );
+      throw InvalidArgumentException("The list of values must not be empty.");
     }
 
     List<String> conditions = [];
@@ -401,9 +347,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     if (values.isEmpty) {
-      throw InvalidArgumentException(
-        "The list of values must not be empty.",
-      );
+      throw InvalidArgumentException("The list of values must not be empty.");
     }
 
     _appendCondition(
@@ -414,10 +358,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereBeforeToday(
-    String column, {
-    String boolean = 'and',
-  }) {
+  QueryBuilder whereBeforeToday(String column, {String boolean = 'and'}) {
     _appendCondition(
       "DATE($column) < CURDATE()",
       isOr: (boolean.toLowerCase() == 'or'),
@@ -426,8 +367,12 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereBetween(String column, List values,
-      {String boolean = 'and', bool not = false}) {
+  QueryBuilder whereBetween(
+    String column,
+    List values, {
+    String boolean = 'and',
+    bool not = false,
+  }) {
     _appendCondition(
       _createBetweenCondition(column, values, not),
       isOr: (boolean.toLowerCase() == 'or'),
@@ -456,10 +401,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   ]) {
     String condition = "$firstColumn $operator $secondColumn";
-    _appendCondition(
-      condition,
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+    _appendCondition(condition, isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
@@ -492,11 +434,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereEqualTo(
-    condition, [
-    value,
-    String boolean = 'and',
-  ]) =>
+  QueryBuilder whereEqualTo(condition, [value, String boolean = 'and']) =>
       where(condition, '=', value, boolean);
 
   @override
@@ -508,10 +446,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     QueryBuilder subQuery = QueryBuilderImpl();
     callback(subQuery);
     String condition = "${not ? 'NOT EXISTS' : 'EXISTS'} (${subQuery.toSql()})";
-    _appendCondition(
-      condition,
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+    _appendCondition(condition, isOr: (boolean.toLowerCase() == 'or'));
     bindings.addAll(subQuery.getBindings());
     return this;
   }
@@ -530,23 +465,13 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereFuture(
-    String column, {
-    String boolean = 'and',
-  }) {
-    _appendCondition(
-      "$column > NOW()",
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+  QueryBuilder whereFuture(String column, {String boolean = 'and'}) {
+    _appendCondition("$column > NOW()", isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
   @override
-  QueryBuilder whereGreaterThan(
-    condition, [
-    value,
-    String boolean = 'and',
-  ]) =>
+  QueryBuilder whereGreaterThan(condition, [value, String boolean = 'and']) =>
       where(condition, '>', value, boolean);
 
   @override
@@ -554,8 +479,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     condition, [
     value,
     String boolean = 'and',
-  ]) =>
-      where(condition, '>=', value, boolean);
+  ]) => where(condition, '>=', value, boolean);
 
   @override
   QueryBuilder whereHour(
@@ -564,8 +488,10 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     dynamic value, {
     String boolean = 'and',
   }) {
-    _appendCondition(_createHourCondition(column, operator, value),
-        isOr: (boolean.toLowerCase() == 'or'));
+    _appendCondition(
+      _createHourCondition(column, operator, value),
+      isOr: (boolean.toLowerCase() == 'or'),
+    );
     return this;
   }
 
@@ -625,11 +551,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereLessThan(
-    condition, [
-    value,
-    String boolean = 'and',
-  ]) =>
+  QueryBuilder whereLessThan(condition, [value, String boolean = 'and']) =>
       where(condition, '<', value, boolean);
 
   @override
@@ -637,8 +559,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     condition, [
     value,
     String boolean = 'and',
-  ]) =>
-      where(condition, '<=', value, boolean);
+  ]) => where(condition, '<=', value, boolean);
 
   @override
   QueryBuilder whereLike(
@@ -648,8 +569,12 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     _appendCondition(
-      _createLikeCondition(column, value,
-          not: false, caseSensitive: caseSensitive),
+      _createLikeCondition(
+        column,
+        value,
+        not: false,
+        caseSensitive: caseSensitive,
+      ),
       isOr: (boolean.toLowerCase() == 'or'),
     );
     return this;
@@ -676,9 +601,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     if (values.isEmpty) {
-      throw InvalidArgumentException(
-        "The list of values must not be empty.",
-      );
+      throw InvalidArgumentException("The list of values must not be empty.");
     }
 
     _appendCondition(
@@ -715,11 +638,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereNotEqualTo(
-    condition, [
-    value,
-    String boolean = 'and',
-  ]) =>
+  QueryBuilder whereNotEqualTo(condition, [value, String boolean = 'and']) =>
       where(condition, '<>', value, boolean);
 
   @override
@@ -751,18 +670,19 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     _appendCondition(
-      _createLikeCondition(column, value,
-          not: true, caseSensitive: caseSensitive),
+      _createLikeCondition(
+        column,
+        value,
+        not: true,
+        caseSensitive: caseSensitive,
+      ),
       isOr: (boolean.toLowerCase() == 'or'),
     );
     return this;
   }
 
   @override
-  QueryBuilder whereNotNull(
-    String column, {
-    String boolean = 'and',
-  }) {
+  QueryBuilder whereNotNull(String column, {String boolean = 'and'}) {
     _appendCondition(
       _createNullCondition(column, true),
       isOr: (boolean.toLowerCase() == 'or'),
@@ -771,26 +691,14 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereNowOrFuture(
-    String column, {
-    String boolean = 'and',
-  }) {
-    _appendCondition(
-      "$column >= NOW()",
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+  QueryBuilder whereNowOrFuture(String column, {String boolean = 'and'}) {
+    _appendCondition("$column >= NOW()", isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
   @override
-  QueryBuilder whereNowOrPast(
-    String column, {
-    String boolean = 'and',
-  }) {
-    _appendCondition(
-      "$column <= NOW()",
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+  QueryBuilder whereNowOrPast(String column, {String boolean = 'and'}) {
+    _appendCondition("$column <= NOW()", isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
@@ -808,14 +716,8 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder wherePast(
-    String column, {
-    String boolean = 'and',
-  }) {
-    _appendCondition(
-      "$column < NOW()",
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+  QueryBuilder wherePast(String column, {String boolean = 'and'}) {
+    _appendCondition("$column < NOW()", isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
@@ -826,10 +728,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   ]) {
     String processedSQL = _processRawSQL(sql, rawBindings);
-    _appendCondition(
-      processedSQL,
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+    _appendCondition(processedSQL, isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
@@ -862,10 +761,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereToday(
-    String column, {
-    String boolean = 'and',
-  }) {
+  QueryBuilder whereToday(String column, {String boolean = 'and'}) {
     _appendCondition(
       "DATE($column) = CURDATE()",
       isOr: (boolean.toLowerCase() == 'or'),
@@ -874,10 +770,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereTodayOrAfter(
-    String column, {
-    String boolean = 'and',
-  }) {
+  QueryBuilder whereTodayOrAfter(String column, {String boolean = 'and'}) {
     _appendCondition(
       "DATE($column) >= CURDATE()",
       isOr: (boolean.toLowerCase() == 'or'),
@@ -886,10 +779,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
   }
 
   @override
-  QueryBuilder whereTodayOrBefore(
-    String column, {
-    String boolean = 'and',
-  }) {
+  QueryBuilder whereTodayOrBefore(String column, {String boolean = 'and'}) {
     _appendCondition(
       "DATE($column) <= CURDATE()",
       isOr: (boolean.toLowerCase() == 'or'),
@@ -918,18 +808,12 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     String condition = _createRelationshipCondition(relation, callback, false);
-    _appendCondition(
-      condition,
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+    _appendCondition(condition, isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
   @override
-  QueryBuilder orWhereHas(
-    String relation,
-    QueryCallback callback,
-  ) {
+  QueryBuilder orWhereHas(String relation, QueryCallback callback) {
     String condition = _createRelationshipCondition(relation, callback, false);
     _appendCondition(condition, isOr: true);
     return this;
@@ -942,18 +826,12 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   }) {
     String condition = _createRelationshipCondition(relation, callback, true);
-    _appendCondition(
-      condition,
-      isOr: (boolean.toLowerCase() == 'or'),
-    );
+    _appendCondition(condition, isOr: (boolean.toLowerCase() == 'or'));
     return this;
   }
 
   @override
-  QueryBuilder orWhereDoesntHave(
-    String relation,
-    QueryCallback callback,
-  ) {
+  QueryBuilder orWhereDoesntHave(String relation, QueryCallback callback) {
     String condition = _createRelationshipCondition(relation, callback, true);
     _appendCondition(condition, isOr: true);
     return this;
@@ -1009,8 +887,11 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     }
   }
 
-  String _createBetweenColumnsCondition(String column, List<String> columns,
-      {bool not = false}) {
+  String _createBetweenColumnsCondition(
+    String column,
+    List<String> columns, {
+    bool not = false,
+  }) {
     if (columns.length < 2) {
       throw InvalidArgumentException(
         'At least two columns must be provided for whereBetweenColumns.',
@@ -1020,11 +901,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     return "$column $op ${columns[0]} AND ${columns[1]}";
   }
 
-  String _createBetweenCondition(
-    String column,
-    List values,
-    bool not,
-  ) {
+  String _createBetweenCondition(String column, List values, bool not) {
     if (values.length < 2) {
       throw InvalidArgumentException(
         'The list of values must contain at least two items.',
@@ -1080,11 +957,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     return "MATCH($colStr) AGAINST(:$paramName$mode)";
   }
 
-  String _createHourCondition(
-    String column,
-    String operator,
-    dynamic value,
-  ) {
+  String _createHourCondition(String column, String operator, dynamic value) {
     if (value == null) {
       throw InvalidArgumentException(
         'The value for whereHour must not be null.',
@@ -1097,11 +970,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     return "HOUR($column) $operator :$paramName";
   }
 
-  String _createInCondition(
-    String column,
-    dynamic values,
-    bool not,
-  ) {
+  String _createInCondition(String column, dynamic values, bool not) {
     String clause = not ? "NOT IN" : "IN";
 
     if (values is List) {
@@ -1130,11 +999,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     }
   }
 
-  String _createJsonContainsCondition(
-    String column,
-    dynamic value,
-    bool not,
-  ) {
+  String _createJsonContainsCondition(String column, dynamic value, bool not) {
     final paramName = _nextParamName();
     bindings[paramName] = value;
 
@@ -1156,8 +1021,12 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     return "JSON_LENGTH($column) $operator :$paramName";
   }
 
-  String _createLikeCondition(String column, dynamic value,
-      {bool not = false, bool caseSensitive = false}) {
+  String _createLikeCondition(
+    String column,
+    dynamic value, {
+    bool not = false,
+    bool caseSensitive = false,
+  }) {
     final paramName = _nextParamName();
     bindings[paramName] = value;
 

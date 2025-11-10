@@ -55,18 +55,18 @@ class RequestFile {
 
   /// Store the file via your Storage layer.
   /// - `destPath` should include trailing slash if desired.
-  Future<String> store({
-    String path = '',
-    required String name,
-  }) =>
-      Storage.put(path, name, stream);
+  Future<String> store({String path = '', required String name}) async {
+    try {
+      final content = await bytes;
+      return await Storage.put(path, name, content.toList());
+    } catch (e) {
+      throw FileSystemException('Failed to store file as $name: $e');
+    }
+  }
 
   /// Move the file into a local path on disk.
   /// Creates directories as needed.
-  Future<String> move({
-    required String toPath,
-    required String name,
-  }) async {
+  Future<String> move({required String toPath, required String name}) async {
     final fullPath = sanitizeRoutePath('$toPath/$name');
     final file = File(fullPath);
     await file.parent.create(recursive: true);

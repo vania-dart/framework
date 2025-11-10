@@ -23,8 +23,10 @@ class DatabaseConnectionProxy implements DatabaseConnection {
 
   String _formatQuery(String? query, Map<String, dynamic> bindings) {
     if (query == null) {
-      Logger.log('Warning: Null query received in _formatQuery',
-          type: Logger.WARNING);
+      Logger.log(
+        'Warning: Null query received in _formatQuery',
+        type: Logger.WARNING,
+      );
       return 'INVALID QUERY: NULL';
     }
 
@@ -61,8 +63,10 @@ class DatabaseConnectionProxy implements DatabaseConnection {
   }
 
   @override
-  Future<bool> execute(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<bool> execute(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     final startTime = DateTime.now();
     try {
       final formattedQuery = _formatQuery(query, bindings);
@@ -72,15 +76,20 @@ class DatabaseConnectionProxy implements DatabaseConnection {
       return result;
     } catch (e) {
       final duration = DateTime.now().difference(startTime);
-      _monitor.recordQuery(_connectionId,
-          'Failed: ${_formatQuery(query, bindings)} - Error: $e', duration);
+      _monitor.recordQuery(
+        _connectionId,
+        'Failed: ${_formatQuery(query, bindings)} - Error: $e',
+        duration,
+      );
       rethrow;
     }
   }
 
   @override
-  Future<List<Map<String, dynamic>>> select(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<List<Map<String, dynamic>>> select(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     final startTime = DateTime.now();
     try {
       final formattedQuery = _formatQuery(query, bindings);
@@ -90,15 +99,20 @@ class DatabaseConnectionProxy implements DatabaseConnection {
       return result;
     } catch (e) {
       final duration = DateTime.now().difference(startTime);
-      _monitor.recordQuery(_connectionId,
-          'Failed: ${_formatQuery(query, bindings)} - Error: $e', duration);
+      _monitor.recordQuery(
+        _connectionId,
+        'Failed: ${_formatQuery(query, bindings)} - Error: $e',
+        duration,
+      );
       rethrow;
     }
   }
 
   @override
-  Future<dynamic> insert(String query,
-      [Map<String, dynamic> bindings = const {}]) async {
+  Future<dynamic> insert(
+    String query, [
+    Map<String, dynamic> bindings = const {},
+  ]) async {
     final startTime = DateTime.now();
     try {
       final formattedQuery = _formatQuery(query, bindings);
@@ -108,8 +122,11 @@ class DatabaseConnectionProxy implements DatabaseConnection {
       return result;
     } catch (e) {
       final duration = DateTime.now().difference(startTime);
-      _monitor.recordQuery(_connectionId,
-          'Failed: ${_formatQuery(query, bindings)} - Error: $e', duration);
+      _monitor.recordQuery(
+        _connectionId,
+        'Failed: ${_formatQuery(query, bindings)} - Error: $e',
+        duration,
+      );
       rethrow;
     }
   }

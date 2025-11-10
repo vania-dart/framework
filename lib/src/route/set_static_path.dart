@@ -7,11 +7,7 @@ import 'package:path/path.dart' as path;
 
 bool setStaticPath(HttpRequest req) {
   String routePath = Uri.decodeComponent(
-    Uri.parse(
-      sanitizeRoutePath(
-        req.uri.toString(),
-      ),
-    ).path.toLowerCase(),
+    Uri.parse(sanitizeRoutePath(req.uri.toString())).path.toLowerCase(),
   );
   if (!routePath.endsWith("/") && req.method.toLowerCase() == 'get') {
     if (req.uri.path == '/') {

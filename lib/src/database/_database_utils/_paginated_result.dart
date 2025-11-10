@@ -22,15 +22,15 @@ class PaginatedResult {
   });
 
   Map<String, dynamic> toMap() => {
-        'data': data,
-        'current_page': currentPage,
-        'per_page': perPage,
-        'total': total,
-        'last_page': lastPage,
-        'is_first': isFirst,
-        'is_last': isLast,
-        'has_more': hasMore,
-      };
+    'data': data,
+    'current_page': currentPage,
+    'per_page': perPage,
+    'total': total,
+    'last_page': lastPage,
+    'is_first': isFirst,
+    'is_last': isLast,
+    'has_more': hasMore,
+  };
 
   @override
   String toString() {

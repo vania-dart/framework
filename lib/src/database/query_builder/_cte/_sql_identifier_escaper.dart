@@ -87,8 +87,9 @@ class SqlIdentifierEscaper {
         identifier == identifier.toUpperCase() &&
         identifier.isNotEmpty &&
         RegExp(r'^[A-Z]+$').hasMatch(identifier)) {
-      if (RegExp(r'^(ID|URL|API|UUID|JSON|XML|HTML|CSS|JS)$')
-          .hasMatch(identifier)) {
+      if (RegExp(
+        r'^(ID|URL|API|UUID|JSON|XML|HTML|CSS|JS)$',
+      ).hasMatch(identifier)) {
         return false;
       }
       if (RegExp(r'(ID|NAME|CODE|TYPE|FLAG|DATA)$').hasMatch(identifier)) {
@@ -97,18 +98,21 @@ class SqlIdentifierEscaper {
       return true;
     }
 
-    if (RegExp(r'^(select|insert|update|delete|create|drop|alter|grant|revoke)')
-        .hasMatch(lower)) {
+    if (RegExp(
+      r'^(select|insert|update|delete|create|drop|alter|grant|revoke)',
+    ).hasMatch(lower)) {
       return true;
     }
 
-    if (RegExp(r'^(count|sum|avg|min|max|concat|substr|trim|upper|lower)$')
-        .hasMatch(lower)) {
+    if (RegExp(
+      r'^(count|sum|avg|min|max|concat|substr|trim|upper|lower)$',
+    ).hasMatch(lower)) {
       return true;
     }
 
-    if (RegExp(r'^(now|today|current_date|current_time|current_timestamp)$')
-        .hasMatch(lower)) {
+    if (RegExp(
+      r'^(now|today|current_date|current_time|current_timestamp)$',
+    ).hasMatch(lower)) {
       return true;
     }
 
@@ -120,14 +124,17 @@ class SqlIdentifierEscaper {
     return false;
   }
 
-  static void validateIdentifier(String identifier,
-      {String context = 'Identifier'}) {
+  static void validateIdentifier(
+    String identifier, {
+    String context = 'Identifier',
+  }) {
     if (identifier.trim().isEmpty) {
       throw InvalidArgumentException('$context cannot be empty or whitespace');
     }
     if (identifier.length > 63) {
       throw InvalidArgumentException(
-          '$context name is too long (max 63 characters): ${identifier.length}');
+        '$context name is too long (max 63 characters): ${identifier.length}',
+      );
     }
     if (identifier.contains('0')) {
       throw InvalidArgumentException('$context cannot contain null character');
