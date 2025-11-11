@@ -728,6 +728,23 @@ abstract class Model extends QueryBuilderImpl {
 
       String primaryRelation = wr.first;
 
+      List<String> getColumns = ['*'];
+      final relationParts = primaryRelation.split(':');
+
+      if (relationParts.length > 1) {
+        primaryRelation = relationParts.first.trim();
+
+        final columnsString = relationParts.last.trim();
+
+        if (columnsString.isNotEmpty) {
+          getColumns = columnsString
+              .split(',')
+              .map((col) => col.trim())
+              .where((col) => col.isNotEmpty)
+              .toList();
+        }
+      }
+
       if (!_relations.containsKey(primaryRelation)) {
         throw InvalidArgumentException(
           'Relation $relation not found in $runtimeType',
@@ -806,9 +823,9 @@ abstract class Model extends QueryBuilderImpl {
 
       if (wr.length > 1) {
         wr.removeAt(0);
-        results = await qb.include(wr.join('.')).get();
+        results = await qb.include(wr.join('.')).get(getColumns);
       } else {
-        results = await qb.get();
+        results = await qb.get(getColumns);
       }
 
       callBack(rela.match(models, results, primaryRelation));
