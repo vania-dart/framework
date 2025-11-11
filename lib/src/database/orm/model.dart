@@ -771,7 +771,16 @@ abstract class Model extends QueryBuilderImpl {
           }
         }
       } else {
-        Set ids = models.map((m) => m[rela.localKey]).toSet();
+        late final String getLocalKey;
+        if (rela is BelongsTo) {
+          getLocalKey =
+              rela.foreignKey ??
+              '${rela.related.runtimeType.toString()}_id'.toLowerCase();
+        } else {
+          getLocalKey = rela.localKey;
+        }
+
+        Set ids = models.map((m) => m[getLocalKey]).toSet();
 
         if (rela is BelongsToMany) {
           qb =
@@ -793,15 +802,16 @@ abstract class Model extends QueryBuilderImpl {
           qb = qb.whereIn(rela.foreignKey!, ids.toList()) as Model;
         }
       }
+      late final List<Map<String, dynamic>> results;
+
       if (wr.length > 1) {
         wr.removeAt(0);
-        var results = await qb.include(wr.join('.')).get();
-        callBack(rela.match(models, results, primaryRelation));
+        results = await qb.include(wr.join('.')).get();
       } else {
-        var results = await qb.get();
-
-        callBack(rela.match(models, results, primaryRelation));
+        results = await qb.get();
       }
+
+      callBack(rela.match(models, results, primaryRelation));
     }
   }
 
