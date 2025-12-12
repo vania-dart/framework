@@ -7,13 +7,49 @@ import '_query_builder_impl.dart';
 int _paramCounter = 0;
 
 abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
+  /// Valid SQL comparison operators to prevent SQL injection.
+  /// Only these operators are allowed in where clauses.
+  static const Set<String> _validOperators = {
+    '=',
+    '<>',
+    '!=',
+    '<',
+    '>',
+    '<=',
+    '>=',
+    'LIKE',
+    'NOT LIKE',
+    'ILIKE', // PostgreSQL case-insensitive LIKE
+    'NOT ILIKE',
+    'REGEXP',
+    'NOT REGEXP',
+    'RLIKE', // MySQL alias for REGEXP
+    'SIMILAR TO', // PostgreSQL
+  };
+
   set paramCounter(int paramN) {
     _paramCounter = paramN;
   }
 
+  /// Returns the current parameter counter value.
+  /// Useful for synchronizing nested queries.
+  int get currentParamCounter => _paramCounter;
+
   String _nextParamName() {
     _paramCounter++;
     return 'p$_paramCounter';
+  }
+
+  /// Validates that the given operator is a valid SQL comparison operator.
+  /// Throws [InvalidArgumentException] if the operator is not valid.
+  /// This prevents SQL injection attacks through malicious operators.
+  void _validateOperator(String operator) {
+    if (!_validOperators.contains(operator.toUpperCase())) {
+      throw InvalidArgumentException(
+        'Invalid SQL operator: "$operator". '
+        'Allowed operators: ${_validOperators.join(", ")}',
+      );
+    }
   }
 
   @override
@@ -41,6 +77,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   ]) {
     if (condition is String) {
+      _validateOperator(operator);
       final paramName = _nextParamName();
       bindings[paramName] = value;
       _appendCondition("$condition $operator :$paramName", isOr: true);
@@ -284,6 +321,7 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String boolean = 'and',
   ]) {
     if (condition is String) {
+      _validateOperator(operator);
       final paramName = _nextParamName();
       bindings[paramName] = value;
       _appendCondition(
@@ -974,12 +1012,6 @@ abstract mixin class WhereClausesBuilderImpl implements QueryBuilder {
     String clause = not ? "NOT IN" : "IN";
 
     if (values is List) {
-      if (values.isEmpty) {
-        throw InvalidArgumentException(
-          "The list of values for IN must not be empty.",
-        );
-      }
-
       List<String> paramNames = [];
       for (var i = 0; i < values.length; i++) {
         final paramName = _nextParamName();

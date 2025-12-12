@@ -712,131 +712,146 @@ abstract class Model extends QueryBuilderImpl {
     return this;
   }
 
-  void _clearWithRelation(_RelationQuery r) {
-    _withRelation = _withRelation.where((item) => item != r).toList();
-  }
-
   Future<void> _eagerLoadRelation(
     List<Map<String, dynamic>> models,
     _RelationQuery rq,
     Function(dynamic data) callBack,
   ) async {
     String relation = rq.relation;
+    List<String> wr = relation.split('.');
 
-    if (_withRelation.any((r) => r.relation == relation)) {
-      List<String> wr = relation.split('.');
+    String primaryRelation = wr.first;
 
-      String primaryRelation = wr.first;
+    List<String> getColumns = ['*'];
+    final relationParts = primaryRelation.split(':');
 
-      List<String> getColumns = ['*'];
-      final relationParts = primaryRelation.split(':');
+    if (relationParts.length > 1) {
+      primaryRelation = relationParts.first.trim();
 
-      if (relationParts.length > 1) {
-        primaryRelation = relationParts.first.trim();
+      final columnsString = relationParts.last.trim();
 
-        final columnsString = relationParts.last.trim();
+      if (columnsString.isNotEmpty) {
+        getColumns = columnsString
+            .split(',')
+            .map((col) => col.trim())
+            .where((col) => col.isNotEmpty)
+            .toList();
+      }
+    }
 
-        if (columnsString.isNotEmpty) {
-          getColumns = columnsString
-              .split(',')
-              .map((col) => col.trim())
-              .where((col) => col.isNotEmpty)
-              .toList();
+    if (!_relations.containsKey(primaryRelation)) {
+      throw InvalidArgumentException(
+        'Relation $relation not found in $runtimeType',
+      );
+    }
+
+    Relation rela = _relations[primaryRelation] as Relation;
+    Model qb = rela.related;
+
+    if (rq.callback != null) {
+      qb = rq.callback!(qb) as Model;
+    }
+
+    if (rela is MorphRelation) {
+      if (rela is MorphTo) {
+        Set ids = models.map((m) => m[rela.morphKey]).toSet();
+
+        // Early return if no IDs to query
+        if (ids.isEmpty) {
+          callBack(rela.match(models, [], primaryRelation));
+          return;
         }
-      }
 
-      if (!_relations.containsKey(primaryRelation)) {
-        throw InvalidArgumentException(
-          'Relation $relation not found in $runtimeType',
-        );
-      }
-
-      Relation rela = _relations[primaryRelation] as Relation;
-      Model qb = rela.related;
-      rela.parent._clearWithRelation(rq);
-
-      if (rq.callback != null) {
-        qb = rq.callback!(qb) as Model;
-      }
-
-      if (rela is MorphRelation) {
-        if (rela is MorphTo) {
-          Set ids = models.map((m) => m[rela.morphKey]).toSet();
-          qb = qb.whereIn(rela.localKey, ids.toList()) as Model;
-        } else {
-          Set ids = models.map((m) => m[rela.localKey]).toSet();
-
-          if (rela is MorphToMany || rela is MorphedByMany) {
-            qb =
-                qb
-                        .whereIn(rela.morphKey, ids.toList())
-                        .whereEqualTo(rela.morphType, rela.type)
-                        .join(
-                          rela.related.tableName,
-                          '${rela.pivotTable}.${rela.relatedMorphKey}',
-                          '=',
-                          '${rela.related.tableName}.${rela.localKey}',
-                        )
-                    as Model;
-            qb.tableName = rela.pivotTable!;
-          } else {
-            qb =
-                qb
-                        .whereIn(rela.morphKey, ids.toList())
-                        .whereEqualTo(rela.morphType, rela.type)
-                    as Model;
-          }
-        }
+        qb = qb.whereIn(rela.localKey, ids.toList()) as Model;
       } else {
-        late final String getLocalKey;
-        if (rela is BelongsTo) {
-          getLocalKey =
-              rela.foreignKey ??
-              '${rela.related.runtimeType.toString()}_id'.toLowerCase();
-        } else {
-          getLocalKey = rela.localKey;
+        Set ids = models.map((m) => m[rela.localKey]).toSet();
+
+        // Early return if no IDs to query
+        if (ids.isEmpty) {
+          callBack(rela.match(models, [], primaryRelation));
+          return;
         }
 
-        Set ids = models.map((m) => m[getLocalKey]).toSet();
-
-        if (rela is BelongsToMany) {
+        if (rela is MorphToMany || rela is MorphedByMany) {
           qb =
               qb
-                      .whereIn(
-                        '${rela.pivotTable}.${rela.parentPivotKey}',
-                        ids.toList(),
-                      )
+                      .whereIn(rela.morphKey, ids.toList())
+                      .whereEqualTo(rela.morphType, rela.type)
                       .join(
-                        rela.pivotTable,
-                        '${rela.pivotTable}.${rela.relatedPivotKey}',
+                        rela.related.tableName,
+                        '${rela.pivotTable}.${rela.relatedMorphKey}',
                         '=',
-                        '${rela.related.tableName}.${rela.relatedLocalKey}',
+                        '${rela.related.tableName}.${rela.localKey}',
                       )
                   as Model;
-        } else if (rela is BelongsTo) {
-          qb = qb.whereIn(rela.localKey, ids.toList()) as Model;
+          qb.tableName = rela.pivotTable!;
         } else {
-          qb = qb.whereIn(rela.foreignKey!, ids.toList()) as Model;
+          qb =
+              qb
+                      .whereIn(rela.morphKey, ids.toList())
+                      .whereEqualTo(rela.morphType, rela.type)
+                  as Model;
         }
       }
-      late final List<Map<String, dynamic>> results;
-
-      if (wr.length > 1) {
-        wr.removeAt(0);
-        results = await qb.include(wr.join('.')).get(getColumns);
+    } else {
+      late final String getLocalKey;
+      if (rela is BelongsTo) {
+        getLocalKey =
+            rela.foreignKey ??
+            '${rela.related.runtimeType.toString()}_id'.toLowerCase();
       } else {
-        results = await qb.get(getColumns);
+        getLocalKey = rela.localKey;
       }
 
-      callBack(rela.match(models, results, primaryRelation));
+      Set ids = models.map((m) => m[getLocalKey]).toSet();
+
+      // Early return if no IDs to query
+      if (ids.isEmpty) {
+        callBack(rela.match(models, [], primaryRelation));
+        return;
+      }
+
+      if (rela is BelongsToMany) {
+        qb =
+            qb
+                    .whereIn(
+                      '${rela.pivotTable}.${rela.parentPivotKey}',
+                      ids.toList(),
+                    )
+                    .join(
+                      rela.pivotTable,
+                      '${rela.pivotTable}.${rela.relatedPivotKey}',
+                      '=',
+                      '${rela.related.tableName}.${rela.relatedLocalKey}',
+                    )
+                as Model;
+      } else if (rela is BelongsTo) {
+        qb = qb.whereIn(rela.localKey, ids.toList()) as Model;
+      } else {
+        qb = qb.whereIn(rela.foreignKey!, ids.toList()) as Model;
+      }
     }
+
+    late final List<Map<String, dynamic>> results;
+
+    if (wr.length > 1) {
+      wr.removeAt(0);
+      results = await qb.include(wr.join('.')).get(getColumns);
+    } else {
+      results = await qb.get(getColumns);
+    }
+
+    callBack(rela.match(models, results, primaryRelation));
   }
 
   Future<List<Map<String, dynamic>>> _loadRelations(
     List<Map<String, dynamic>> result,
   ) async {
     if (_withRelation.isNotEmpty) {
-      final relationsToLoad = List<_RelationQuery>.from(_withRelation);
+      // Create an immutable copy of relations to load and clear the original list
+      // This prevents concurrent modification when iterating
+      final relationsToLoad = List<_RelationQuery>.unmodifiable(_withRelation);
+      _withRelation = [];
 
       for (_RelationQuery relation in relationsToLoad) {
         await _eagerLoadRelation(result, relation, (callBackResult) {

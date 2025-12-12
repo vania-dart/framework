@@ -31,7 +31,9 @@ class MigrationRunner {
     } catch (e) {
       stopwatch.stop();
       if (e is QueryException) {
-        stderr.write(e.cause);
+        stderr.writeln(e.cause);
+      } else {
+        stderr.writeln(e);
       }
       stderr.writeln(
         '❌ Migration $migrationName failed ......................................\x1B[31m ${stopwatch.elapsedMilliseconds}ms FAILED\x1B[0m',
