@@ -228,8 +228,8 @@ class FieldValidation {
     return this;
   }
 
-  FieldValidation regExp({String? messages}) {
-    _rules.add('reg_exp');
+  FieldValidation regExp(String rule, {String? messages}) {
+    _rules.add('reg_exp:$rule');
     if (messages != null) {
       _messages['$fieldName.reg_exp'] = messages;
     }
@@ -276,13 +276,8 @@ class FieldValidation {
     return this;
   }
 
-  @override
-  String toString() {
-    return _rules.join('|');
-  }
-
-  FieldValidation unique(String table, String column, {String? messages}) {
-    _rules.add('unique:$table,$column');
+  FieldValidation unique(String table, {String? messages}) {
+    _rules.add('unique:$table,$fieldName');
     if (messages != null) {
       _messages['$fieldName.unique'] = messages;
     }
@@ -303,5 +298,10 @@ class FieldValidation {
       _messages['$fieldName.uuid'] = messages;
     }
     return this;
+  }
+
+  @override
+  String toString() {
+    return _rules.join('|');
   }
 }
