@@ -95,7 +95,7 @@ class RequestHandler {
           }
         }
       } on BaseHttpResponseException catch (error) {
-        Response? customResponse = _handleException(error, request!);
+        Response? customResponse = _handleException(error, request);
         if (customResponse != null) {
           return customResponse.makeResponse(req.response);
         }
@@ -128,20 +128,20 @@ class RequestHandler {
 
         error.response(isHtml).makeResponse(req.response);
       } on InvalidArgumentException catch (e) {
-        Response? customResponse = _handleException(e, request!);
+        Response? customResponse = _handleException(e, request);
         if (customResponse != null) {
           return customResponse.makeResponse(req.response);
         }
         Logger.log(e.message, type: Logger.ERROR);
         _response(req, e.message);
       } on DatabaseException catch (error) {
-        Response? customResponse = _handleException(error, request!);
+        Response? customResponse = _handleException(error, request);
         if (customResponse != null) {
           return customResponse.makeResponse(req.response);
         }
         _response(req, error.message);
       } on QueryException catch (error) {
-        Response? customResponse = _handleException(error, request!);
+        Response? customResponse = _handleException(error, request);
         if (customResponse != null) {
           return customResponse.makeResponse(req.response);
         }
