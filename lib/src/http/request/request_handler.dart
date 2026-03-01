@@ -161,12 +161,12 @@ class RequestHandler {
     try {
       ExceptionHandler? handler =
           Application().getExceptionHandler(exception.runtimeType);
-      if (handler != null && request != null) {
+      if (handler != null) {
         return handler.handle(exception, request);
       }
       GeneralExceptionHandler? generalHandler =
           Application().getGeneralExceptionHandler();
-      if (generalHandler != null && request != null) {
+      if (generalHandler != null) {
         return generalHandler.handle(exception, request);
       }
     } catch (_) {}

@@ -10,7 +10,7 @@ import 'package:vania/application.dart';
 
 class DatabaseExceptionHandler extends ExceptionHandler<DatabaseException> {
   @override
-  Response handle(DatabaseException exception, Request request) {
+  Response handle(DatabaseException exception, Request? request) {
     return Response.json({
       'success': false,
       'message': 'Database error occurred',
@@ -21,7 +21,7 @@ class DatabaseExceptionHandler extends ExceptionHandler<DatabaseException> {
 
 class QueryExceptionHandler extends ExceptionHandler<QueryException> {
   @override
-  Response handle(QueryException exception, Request request) {
+  Response handle(QueryException exception, Request? request) {
     return Response.json({
       'success': false,
       'message': 'Query error occurred',
@@ -32,7 +32,7 @@ class QueryExceptionHandler extends ExceptionHandler<QueryException> {
 
 class NotFoundExceptionHandler extends ExceptionHandler<NotFoundException> {
   @override
-  Response handle(NotFoundException exception, Request request) {
+  Response handle(NotFoundException exception, Request? request) {
     return Response.json({
       'success': false,
       'message': exception.message,
@@ -42,7 +42,7 @@ class NotFoundExceptionHandler extends ExceptionHandler<NotFoundException> {
 
 class ValidationExceptionHandler extends ExceptionHandler<ValidationException> {
   @override
-  Response handle(ValidationException exception, Request request) {
+  Response handle(ValidationException exception, Request? request) {
     return Response.json({
       'success': false,
       'message': 'Validation failed',
@@ -53,7 +53,7 @@ class ValidationExceptionHandler extends ExceptionHandler<ValidationException> {
 
 class ThirdPartyExceptionHandler extends GeneralExceptionHandler {
   @override
-  Response? handle(dynamic exception, Request request) {
+  Response? handle(dynamic exception, Request? request) {
     return Response.json({
       'success': false,
       'message': 'An unexpected error occurred',
