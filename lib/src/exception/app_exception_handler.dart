@@ -68,18 +68,12 @@ class AppExceptionServiceProvider extends ServiceProvider {
 
   @override
   Future<void> register() async {
-    Application().addExceptionHandler<DatabaseException>(
-      DatabaseExceptionHandler(),
-    );
-    Application().addExceptionHandler<QueryException>(
-      QueryExceptionHandler(),
-    );
-    Application().addExceptionHandler<NotFoundException>(
-      NotFoundExceptionHandler(),
-    );
-    Application().addExceptionHandler<ValidationException>(
-      ValidationExceptionHandler(),
-    );
+    Application().addExceptionHandlers({
+      DatabaseException: DatabaseExceptionHandler(),
+      QueryException: QueryExceptionHandler(),
+      NotFoundException: NotFoundExceptionHandler(),
+      ValidationException: ValidationExceptionHandler(),
+    });
     Application().setGeneralExceptionHandler(
       ThirdPartyExceptionHandler(),
     );

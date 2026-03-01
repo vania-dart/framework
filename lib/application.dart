@@ -29,6 +29,10 @@ class Application extends Container {
     _exceptionHandlers[T] = handler;
   }
 
+  void addExceptionHandlers(Map<Type, ExceptionHandler> handlers) {
+    _exceptionHandlers.addAll(handlers);
+  }
+
   void setGeneralExceptionHandler(GeneralExceptionHandler handler) {
     _generalExceptionHandler = handler;
   }
