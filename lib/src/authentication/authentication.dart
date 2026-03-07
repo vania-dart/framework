@@ -254,7 +254,7 @@ class Auth {
       return true;
     } else {
       Map<String, dynamic>? exists = await PersonalAccessToken().query
-          .where('token', '=', md5.convert(utf8.encode(token)))
+          .where('token', '=', md5.convert(utf8.encode(token)).toString())
           .whereNull('deleted_at')
           .first(['id']);
       // Throw 401 Error if token not found
