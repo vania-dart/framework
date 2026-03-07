@@ -183,7 +183,7 @@ class Auth {
       await PersonalAccessToken().query.insert({
         'name': _userGuard,
         'tokenable_id': user['id'],
-        'token': md5.convert(utf8.encode(newToken['access_token'])),
+        'token': md5.convert(utf8.encode(newToken['access_token'])).toString(),
         'created_at': DateTime.now(),
       });
     }
@@ -215,7 +215,7 @@ class Auth {
   ///
   Future<bool> deleteCurrentToken(String token) async {
     await PersonalAccessToken().query
-        .where('token', '=', md5.convert(utf8.encode(token)))
+        .where('token', '=', md5.convert(utf8.encode(token)).toString())
         .update({'deleted_at': DateTime.now()});
     return true;
   }
@@ -263,7 +263,7 @@ class Auth {
       }
 
       await PersonalAccessToken().query
-          .where('token', '=', md5.convert(utf8.encode(token)))
+          .where('token', '=', md5.convert(utf8.encode(token)).toString())
           .update({'last_used_at': DateTime.now()});
 
       if (user == null) {
