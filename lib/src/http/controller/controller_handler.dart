@@ -1,10 +1,12 @@
 import 'package:vania/src/exception/database_exception.dart';
+import 'package:vania/src/exception/exception_handler.dart';
 import 'package:vania/src/exception/query_exception.dart';
 import 'package:vania/src/exception/validation_exception.dart';
 import 'package:vania/src/http/request/request.dart';
 import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/route/route_data.dart';
 import 'package:vania/src/route/route_history.dart';
+import 'package:vania/application.dart';
 
 import '../../exception/base_http_exception.dart';
 import '../../exception/invalid_argument_exception.dart';
@@ -51,6 +53,10 @@ class ControllerHandler {
 
       response.makeResponse(request.response);
     } on ValidationException catch (error) {
+      Response? customResponse = _handleException(error, request);
+      if (customResponse != null) {
+        return customResponse.makeResponse(request.response);
+      }
       bool isHtml = request.request.headers
           .value('accept')
           .toString()
@@ -63,16 +69,52 @@ class ControllerHandler {
         error.response(false).makeResponse(request.response);
       }
     } on InvalidArgumentException catch (error) {
+      Response? customResponse = _handleException(error, request);
+      if (customResponse != null) {
+        return customResponse.makeResponse(request.response);
+      }
       _response(request, error.message);
     } on DatabaseException catch (error) {
+      Response? customResponse = _handleException(error, request);
+      if (customResponse != null) {
+        return customResponse.makeResponse(request.response);
+      }
       _response(request, error.message, 500);
     } on QueryException catch (error) {
+      Response? customResponse = _handleException(error, request);
+      if (customResponse != null) {
+        return customResponse.makeResponse(request.response);
+      }
       _response(request, error.cause ?? '', 500);
     } on BaseHttpResponseException catch (error) {
+      Response? customResponse = _handleException(error, request);
+      if (customResponse != null) {
+        return customResponse.makeResponse(request.response);
+      }
       _response(request, error.message, error.code);
     } catch (error) {
+      Response? customResponse = _handleException(error, request);
+      if (customResponse != null) {
+        return customResponse.makeResponse(request.response);
+      }
       _response(request, error.toString());
     }
+  }
+
+  Response? _handleException(dynamic exception, Request request) {
+    try {
+      ExceptionHandler? handler =
+          Application().getExceptionHandler(exception.runtimeType);
+      if (handler != null) {
+        return handler.handle(exception, request);
+      }
+      GeneralExceptionHandler? generalHandler =
+          Application().getGeneralExceptionHandler();
+      if (generalHandler != null) {
+        return generalHandler.handle(exception, request);
+      }
+    } catch (_) {}
+    return null;
   }
 }
 

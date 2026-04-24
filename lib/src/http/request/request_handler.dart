@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:vania/src/exception/database_exception.dart';
+import 'package:vania/src/exception/exception_handler.dart';
 import 'package:vania/src/exception/query_exception.dart';
 import 'package:vania/src/extensions/extensions.dart';
 import 'package:vania/src/http/response/response.dart';
@@ -24,6 +25,7 @@ import 'package:vania/src/websocket/web_socket_handler.dart';
 import 'package:vania/src/exception/base_http_exception.dart';
 import 'package:vania/src/logger/logger.dart';
 import 'package:vania/src/utils/helper.dart';
+import 'package:vania/application.dart';
 import 'request.dart';
 
 HttpRequest? globalHttpRequest;
@@ -48,6 +50,7 @@ class RequestHandler {
       WebSocketHandler().handler(req);
     } else {
       bool isHtml = req.headers.value('accept').toString().contains('html');
+      Request? request;
       try {
         HttpCors(req);
         RouteData? route = httpRouteHandler(req);
@@ -57,7 +60,7 @@ class RequestHandler {
         String requestMethod = req.method.toUpperCase();
 
         if (route != null) {
-          Request request = Request().from(request: req, route: route);
+          request = Request().from(request: req, route: route);
           await request.extractBody();
 
           if (isHtml) {
@@ -92,6 +95,11 @@ class RequestHandler {
           }
         }
       } on BaseHttpResponseException catch (error) {
+        Response? customResponse = _handleException(error, request);
+        if (customResponse != null) {
+          return customResponse.makeResponse(req.response);
+        }
+
         if (error is NotFoundException && isHtml) {
           if (File('lib/resources/view/errors/404.html').existsSync()) {
             return view('errors/404').makeResponse(req.response);
@@ -120,17 +128,49 @@ class RequestHandler {
 
         error.response(isHtml).makeResponse(req.response);
       } on InvalidArgumentException catch (e) {
+        Response? customResponse = _handleException(e, request);
+        if (customResponse != null) {
+          return customResponse.makeResponse(req.response);
+        }
         Logger.log(e.message, type: Logger.ERROR);
         _response(req, e.message);
       } on DatabaseException catch (error) {
+        Response? customResponse = _handleException(error, request);
+        if (customResponse != null) {
+          return customResponse.makeResponse(req.response);
+        }
         _response(req, error.message);
       } on QueryException catch (error) {
+        Response? customResponse = _handleException(error, request);
+        if (customResponse != null) {
+          return customResponse.makeResponse(req.response);
+        }
         _response(req, error.cause);
       } catch (e) {
+        Response? customResponse = _handleException(e, request);
+        if (customResponse != null) {
+          return customResponse.makeResponse(req.response);
+        }
         Logger.log(e.toString(), type: Logger.ERROR);
         _response(req, e.toString());
       }
     }
+  }
+
+  Response? _handleException(dynamic exception, Request? request) {
+    try {
+      ExceptionHandler? handler =
+          Application().getExceptionHandler(exception.runtimeType);
+      if (handler != null) {
+        return handler.handle(exception, request);
+      }
+      GeneralExceptionHandler? generalHandler =
+          Application().getGeneralExceptionHandler();
+      if (generalHandler != null) {
+        return generalHandler.handle(exception, request);
+      }
+    } catch (_) {}
+    return null;
   }
 
   void _response(HttpRequest req, dynamic message, {int statusCode = 500}) {

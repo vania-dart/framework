@@ -1,4 +1,5 @@
 import 'src/container.dart';
+import 'src/exception/exception_handler.dart';
 import 'src/ioc_container.dart';
 import 'src/localization_handler/localization.dart';
 import 'src/server/base_http_server.dart';
@@ -10,6 +11,9 @@ import 'src/utils/helper.dart' show env;
 class Application extends Container {
   static Application? _singleton;
 
+  final Map<Type, ExceptionHandler> _exceptionHandlers = {};
+  GeneralExceptionHandler? _generalExceptionHandler;
+
   factory Application() {
     if (_singleton == null) {
       _singleton = Application._internal();
@@ -20,6 +24,26 @@ class Application extends Container {
   }
 
   Application._internal();
+
+  void addExceptionHandler<T>(ExceptionHandler<T> handler) {
+    _exceptionHandlers[T] = handler;
+  }
+
+  void addExceptionHandlers(Map<Type, ExceptionHandler> handlers) {
+    _exceptionHandlers.addAll(handlers);
+  }
+
+  void setGeneralExceptionHandler(GeneralExceptionHandler handler) {
+    _generalExceptionHandler = handler;
+  }
+
+  ExceptionHandler? getExceptionHandler(Type type) {
+    return _exceptionHandlers[type];
+  }
+
+  GeneralExceptionHandler? getGeneralExceptionHandler() {
+    return _generalExceptionHandler;
+  }
 
   late BaseHttpServer _server;
 
