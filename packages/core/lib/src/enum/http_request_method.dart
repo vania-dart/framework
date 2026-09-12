@@ -1,0 +1,16 @@
+enum HttpRequestMethod {
+  get,
+  post,
+  put,
+  patch,
+  delete,
+  purge,
+  options,
+  copy,
+  view,
+  link,
+  unlink,
+  lock,
+  unlock,
+  propfind,
+}
