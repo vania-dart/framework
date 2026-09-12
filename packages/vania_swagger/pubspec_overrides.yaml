@@ -1,0 +1,3 @@
+dependency_overrides:
+  vania:
+    path: ../core
