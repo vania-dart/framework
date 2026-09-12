@@ -1,0 +1,19 @@
+name: vania_redis
+description: Redis client, cache driver, Lua scripting, pub/sub, and pooling for Vania.
+version: 1.0.0
+homepage: https://vdart.dev
+repository: https://github.com/vania-dart/framework/packages/vania_redis
+issue_tracker: https://github.com/vania-dart/framework/issues
+documentation: https://vdart.dev/docs
+topics: [ server, backend, redis, cache, vania ]
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  redis: ^4.1.0
+  vania: ^2.0.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.2
