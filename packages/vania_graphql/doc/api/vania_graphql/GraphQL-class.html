@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the GraphQL class from the vania_graphql library, for the Dart programming language.">
+  <title>GraphQL class - vania_graphql library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">vania_graphql</a></li>
+    <li><a href="../vania_graphql/">vania_graphql.dart</a></li>
+    <li class="self-crumb">GraphQL class</li>
+  </ol>
+  <div class="self-name">GraphQL</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="vania_graphql&#47;vania_graphql-library-sidebar.html"
+    data-below-sidebar="vania_graphql&#47;GraphQL-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">GraphQL</span> class 
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>A Dart implementation of a GraphQL server.</p>
+</section>
+
+
+
+    
+  <section class="summary offset-anchor" id="constructors">
+    <h2>Constructors</h2>
+    <dl class="constructor-summary-list">
+        <dt id="GraphQL.new" class="callable">
+          <span class="name"><a href="../vania_graphql/GraphQL/GraphQL.html">GraphQL</a></span><span class="signature">(<span class="parameter" id="param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, {</span><span class="parameter" id="param-introspect"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">introspect</span> = <span class="default-value">true</span>, </span><span class="parameter" id="param-defaultFieldResolver"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-async/FutureOr-class.html">FutureOr</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span></span> <span class="parameter-name">defaultFieldResolver</span>&lt;<wbr><span class="type-parameter">T</span>&gt;(<span class="parameter" id="param-"><span class="type-annotation">T</span>, </span><span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, </span><span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span></span>)?, </span><span class="parameter" id="param-customTypes"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../vania_graphql/GraphQLType-class.html">GraphQLType</a></span>&gt;</span></span> <span class="parameter-name">customTypes</span> = <span class="default-value">const &lt;GraphQLType&gt;[]</span></span>})</span>
+        </dt>
+        <dd>
+          
+        </dd>
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="customTypes" class="property">
+  <span class="name"><a href="../vania_graphql/GraphQL/customTypes.html">customTypes</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../vania_graphql/GraphQLType-class.html">GraphQLType</a></span>&gt;</span></span>
+  
+
+</dt>
+<dd>
+  Any custom types to include in introspection information.
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="defaultFieldResolver" class="property">
+  <span class="name"><a href="../vania_graphql/GraphQL/defaultFieldResolver.html">defaultFieldResolver</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/FutureOr-class.html">FutureOr</a><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span> Function&lt;<wbr><span class="type-parameter">T</span>&gt;<span class="signature">(<span class="parameter" id="param-"><span class="type-annotation">T</span>, </span><span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, </span><span class="parameter" id="param-"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span></span>)</span>?</span>
+  
+
+</dt>
+<dd>
+  An optional callback that can be used to resolve fields from objects that are not <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a>s,
+when the related field has no resolver.
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="coerceArgumentValues" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/coerceArgumentValues.html">coerceArgumentValues</a></span><span class="signature">(<wbr><span class="parameter" id="coerceArgumentValues-param-objectType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a></span> <span class="parameter-name">objectType</span>, </span><span class="parameter" id="coerceArgumentValues-param-field"><span class="type-annotation">SelectionContext</span> <span class="parameter-name">field</span>, </span><span class="parameter" id="coerceArgumentValues-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="coerceVariableValues" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/coerceVariableValues.html">coerceVariableValues</a></span><span class="signature">(<wbr><span class="parameter" id="coerceVariableValues-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="coerceVariableValues-param-operation"><span class="type-annotation">OperationDefinitionContext</span> <span class="parameter-name">operation</span>, </span><span class="parameter" id="coerceVariableValues-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="collectFields" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/collectFields.html">collectFields</a></span><span class="signature">(<wbr><span class="parameter" id="collectFields-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="collectFields-param-objectType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a>?</span> <span class="parameter-name">objectType</span>, </span><span class="parameter" id="collectFields-param-selectionSet"><span class="type-annotation">SelectionSetContext</span> <span class="parameter-name">selectionSet</span>, </span><span class="parameter" id="collectFields-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, {</span><span class="parameter" id="collectFields-param-visitedFragments"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a>?</span> <span class="parameter-name">visitedFragments</span>, </span><span class="parameter" id="collectFields-param-parentType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a>?</span> <span class="parameter-name">parentType</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, <span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter">SelectionContext</span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="completeValue" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/completeValue.html">completeValue</a></span><span class="signature">(<wbr><span class="parameter" id="completeValue-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="completeValue-param-fieldName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">fieldName</span>, </span><span class="parameter" id="completeValue-param-fieldType"><span class="type-annotation"><a href="../vania_graphql/GraphQLType-class.html">GraphQLType</a></span> <span class="parameter-name">fieldType</span>, </span><span class="parameter" id="completeValue-param-fields"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter">SelectionContext</span>&gt;</span></span> <span class="parameter-name">fields</span>, </span><span class="parameter" id="completeValue-param-result"><span class="type-annotation">dynamic</span> <span class="parameter-name">result</span>, </span><span class="parameter" id="completeValue-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="completeValue-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span>, {</span><span class="parameter" id="completeValue-param-lazy"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a></span>&gt;</span></span> <span class="parameter-name">lazy</span> = <span class="default-value">const []</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="convertType" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/convertType.html">convertType</a></span><span class="signature">(<wbr><span class="parameter" id="convertType-param-ctx"><span class="type-annotation">TypeContext</span> <span class="parameter-name">ctx</span>, {</span><span class="parameter" id="convertType-param-usePolymorphicName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">usePolymorphicName</span> = <span class="default-value">false</span>, </span><span class="parameter" id="convertType-param-parent"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a>?</span> <span class="parameter-name">parent</span></span>})
+    <span class="returntype parameter">&#8594; <a href="../vania_graphql/GraphQLType-class.html">GraphQLType</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="createSourceEventStream" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/createSourceEventStream.html">createSourceEventStream</a></span><span class="signature">(<wbr><span class="parameter" id="createSourceEventStream-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="createSourceEventStream-param-subscription"><span class="type-annotation">OperationDefinitionContext</span> <span class="parameter-name">subscription</span>, </span><span class="parameter" id="createSourceEventStream-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="createSourceEventStream-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="createSourceEventStream-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="doesFragmentTypeApply" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/doesFragmentTypeApply.html">doesFragmentTypeApply</a></span><span class="signature">(<wbr><span class="parameter" id="doesFragmentTypeApply-param-objectType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a>?</span> <span class="parameter-name">objectType</span>, </span><span class="parameter" id="doesFragmentTypeApply-param-fragmentType"><span class="type-annotation">TypeConditionContext</span> <span class="parameter-name">fragmentType</span>, {</span><span class="parameter" id="doesFragmentTypeApply-param-parentType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a>?</span> <span class="parameter-name">parentType</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="executeField" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/executeField.html">executeField</a></span><span class="signature">(<wbr><span class="parameter" id="executeField-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="executeField-param-fieldName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">fieldName</span>, </span><span class="parameter" id="executeField-param-objectType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a></span> <span class="parameter-name">objectType</span>, </span><span class="parameter" id="executeField-param-objectValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">objectValue</span>, </span><span class="parameter" id="executeField-param-fields"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter">SelectionContext</span>&gt;</span></span> <span class="parameter-name">fields</span>, </span><span class="parameter" id="executeField-param-fieldType"><span class="type-annotation"><a href="../vania_graphql/GraphQLType-class.html">GraphQLType</a></span> <span class="parameter-name">fieldType</span>, </span><span class="parameter" id="executeField-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="executeField-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span>, {</span><span class="parameter" id="executeField-param-lazy"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a></span>&gt;</span></span> <span class="parameter-name">lazy</span> = <span class="default-value">const []</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="executeMutation" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/executeMutation.html">executeMutation</a></span><span class="signature">(<wbr><span class="parameter" id="executeMutation-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="executeMutation-param-mutation"><span class="type-annotation">OperationDefinitionContext</span> <span class="parameter-name">mutation</span>, </span><span class="parameter" id="executeMutation-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="executeMutation-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="executeMutation-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="executeMutation-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, <span class="type-parameter">dynamic</span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="executeQuery" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/executeQuery.html">executeQuery</a></span><span class="signature">(<wbr><span class="parameter" id="executeQuery-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="executeQuery-param-query"><span class="type-annotation">OperationDefinitionContext</span> <span class="parameter-name">query</span>, </span><span class="parameter" id="executeQuery-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="executeQuery-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="executeQuery-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="executeQuery-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="executeRequest" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/executeRequest.html">executeRequest</a></span><span class="signature">(<wbr><span class="parameter" id="executeRequest-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="executeRequest-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, {</span><span class="parameter" id="executeRequest-param-operationName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">operationName</span>, </span><span class="parameter" id="executeRequest-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span> = <span class="default-value">const &lt;String, dynamic&gt;{}</span>, </span><span class="parameter" id="executeRequest-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="executeRequest-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span> = <span class="default-value">const &lt;String, dynamic&gt;{}</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="executeSelectionSet" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/executeSelectionSet.html">executeSelectionSet</a></span><span class="signature">(<wbr><span class="parameter" id="executeSelectionSet-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="executeSelectionSet-param-selectionSet"><span class="type-annotation">SelectionSetContext</span> <span class="parameter-name">selectionSet</span>, </span><span class="parameter" id="executeSelectionSet-param-objectType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a>?</span> <span class="parameter-name">objectType</span>, </span><span class="parameter" id="executeSelectionSet-param-objectValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">objectValue</span>, </span><span class="parameter" id="executeSelectionSet-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="executeSelectionSet-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span>, {</span><span class="parameter" id="executeSelectionSet-param-lazy"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a></span>&gt;</span></span> <span class="parameter-name">lazy</span> = <span class="default-value">const []</span>, </span><span class="parameter" id="executeSelectionSet-param-parentType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a>?</span> <span class="parameter-name">parentType</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="executeSubscriptionEvent" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/executeSubscriptionEvent.html">executeSubscriptionEvent</a></span><span class="signature">(<wbr><span class="parameter" id="executeSubscriptionEvent-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="executeSubscriptionEvent-param-subscription"><span class="type-annotation">OperationDefinitionContext</span> <span class="parameter-name">subscription</span>, </span><span class="parameter" id="executeSubscriptionEvent-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="executeSubscriptionEvent-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="executeSubscriptionEvent-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="executeSubscriptionEvent-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="getDirectiveValue" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/getDirectiveValue.html">getDirectiveValue</a></span><span class="signature">(<wbr><span class="parameter" id="getDirectiveValue-param-name"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">name</span>, </span><span class="parameter" id="getDirectiveValue-param-argumentName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">argumentName</span>, </span><span class="parameter" id="getDirectiveValue-param-holder"><span class="type-annotation">Directives</span> <span class="parameter-name">holder</span>, </span><span class="parameter" id="getDirectiveValue-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="getOperation" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/getOperation.html">getOperation</a></span><span class="signature">(<wbr><span class="parameter" id="getOperation-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="getOperation-param-operationName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">operationName</span></span>)
+    <span class="returntype parameter">&#8594; OperationDefinitionContext</span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="makeLazy" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/makeLazy.html">makeLazy</a></span><span class="signature">(<wbr><span class="parameter" id="makeLazy-param-map"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">map</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="mapSourceToResponseEvent" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/mapSourceToResponseEvent.html">mapSourceToResponseEvent</a></span><span class="signature">(<wbr><span class="parameter" id="mapSourceToResponseEvent-param-sourceStream"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a></span> <span class="parameter-name">sourceStream</span>, </span><span class="parameter" id="mapSourceToResponseEvent-param-subscription"><span class="type-annotation">OperationDefinitionContext</span> <span class="parameter-name">subscription</span>, </span><span class="parameter" id="mapSourceToResponseEvent-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="mapSourceToResponseEvent-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="mapSourceToResponseEvent-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="mapSourceToResponseEvent-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="mapSourceToResponseEvent-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="mergeSelectionSets" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/mergeSelectionSets.html">mergeSelectionSets</a></span><span class="signature">(<wbr><span class="parameter" id="mergeSelectionSets-param-fields"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter">SelectionContext</span>&gt;</span></span> <span class="parameter-name">fields</span></span>)
+    <span class="returntype parameter">&#8594; SelectionSetContext</span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="parseAndExecute" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/parseAndExecute.html">parseAndExecute</a></span><span class="signature">(<wbr><span class="parameter" id="parseAndExecute-param-text"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">text</span>, {</span><span class="parameter" id="parseAndExecute-param-operationName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">operationName</span>, </span><span class="parameter" id="parseAndExecute-param-sourceUrl"><span class="type-annotation">dynamic</span> <span class="parameter-name">sourceUrl</span>, </span><span class="parameter" id="parseAndExecute-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span> = <span class="default-value">const {}</span>, </span><span class="parameter" id="parseAndExecute-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span>, </span><span class="parameter" id="parseAndExecute-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span> = <span class="default-value">const {}</span></span>})
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="resolveAbstractType" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/resolveAbstractType.html">resolveAbstractType</a></span><span class="signature">(<wbr><span class="parameter" id="resolveAbstractType-param-fieldName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">fieldName</span>, </span><span class="parameter" id="resolveAbstractType-param-type"><span class="type-annotation"><a href="../vania_graphql/GraphQLType-class.html">GraphQLType</a></span> <span class="parameter-name">type</span>, </span><span class="parameter" id="resolveAbstractType-param-result"><span class="type-annotation">dynamic</span> <span class="parameter-name">result</span></span>)
+    <span class="returntype parameter">&#8594; <a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="resolveFieldEventStream" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/resolveFieldEventStream.html">resolveFieldEventStream</a></span><span class="signature">(<wbr><span class="parameter" id="resolveFieldEventStream-param-subscriptionType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a></span> <span class="parameter-name">subscriptionType</span>, </span><span class="parameter" id="resolveFieldEventStream-param-rootValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">rootValue</span>, </span><span class="parameter" id="resolveFieldEventStream-param-fieldName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">fieldName</span>, </span><span class="parameter" id="resolveFieldEventStream-param-argumentValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">argumentValues</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="resolveFieldValue" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/resolveFieldValue.html">resolveFieldValue</a></span><span class="signature">&lt;<wbr><span class="type-parameter">T</span>&gt;</span><span class="signature">(<wbr><span class="parameter" id="resolveFieldValue-param-objectType"><span class="type-annotation"><a href="../vania_graphql/GraphQLObjectType-class.html">GraphQLObjectType</a></span> <span class="parameter-name">objectType</span>, </span><span class="parameter" id="resolveFieldValue-param-objectValue"><span class="type-annotation">T</span> <span class="parameter-name">objectValue</span>, </span><span class="parameter" id="resolveFieldValue-param-fieldName"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">fieldName</span>, </span><span class="parameter" id="resolveFieldValue-param-argumentValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">argumentValues</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">T?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="subscribe" class="callable">
+  <span class="name"><a href="../vania_graphql/GraphQL/subscribe.html">subscribe</a></span><span class="signature">(<wbr><span class="parameter" id="subscribe-param-document"><span class="type-annotation">DocumentContext</span> <span class="parameter-name">document</span>, </span><span class="parameter" id="subscribe-param-subscription"><span class="type-annotation">OperationDefinitionContext</span> <span class="parameter-name">subscription</span>, </span><span class="parameter" id="subscribe-param-schema"><span class="type-annotation"><a href="../vania_graphql/GraphQLSchema-class.html">GraphQLSchema</a></span> <span class="parameter-name">schema</span>, </span><span class="parameter" id="subscribe-param-variableValues"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">variableValues</span>, </span><span class="parameter" id="subscribe-param-globalVariables"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">globalVariables</span>, </span><span class="parameter" id="subscribe-param-initialValue"><span class="type-annotation">dynamic</span> <span class="parameter-name">initialValue</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>&gt;</span></span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  
+  
+
+</dd>
+
+        <dt id="toString" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  A string representation of this object.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+    
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">vania_graphql</a></li>
+    <li><a href="../vania_graphql/">vania_graphql</a></li>
+    <li class="self-crumb">GraphQL class</li>
+</ol>
+
+    <h5>vania_graphql library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    vania_graphql
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+
