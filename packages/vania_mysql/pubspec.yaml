@@ -1,0 +1,20 @@
+name: vania_mysql
+description: MySQL ORM, query builder, migrations, and driver for Vania.
+version: 1.0.0
+homepage: https://vdart.dev
+repository: https://github.com/vania-dart/framework/packages/vania_mysql
+issue_tracker: https://github.com/vania-dart/framework/issues
+documentation: https://vdart.dev/docs
+topics: [ server, backend, database, orm, vania ]
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  mysql_client: ^0.0.27
+  meta: ^1.17.0
+  vania: ^2.0.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.2
