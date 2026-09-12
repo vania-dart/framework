@@ -1,0 +1,23 @@
+name: redis_cache
+description: A page-view counter backed by Redis using vania_redis with the Vania framework.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  vania:
+    path: ../../packages/core
+  vania_redis:
+    path: ../../packages/vania_redis
+
+dependency_overrides:
+  vania:
+    path: ../../packages/core
+  vania_redis:
+    path: ../../packages/vania_redis
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
