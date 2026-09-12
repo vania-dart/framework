@@ -1,0 +1,23 @@
+name: graphql_api
+description: A simple GraphQL API with the GraphiQL web UI, built with the Vania framework.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  vania:
+    path: ../../packages/core
+  vania_graphql:
+    path: ../../packages/vania_graphql
+
+dependency_overrides:
+  vania:
+    path: ../../packages/core
+  vania_graphql:
+    path: ../../packages/vania_graphql
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
