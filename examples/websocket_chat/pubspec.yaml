@@ -1,0 +1,25 @@
+name: websocket_chat
+description: A WebSocket chat sample (rooms, messages, typing, join/leave) built with the Vania framework.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  vania:
+    path: ../../packages/core
+  vania_websocket:
+    path: ../../packages/vania_websocket
+
+dependency_overrides:
+  vania:
+    path: ../../packages/core
+  vania_auth:
+    path: ../../packages/vania_auth
+  vania_websocket:
+    path: ../../packages/vania_websocket
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6

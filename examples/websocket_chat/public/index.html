@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Vania WebSocket Chat</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; }
+    #log { border: 1px solid #ccc; height: 260px; overflow-y: auto; padding: .5rem; }
+    #log div { margin: .15rem 0; }
+    .sys { color: #888; font-style: italic; }
+    input, button { padding: .4rem; font-size: 1rem; }
+    .row { display: flex; gap: .5rem; margin: .5rem 0; }
+    .row input { flex: 1; }
+    #typing { color: #888; height: 1.2rem; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <h1>Vania Chat</h1>
+
+  <div class="row">
+    <input id="name" placeholder="Your name" value="guest" />
+    <input id="room" placeholder="Room" value="general" />
+    <button id="join">Join</button>
+    <button id="leave">Leave</button>
+  </div>
+
+  <div id="log"></div>
+  <div id="typing"></div>
+
+  <div class="row">
+    <input id="text" placeholder="Type a message…" autocomplete="off" />
+    <button id="send">Send</button>
+  </div>
+
+  <script>
+    const ws = new WebSocket(`ws://${location.hostname || 'localhost'}:8000/chat`);
+    const log = (msg, cls = '') => {
+      const d = document.createElement('div');
+      if (cls) d.className = cls;
+      d.textContent = msg;
+      document.getElementById('log').append(d);
+      document.getElementById('log').scrollTop = 1e9;
+    };
+    const send = (event, payload) => ws.send(JSON.stringify({ event, payload }));
+    const room = () => document.getElementById('room').value.trim();
+
+    let typingTimer;
+    document.getElementById('text').addEventListener('input', () => {
+      send('typing', { room: room() });
+    });
+
+    ws.onopen = () => {
+      send('set-name', { name: document.getElementById('name').value.trim() });
+      log('connected', 'sys');
+    };
+
+    ws.onmessage = (e) => {
+      const { event, payload } = JSON.parse(e.data);
+      switch (event) {
+        case 'message':
+          log(`${payload.from}: ${payload.text}`);
+          break;
+        case 'user-joined':
+          log(`${payload.user} joined ${payload.room}`, 'sys');
+          break;
+        case 'user-left':
+          log(`${payload.user} left ${payload.room}`, 'sys');
+          break;
+        case 'joined':
+          log(`you joined ${payload.room} (members: ${payload.members.join(', ')})`, 'sys');
+          break;
+        case 'room-created':
+          log(`room created: ${payload.room}`, 'sys');
+          break;
+        case 'typing':
+          document.getElementById('typing').textContent = `${payload.user} is typing…`;
+          clearTimeout(typingTimer);
+          typingTimer = setTimeout(() => {
+            document.getElementById('typing').textContent = '';
+          }, 1200);
+          break;
+      }
+    };
+
+    document.getElementById('join').onclick = () =>
+      send('create-room', { room: room() });
+    document.getElementById('leave').onclick = () =>
+      send('leave', { room: room() });
+    document.getElementById('send').onclick = () => {
+      const input = document.getElementById('text');
+      if (input.value.trim()) send('message', { room: room(), text: input.value.trim() });
+      input.value = '';
+    };
+  </script>
+</body>
+</html>
