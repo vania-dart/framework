@@ -1,0 +1,2 @@
+[2026-08-30 17:26:02] WARNING: PasswordHasher is using its built-in default key. This value is public, so the pepper adds no security. Call PasswordHasher().setHashKey(env("APP_KEY")) during boot.
+[2026-08-30 17:29:53] WARNING: PasswordHasher is using its built-in default key. This value is public, so the pepper adds no security. Call PasswordHasher().setHashKey(env("APP_KEY")) during boot.
