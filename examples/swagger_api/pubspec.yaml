@@ -1,0 +1,23 @@
+name: swagger_api
+description: A small REST API documented with Swagger/OpenAPI using the Vania framework.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  vania:
+    path: ../../packages/core
+  vania_swagger:
+    path: ../../packages/vania_swagger
+
+dependency_overrides:
+  vania:
+    path: ../../packages/core
+  vania_swagger:
+    path: ../../packages/vania_swagger
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
