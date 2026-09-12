@@ -1,0 +1,35 @@
+name: Vania Dart
+
+on:
+  push:
+    branches: [ "main", "dev"]
+  pull_request:
+    branches: [ "main", "dev"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1.2
+        with:
+          sdk: stable
+
+      # Get Flutter packages
+      - name: Install dependencies
+        run: dart pub get
+
+      # Check formatting
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+        
+      # Analyze the source code
+      - name: Analyze project source
+        run: dart analyze
+
+      # Run tests
+      - name: Run tests
+        run: dart test
