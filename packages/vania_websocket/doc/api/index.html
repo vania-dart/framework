@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="vania_websocket API docs, for the Dart programming language.">
+  <title>vania_websocket - Dart API docs</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static-assets/github.css?v1">
+  <link rel="stylesheet" href="static-assets/styles.css?v1">
+  <link rel="icon" href="static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="https://vdart.dev">vania_websocket package</a></li>
+  </ol>
+  <div class="self-name">vania_websocket</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div id="dartdoc-main-content" class="main-content">
+      
+<section class="desc markdown">
+  <h1 id="vania-websocket">Vania WebSocket</h1>
+<p><strong>Real-time features for Vania: rooms, channels, presence, and broadcasting — over a single connection on your existing port.</strong></p>
+<p><code>vania_websocket</code> adds real-time messaging to a Vania app. You register event handlers, group connections into rooms and channels, track who's online with presence, and broadcast to one client, a room, or everyone. It runs on your app's normal HTTP port, so there's no second server to deploy or expose.</p>
+<h2 id="install">Install</h2>
+<pre class="language-yaml"><code class="language-yaml">dependencies:
+  vania_websocket: ^1.0.0
+</code></pre>
+<p>Register the provider:</p>
+<pre class="language-dart"><code class="language-dart">final providers = &lt;ServiceProvider&gt;[
+  WebSocketServiceProvider(),
+];
+</code></pre>
+<h2 id="handle-events">Handle events</h2>
+<p>Every frame is <code>{ "event": "...", "payload": { ... } }</code>. A handler receives the payload, the raw socket, and a context map whose <code>session_id</code> identifies the connection:</p>
+<pre class="language-dart"><code class="language-dart">import 'package:vania_websocket/vania_websocket.dart';
+
+final ws = VaniaWebSocketService();
+
+ws.on('chat:message', (payload, socket, context) async {
+  final room = (payload as Map)['room'] as String;
+  ws.emitToRoom(room, 'chat:message', payload);
+});
+</code></pre>
+<h2 id="broadcast">Broadcast</h2>
+<pre class="language-dart"><code class="language-dart">ws.emitToRoom('game_lobby', 'update', {'players': 4}); // to a room
+ws.sendTo(sessionId, 'notification', {'text': 'Hi'});   // to one connection
+ws.broadcast('announcement', {'text': 'Restarting'});   // to everyone
+</code></pre>
+<h2 id="whats-included">What's included</h2>
+<ul>
+<li><strong>Rooms</strong> — lightweight groupings for broadcasting; join, leave, and list members.</li>
+<li><strong>Channels</strong> — a higher-level grouping for organizing subscriptions.</li>
+<li><strong>Presence</strong> — <code>WebSocketPresence()</code> tracks who's online, with change events and per-user messaging.</li>
+<li><strong>Connection introspection</strong> — <code>connectionCount</code>, <code>connectionIds</code>, <code>hasConnection</code>, <code>getConnectionInfo</code>, <code>close</code>, <code>closeAll</code>.</li>
+<li><strong>Middleware</strong> — authenticate or rate-limit socket connections before they're accepted.</li>
+</ul>
+<h2 id="a-note-on-design">A note on design</h2>
+<p>Keep your real-time logic in a plain, transport-free object and let the handlers just unpack the payload and call it. That keeps everything unit-testable without a live socket — see the WebSocket chat walkthrough in the docs for the full pattern.</p>
+<h2 id="links">Links</h2>
+<ul>
+<li>Documentation: <a href="https://vdart.dev/docs/intro">vdart.dev/docs</a></li>
+<li>Source &amp; issues: <a href="https://github.com/vania-dart/framework">github.com/vania-dart/framework</a></li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT</p>
+</section>
+
+
+      <section class="summary">
+          <h2>Libraries</h2>
+        <dl>
+          <dt id="vania_websocket">
+  <span class="name"><a href="vania_websocket/">vania_websocket</a></span> 
+
+</dt>
+<dd>WebSocket extension for Vania framework.
+</dd>
+
+        </dl>
+      </section>
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="https://vdart.dev">vania_websocket package</a></li>
+</ol>
+
+    <h5 class="hidden-xs"><span class="package-name">vania_websocket</span> <span class="package-kind">package</span></h5>
+    <ol>
+      <li class="section-title">Libraries</li>
+      <li><a href="vania_websocket/">vania_websocket</a></li>
+</ol>
+
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div>
+</main>
+<footer>
+  <span class="no-break">
+    vania_websocket
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="static-assets/highlight.pack.js?v1"></script>
+<script src="static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+
