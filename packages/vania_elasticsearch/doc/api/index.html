@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="vania_elasticsearch API docs, for the Dart programming language.">
+  <title>vania_elasticsearch - Dart API docs</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static-assets/github.css?v1">
+  <link rel="stylesheet" href="static-assets/styles.css?v1">
+  <link rel="icon" href="static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="https://vdart.dev">vania_elasticsearch package</a></li>
+  </ol>
+  <div class="self-name">vania_elasticsearch</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+  <div id="dartdoc-main-content" class="main-content">
+      
+<section class="desc markdown">
+  <h1 id="vania-elasticsearch">Vania Elasticsearch</h1>
+<p><strong>Full-text search for Vania: index your models, then search them with real relevance ranking.</strong></p>
+<p><code>vania_elasticsearch</code> connects a Vania app to an Elasticsearch cluster. It gives you a typed client, a query builder, bulk indexing, and — the part most apps want — a <code>Searchable</code> mixin that turns any model into a searchable document. Add it to a model and <code>Article().search('dart')</code> returns relevance-ranked hits, not a clumsy <code>LIKE '%dart%'</code>.</p>
+<h2 id="install">Install</h2>
+<pre class="language-yaml"><code class="language-yaml">dependencies:
+  vania_elasticsearch: ^1.0.0
+</code></pre>
+<p>Register the provider and point it at your cluster:</p>
+<pre class="language-dart"><code class="language-dart">final providers = &lt;ServiceProvider&gt;[
+  ElasticsearchServiceProvider(
+    config: ElasticsearchConfig(
+      hosts: [Uri.parse(env('ELASTICSEARCH_HOST', 'http://localhost:9200'))],
+      defaultIndex: 'articles',
+    ),
+  ),
+];
+</code></pre>
+<h2 id="make-a-model-searchable">Make a model searchable</h2>
+<pre class="language-dart"><code class="language-dart">import 'package:vania/database.dart' show Model;
+import 'package:vania_elasticsearch/vania_elasticsearch.dart';
+
+class Article extends Model with Searchable {
+  Article({int? id, String? title, String? body}) {
+    tableName = 'articles'; // the table name doubles as the index
+    if (id != null) attributes['id'] = id;
+    if (title != null) attributes['title'] = title;
+    if (body != null) attributes['body'] = body;
+  }
+}
+</code></pre>
+<p>By default the model's table name is the index and its <code>toJson()</code> is the indexed document — no separate mapping to maintain.</p>
+<h2 id="index-and-search">Index and search</h2>
+<pre class="language-dart"><code class="language-dart">// Index a document
+await article.searchable();
+
+// Full-text search across fields, ranked by relevance
+final result = await Article().search('dart backend', fields: ['title', 'body']);
+print(result.total);
+print(result.hits);
+</code></pre>
+<h2 id="whats-included">What's included</h2>
+<ul>
+<li><strong><code>Searchable</code> mixin</strong> — <code>searchable()</code> to index, <code>unsearchable()</code> to remove, <code>search()</code> to query.</li>
+<li><strong>Query builder</strong> — multi-match, match-all, and custom queries with paging (<code>from</code>, <code>size</code>).</li>
+<li><strong>Direct client</strong> — <code>Elasticsearch.search(...)</code>, <code>Elasticsearch.index(...)</code>, and bulk helpers when you need lower-level control.</li>
+<li><strong>Bulk indexing</strong> for backfilling large datasets efficiently.</li>
+</ul>
+<h2 id="links">Links</h2>
+<ul>
+<li>Documentation: <a href="https://vdart.dev/docs/intro">vdart.dev/docs</a></li>
+<li>Source &amp; issues: <a href="https://github.com/vania-dart/framework">github.com/vania-dart/framework</a></li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT</p>
+</section>
+
+
+      <section class="summary">
+          <h2>Libraries</h2>
+        <dl>
+          <dt id="vania_elasticsearch">
+  <span class="name"><a href="vania_elasticsearch/">vania_elasticsearch</a></span> 
+
+</dt>
+<dd>
+</dd>
+
+        </dl>
+      </section>
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="https://vdart.dev">vania_elasticsearch package</a></li>
+</ol>
+
+    <h5 class="hidden-xs"><span class="package-name">vania_elasticsearch</span> <span class="package-kind">package</span></h5>
+    <ol>
+      <li class="section-title">Libraries</li>
+      <li><a href="vania_elasticsearch/">vania_elasticsearch</a></li>
+</ol>
+
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div>
+</main>
+<footer>
+  <span class="no-break">
+    vania_elasticsearch
+      1.0.0
+  </span>
+  
+</footer>
+
+
+<script src="static-assets/highlight.pack.js?v1"></script>
+<script src="static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

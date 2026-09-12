@@ -1,0 +1,18 @@
+name: vania_elasticsearch
+description: Production-ready Elasticsearch client, query builder, bulk indexing, and Vania integration.
+version: 1.0.0
+homepage: https://vdart.dev
+repository: https://github.com/vania-dart/framework/packages/vania_elasticsearch
+issue_tracker: https://github.com/vania-dart/framework/issues
+documentation: https://vdart.dev/docs
+topics: [ server, backend, elasticsearch, search, vania ]
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  vania: ^2.0.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.2
