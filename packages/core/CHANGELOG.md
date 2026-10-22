@@ -34,7 +34,7 @@ the app actually has views or asks for them.
   no longer accidentally covers `webhooks-admin`. A `.` in a wildcard pattern
   means a literal dot.
 - **Sessions.** A session id the server never handed out is ignored instead
-  of adopted. The stored session lives for `SESSION_LIFETIME` (it used to be
+  of adopted, by page requests and API calls alike. The stored session lives for `SESSION_LIFETIME` (it used to be
   a fixed hour) and gets extended once it's past half of that. Changes are
   saved once, right before the response, and only the keys that changed are
   written.
@@ -52,7 +52,17 @@ the app actually has views or asks for them.
 ### New
 
 - Serve from several isolates with `APP_ISOLATES` (a number, or `auto`). If
-  one crashes, a new one takes its place.
+  one crashes, a new one takes its place. The extra isolates don't run
+  `main()`, so move what you do there before `initialize` — registering a
+  database driver, setting up auth — into the new `setup:` callback, which
+  runs in every isolate:
+
+  ```dart
+  await Application().initialize(
+    config: config,
+    setup: () => registerMySqlDriver(),
+  );
+  ```
 - Graceful shutdown on `SIGINT`/`SIGTERM`: requests in flight get up to
   `SHUTDOWN_TIMEOUT` seconds to finish.
 - `REQUEST_TIMEOUT`, `HTTP_IDLE_TIMEOUT` and `HTTP_BACKLOG` settings.
