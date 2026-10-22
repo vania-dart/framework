@@ -44,6 +44,10 @@ the app actually has views or asks for them.
 - A response whose data can't be encoded as JSON is a 500, not a 200 with a
   broken body. `Response()` with no data sends an empty body instead of
   `null`.
+- **`Throttle` no longer turns itself off in development** unless you ask
+  with `bypassInDevelopment: true`; then it's skipped while `APP_ENV` is
+  `local` or `development`. A production app running on a `.env` copied
+  from a laptop kept no rate limits before.
 - `env<int>`, `env<bool>` and the other typed reads treat an empty value
   (`KEY=`) as not set and return your default.
 - `ROUTE_LOOK_UP_SIZE` is gone, along with the route cache it sized. Route
@@ -101,8 +105,16 @@ the app actually has views or asks for them.
   `GET`.
 - `Request.has`, `except`, `headers`, `file` and `files` misbehaved on some
   inputs.
-- `Throttle` reports `X-RateLimit-Remaining` after counting the request,
-  sends the real reset time, and is skipped while `APP_ENV` is `local`.
+- `Throttle` reports `X-RateLimit-Remaining` after counting the request and
+  sends the real reset time.
+- Two routes with the same path, one for a domain and one for any host,
+  overwrote each other; now both work and the host decides. An encoded `/`
+  (`a%2Fb`) no longer finds the static route `a/b`.
+- The `XSRF-TOKEN` cookie expired after a fixed 2.5 hours, so a form left
+  open longer got a 419 while its session was still alive. It now lasts as
+  long as the session and is renewed with it.
+- A server isolate that keeps failing to start is retried at most once a
+  minute, instead of the wait starting over at one second.
 - A middleware that neither calls `next()` nor returns a response now gets a
   500 instead of leaving the request hanging.
 - A `Router.group` callback that throws no longer leaks its prefix and
