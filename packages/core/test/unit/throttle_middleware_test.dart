@@ -16,11 +16,17 @@ void main() {
     clearRouteCaches();
     Router.basePrefix(null);
     // Each test gets its own route, so its own counter.
-    for (final path in ['/counted', '/reset', '/local', '/development']) {
+    for (final path in ['/counted', '/reset', '/default']) {
       Router.get(
         path,
         () => Response.json({}),
       ).middleware([Throttle(maxAttempts: 3)]);
+    }
+    for (final path in ['/local', '/development']) {
+      Router.get(
+        path,
+        () => Response.json({}),
+      ).middleware([Throttle(maxAttempts: 3, bypassInDevelopment: true)]);
     }
     initializeRoutes();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -71,7 +77,16 @@ void main() {
     },
   );
 
-  test('a local development app is not throttled', () async {
+  test('APP_ENV=local alone does not turn throttling off', () async {
+    // What a `.env` copied from a development machine says.
+    Env().env['APP_ENV'] = 'local';
+    final statuses = [
+      for (var i = 0; i < 4; i++) (await get('/default')).statusCode,
+    ];
+    expect(statuses, [200, 200, 200, 429]);
+  });
+
+  test('bypassInDevelopment skips it for a local app', () async {
     // `local` is the documented development value of APP_ENV.
     Env().env['APP_ENV'] = 'local';
     for (var i = 0; i < 5; i++) {
@@ -79,7 +94,7 @@ void main() {
     }
   });
 
-  test('so is one that calls its environment development', () async {
+  test('and for one that calls its environment development', () async {
     Env().env['APP_ENV'] = 'development';
     for (var i = 0; i < 5; i++) {
       expect((await get('/development')).statusCode, 200);

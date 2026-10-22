@@ -18,6 +18,12 @@ class Throttle extends Middleware {
   final bool includeUserIdentifier;
   final String? customMessage;
   final Map<String, String>? headers;
+
+  /// Skips the limit while `APP_ENV` is `local` or `development`.
+  ///
+  /// Off unless asked for: `local` is also what a `.env` copied from a
+  /// development machine says, and a production app that kept it would
+  /// lose its rate limits without a word.
   final bool bypassInDevelopment;
 
   late final ThrottleRequests _throttle;
@@ -28,7 +34,7 @@ class Throttle extends Middleware {
     this.includeUserIdentifier = false,
     this.customMessage,
     this.headers,
-    this.bypassInDevelopment = true,
+    this.bypassInDevelopment = false,
   }) {
     _throttle = ThrottleRequests(maxAttempts: maxAttempts, duration: duration);
   }

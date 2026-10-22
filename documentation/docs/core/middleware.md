@@ -112,7 +112,7 @@ Router.post('/login', authController.login)
 
 Five requests per minute per client; excess requests get `429 Too Many Requests` with a `Retry-After` header. Every response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` (what is left after this request) and `X-RateLimit-Reset` (when the count starts over).
 
-Clients are told apart by IP address, which behind a reverse proxy is the proxy's unless it is listed in `TRUSTED_PROXIES`. Pass `includeUserIdentifier: true` to count each signed-in user separately. Throttling is skipped while `APP_ENV` is `local`; pass `bypassInDevelopment: false` to keep it on. The counts are kept in memory, so they are per process, and per isolate with `APP_ISOLATES`.
+Clients are told apart by IP address, which behind a reverse proxy is the proxy's unless it is listed in `TRUSTED_PROXIES`. Pass `includeUserIdentifier: true` to count each signed-in user separately. Pass `bypassInDevelopment: true` to skip throttling while `APP_ENV` is `local` or `development`; it is off by default, so a production app that kept a development `.env` is still rate limited. The counts are kept in memory, so they are per process, and per isolate with `APP_ISOLATES`.
 
 ### Security headers
 
