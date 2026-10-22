@@ -1,10 +1,14 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:vania/src/http/session/flash_messages.dart';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:vania/env.dart' show env;
 import 'package:vania/src/contract/http/request/form_validation.dart';
 import 'package:vania/src/exception/validation_exception.dart';
+import 'package:vania/src/http/request/accept_query.dart';
 import 'package:vania/src/http/request/request_body.dart';
+import 'package:vania/src/utils/helper.dart' show abort;
 import 'package:vania/src/http/request/request_file.dart';
 import 'package:vania/src/http/validation/custom_validation_rule.dart';
 import 'package:vania/src/http/validation/validation_chain/validation.dart';
@@ -29,6 +33,12 @@ void setRequestUserResolver(RequestUserResolver resolver) {
 void clearRequestUserResolver() {
   _requestUserResolver = null;
 }
+
+/// Peers whose `X-Forwarded-For` is believed, from `TRUSTED_PROXIES`.
+final List<String> _trustedProxies = env<String>(
+  'TRUSTED_PROXIES',
+  '',
+).split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
 
 class Request {
   late HttpRequest request;
@@ -63,10 +73,7 @@ class Request {
     final peer = ip;
     if (peer == null) return null;
 
-    final trusted = env<String>(
-      'TRUSTED_PROXIES',
-      '',
-    ).split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    final trusted = _trustedProxies;
     if (trusted.isEmpty) return peer;
     if (!trusted.contains('*') && !trusted.contains(peer)) return peer;
 
@@ -96,13 +103,13 @@ class Request {
   Map<String, dynamic> get _query => uri.queryParameters;
 
   Map<String, dynamic> body = <String, dynamic>{};
-  final Map<String, dynamic> _cookies = <String, dynamic>{};
 
+  /// Parsed on first use: most requests never read a cookie, and those
+  /// that do — middleware included — may do so before the body is read.
+  late final Map<String, dynamic> _cookies = _parseCookies();
+
+  /// The merged body, query and route params, built on first use.
   Map<String, dynamic>? _allData;
-
-  void _rebuildAll() {
-    _allData = <String, dynamic>{...body, ..._query, ...params()};
-  }
 
   Map<String, dynamic> get _all =>
       _allData ??= <String, dynamic>{...body, ..._query, ...params()};
@@ -125,14 +132,15 @@ class Request {
     };
   }
 
-  /// Extracts the cookies from the headers and stores them in [_cookies].
+  /// Parses the cookies from the headers.
   ///
   /// Malformed pairs (no `=`) are skipped. Values
   /// that contain `=` characters (e.g. base64 with `=` padding) are
   /// preserved by rejoining everything after the first `=`.
-  void _extractCookies() {
+  Map<String, dynamic> _parseCookies() {
+    final parsed = <String, dynamic>{};
     final List<String>? cookies = _httpHeaders[HttpHeaders.cookieHeader];
-    if (cookies == null) return;
+    if (cookies == null) return parsed;
     for (final header in cookies) {
       for (final pair in header.split(';')) {
         final eq = pair.indexOf('=');
@@ -140,9 +148,10 @@ class Request {
         final name = pair.substring(0, eq).trim();
         final value = pair.substring(eq + 1).trim();
         if (name.isEmpty) continue;
-        _cookies[name] = value;
+        parsed[name] = value;
       }
     }
+    return parsed;
   }
 
   bool _bodyExtracted = false;
@@ -157,20 +166,54 @@ class Request {
   Future<Request> extractBody() async {
     if (_bodyExtracted) return this;
     _bodyExtracted = true;
-    _extractCookies();
     final method = request.method.toLowerCase();
     if (method == 'post' ||
         method == 'patch' ||
         method == 'put' ||
-        method == 'delete') {
-      body = await RequestBody.extractBody(request: request);
+        method == 'delete' ||
+        method == 'query') {
+      final isQuery = method == 'query';
+      if (isQuery) _checkQueryMediaType();
+      final content = await RequestBody.extract(
+        request: request,
+        strict: isQuery,
+      );
+      body = content.fields;
+      _rawBody = content.bytes;
+      // Anything read before now saw no body; rebuild on next use.
+      _allData = null;
     }
-    _rebuildAll();
     return this;
   }
 
+  Uint8List? _rawBody;
+
+  /// The request content as received, before any parsing — for a media
+  /// type the framework does not read into fields, such as the
+  /// `application/sql` of a `QUERY`, or to verify a webhook signature.
+  ///
+  /// Empty before the body has been read, and for multipart uploads,
+  /// which are streamed rather than held.
+  Uint8List get rawBody => _rawBody ?? Uint8List(0);
+
+  /// A `QUERY` is its content, so the server must know what that content
+  /// is: RFC 10008 has it fail a request without a `Content-Type`, and
+  /// cannot have it guess one.
+  void _checkQueryMediaType() {
+    final type = request.headers.contentType;
+    if (type == null) {
+      abort(400, 'A QUERY request must give its media type in Content-Type.');
+      return;
+    }
+    final accepted = route?.acceptQuery;
+    if (accepted != null && !acceptsMediaType(accepted, type)) {
+      response.headers.set('Accept-Query', acceptQueryHeader(accepted));
+      abort(415, 'This QUERY does not take ${type.mimeType} content.');
+    }
+  }
+
   Map<String, dynamic> all() {
-    return Map.unmodifiable(_all);
+    return UnmodifiableMapView(_all);
   }
 
   Map<String, dynamic> params() {
@@ -191,11 +234,11 @@ class Request {
 
   bool has(dynamic keys) {
     if (keys is String) {
-      String? val = _all[keys];
+      final val = _all[keys];
       if (val == null) {
         return false;
       }
-      return val.toString().isNotEmpty ? true : false;
+      return val.toString().isNotEmpty;
     }
 
     if (keys is List<String>) {
@@ -230,7 +273,9 @@ class Request {
   }
 
   Map<String, dynamic> except(dynamic key) {
-    Map<String, dynamic> requestItems = _all;
+    // A copy: removing from the merged view itself would drop the keys
+    // from every later read of this request's input.
+    final requestItems = Map<String, dynamic>.of(_all);
 
     if (key is List<String>) {
       for (String vKey in key) {
@@ -265,33 +310,23 @@ class Request {
     return defaultVal;
   }
 
-  RequestFile? file(String key) {
-    if (_all[key] == null) {
-      return null;
-    }
-
-    if (_all[key] is! RequestFile) {
-      return (_all[key] as List<RequestFile>).first;
-    }
-
-    return _all[key];
-  }
+  /// The upload under [key], or the first of several. Null when [key]
+  /// holds no upload, a plain text field included.
+  RequestFile? file(String key) => files(key)?.first;
 
   bool hasFile(String key) =>
       (_all[key].toString().isNotEmpty &&
       (file(key) != null || files(key) != null));
 
+  /// The uploads under [key]. Null when it holds none.
   List<RequestFile>? files(String key) {
-    if (_all[key] == null) {
-      return null;
+    final value = _all[key];
+    if (value is RequestFile) return [value];
+    if (value is List) {
+      final uploads = value.whereType<RequestFile>().toList();
+      if (uploads.isNotEmpty) return uploads;
     }
-
-    var files = _all[key];
-
-    if (files is! List) {
-      return [files];
-    }
-    return files as List<RequestFile>;
+    return null;
   }
 
   String string(String key) {
@@ -375,7 +410,7 @@ class Request {
   Map<String, dynamic> get headers {
     Map<String, dynamic> ret = <String, dynamic>{};
     _httpHeaders.forEach((String name, List<String> values) {
-      ret[name] = values.join();
+      ret[name] = values.join(', ');
     });
     return ret;
   }

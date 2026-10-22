@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:vania/src/exception/http_exception.dart';
 import 'package:vania/src/http/request/request_body.dart';
+import 'package:vania/src/http/request/request_file.dart';
 
 /// Starts a loopback HTTP server, sends a POST with the given payload
 /// pattern, and returns the server-side `HttpRequest` for the parser to
@@ -83,6 +84,76 @@ void main() {
             isA<HttpResponseException>().having((e) => e.code, 'code', 413),
           ),
         );
+        await req.response.close();
+      },
+    );
+
+    // A chunked upload declares no Content-Length, so only counting the
+    // bytes as they stream in can enforce the cap.
+    List<int> multipart({required String disposition, required int size}) => [
+      ...'--XyZ\r\nContent-Disposition: form-data; $disposition\r\n\r\n'
+          .codeUnits,
+      ...List<int>.filled(size, 65),
+      ...'\r\n--XyZ--\r\n'.codeUnits,
+    ];
+
+    for (final (kind, disposition) in [
+      ('text field', 'name="note"'),
+      ('file', 'name="upload"; filename="big.bin"'),
+    ]) {
+      test(
+        'when a chunked multipart $kind exceeds MAX_BODY_SIZE, aborts 413',
+        () async {
+          final req = await _postWith(
+            body: multipart(disposition: disposition, size: 11 * 1024 * 1024),
+            contentType: 'multipart/form-data; boundary=XyZ',
+            chunkCount: 20,
+            declareContentLength: false,
+          );
+          req.response.statusCode = 413;
+          await expectLater(
+            RequestBody.extractBody(request: req),
+            throwsA(
+              isA<HttpResponseException>().having((e) => e.code, 'code', 413),
+            ),
+          );
+          await req.response.close();
+        },
+      );
+    }
+
+    test(
+      'when a chunked multipart body is under the limit, parses it',
+      () async {
+        final req = await _postWith(
+          body: multipart(disposition: 'name="note"', size: 1024),
+          contentType: 'multipart/form-data; boundary=XyZ',
+          chunkCount: 4,
+          declareContentLength: false,
+        );
+        req.response.statusCode = 200;
+        final parsed = await RequestBody.extractBody(request: req);
+        expect(parsed['note'], 'A' * 1024);
+        await req.response.close();
+      },
+    );
+
+    test(
+      'when a chunked multipart file is under the limit, its bytes are readable',
+      () async {
+        final req = await _postWith(
+          body: multipart(
+            disposition: 'name="upload"; filename="a.bin"',
+            size: 300 * 1024,
+          ),
+          contentType: 'multipart/form-data; boundary=XyZ',
+          chunkCount: 8,
+          declareContentLength: false,
+        );
+        req.response.statusCode = 200;
+        final parsed = await RequestBody.extractBody(request: req);
+        final file = parsed['upload'] as RequestFile;
+        expect(await file.size, 300 * 1024);
         await req.response.close();
       },
     );

@@ -30,7 +30,7 @@ class RequestFile {
   /// Lazily reads all bytes from the multipart stream.
   Future<Uint8List> get bytes async {
     if (_bytes != null) return _bytes!;
-    final builder = BytesBuilder();
+    final builder = BytesBuilder(copy: false);
     await for (final chunk in stream) {
       builder.add(chunk);
     }
@@ -58,7 +58,7 @@ class RequestFile {
   Future<String> store({String path = '', required String name}) async {
     try {
       final content = await bytes;
-      return await Storage.put(path, name, content.toList());
+      return await Storage.put(path, name, content);
     } catch (e) {
       throw FileSystemException('Failed to store file as $name: $e');
     }

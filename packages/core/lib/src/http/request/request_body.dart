@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:vania/src/exception/http_exception.dart';
 import 'package:vania/src/http/request/request_form_data.dart';
 import 'package:vania/src/utils/helper.dart' show abort;
 import 'package:vania/env.dart' show env;
@@ -18,6 +19,18 @@ class RequestBody {
 
   static Future<Map<String, dynamic>> extractBody({
     required HttpRequest request,
+  }) async => (await extract(request: request)).fields;
+
+  /// Reads the request content: [RequestContent.fields] parsed from a
+  /// form or JSON body, and [RequestContent.bytes] as received.
+  ///
+  /// Content that does not parse as its declared type yields no fields.
+  /// With [strict] it is a 400 instead: RFC 10008 has a `QUERY` server
+  /// reject content that contradicts its `Content-Type`, since the query
+  /// is that content and there is nothing else to fall back on.
+  static Future<RequestContent> extract({
+    required HttpRequest request,
+    bool strict = false,
   }) async {
     final headers = request.headers;
     final contentLength = headers.contentLength;
@@ -32,35 +45,57 @@ class RequestBody {
 
     final contentType = request.headers.contentType;
     if (isFormData(contentType)) {
-      final formData = RequestFormData(request: request);
-      await formData.extractData();
-      return formData.inputs;
+      final formData = RequestFormData(
+        request: request,
+        maxBodySize: _maxBodySizeBytes,
+      );
+      try {
+        await formData.extractData();
+      } on HttpResponseException {
+        rethrow;
+      } catch (_) {
+        if (strict) abort(400, 'The content is not valid multipart data.');
+        rethrow;
+      }
+      // Parts are streamed rather than buffered, so there are no bytes to
+      // keep.
+      return RequestContent(formData.inputs, Uint8List(0));
     }
 
     final Uint8List bodyBytes = await _drain(request, contentLength);
 
-    if (bodyBytes.isEmpty) return <String, dynamic>{};
+    if (bodyBytes.isEmpty) return RequestContent({}, bodyBytes);
 
     if (isJson(contentType)) {
       try {
         final decoded = _utf8Json.convert(bodyBytes);
-        if (decoded is Map<String, dynamic>) return decoded;
-        if (decoded is Map) {
-          return decoded.cast<String, dynamic>();
+        if (decoded is Map<String, dynamic>) {
+          return RequestContent(decoded, bodyBytes);
         }
-      } catch (_) {}
-      return <String, dynamic>{};
+        if (decoded is Map) {
+          return RequestContent(decoded.cast<String, dynamic>(), bodyBytes);
+        }
+        // Valid JSON that is not an object has no fields to offer.
+        return RequestContent({}, bodyBytes);
+      } catch (_) {
+        if (strict) abort(400, 'The content is not valid JSON.');
+        return RequestContent({}, bodyBytes);
+      }
     }
 
     if (isUrlencoded(contentType)) {
       try {
-        return Uri.splitQueryString(utf8.decode(bodyBytes));
+        return RequestContent(
+          Uri.splitQueryString(utf8.decode(bodyBytes)),
+          bodyBytes,
+        );
       } catch (_) {
-        return <String, dynamic>{};
+        if (strict) abort(400, 'The content is not valid form data.');
+        return RequestContent({}, bodyBytes);
       }
     }
 
-    return <String, dynamic>{};
+    return RequestContent({}, bodyBytes);
   }
 
   static Future<Uint8List> _drain(
@@ -145,4 +180,15 @@ class RequestBody {
     if (mime == null) return false;
     return mime.contains('json');
   }
+}
+
+/// A request body as read by [RequestBody.extract].
+class RequestContent {
+  /// Fields parsed from a form or JSON object; empty for anything else.
+  final Map<String, dynamic> fields;
+
+  /// The content as received. Empty for multipart, which is streamed.
+  final Uint8List bytes;
+
+  const RequestContent(this.fields, this.bytes);
 }
