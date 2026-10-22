@@ -58,7 +58,7 @@ void main() {
   group('encodeYaml', () {
     test('emits maps, lists, and scalars in a consumable shape', () {
       final yaml = encodeYaml({
-        'openapi': '3.1.0',
+        'openapi': '3.2.0',
         'paths': {
           '/pets': {
             'get': {'summary': 'List'},
@@ -68,7 +68,7 @@ void main() {
         'x-empty-map': const <String, Object>{},
       });
       expect(yaml, contains('openapi:'));
-      expect(yaml, contains('3.1.0'));
+      expect(yaml, contains('3.2.0'));
       expect(yaml, contains('/pets'));
       expect(yaml, contains('get:'));
       expect(yaml, contains('summary: List'));

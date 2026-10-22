@@ -398,3 +398,11 @@ class ApiPatch extends ApiRoute {
 class ApiDelete extends ApiRoute {
   const ApiDelete(String path) : super('DELETE', path);
 }
+
+/// An HTTP `QUERY` route (RFC 10008): a safe, idempotent read whose query
+/// is in the request content.
+///
+/// Not `ApiQuery`, which is taken by query-string parameters.
+class ApiQueryMethod extends ApiRoute {
+  const ApiQueryMethod(String path) : super('QUERY', path);
+}
