@@ -80,7 +80,7 @@ void main() {
     // DateTime has no toJson; both the old and new encoder throw on it, and
     // the handler is expected to answer rather than leave the socket open.
     final res = await _send(() => Response.json({'t': DateTime(2020)}));
-    expect(res.status, equals(HttpStatus.ok));
-    expect(utf8.decode(res.body), contains('jsonEncode Error'));
+    expect(res.status, equals(HttpStatus.internalServerError));
+    expect(utf8.decode(res.body), '{"message":"Internal Server Error"}');
   });
 }

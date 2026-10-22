@@ -13,7 +13,11 @@ class ThrottleException extends BaseHttpResponseException {
   @override
   Response response(bool isHtml) {
     if (isHtml) {
-      return Response.html(message);
+      return Response.html(
+        htmlText,
+        statusCode: code,
+        headers: headers ?? const {},
+      );
     }
 
     final Map<String, dynamic> responseData = message is Map
