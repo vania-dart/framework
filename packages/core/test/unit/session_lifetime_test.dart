@@ -9,10 +9,11 @@ import 'package:vania/src/http/session/session_manager.dart';
 
 /// A returning browser's session: it already has a CSRF token, so a visit
 /// writes nothing on that account.
-const _returning = {'user': 1, 'x_csrf_token': 'token'};
+const _returning = {'user': 1, 'x_csrf_token': 'token', 'x_csrf_iv': 'iv'};
 
-/// Visits once with [sessionId], the way RequestHandler runs a request.
-Future<void> _visit(String sessionId) async {
+/// Visits once with [sessionId], the way RequestHandler runs a request,
+/// and returns the cookies the response sets.
+Future<List<Cookie>> _visit(String sessionId) async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
   server.listen((req) {
     runInRequestScope(req, () async {
@@ -25,9 +26,11 @@ Future<void> _visit(String sessionId) async {
   rq.cookies
     ..add(Cookie(SessionManager().sessionKey, sessionId))
     ..add(Cookie('XSRF-TOKEN', 'cookie'));
-  await (await rq.close()).drain<void>();
+  final res = await rq.close();
+  await res.drain<void>();
   client.close(force: true);
   await server.close(force: true);
+  return res.cookies;
 }
 
 void main() {
@@ -88,6 +91,26 @@ void main() {
     await _visit('sid');
 
     expect(file.lastModifiedSync(), written);
+  });
+
+  test('the XSRF cookie lasts as long as the session', () async {
+    Duration? xsrfLeft(List<Cookie> cookies) => cookies
+        .where((c) => c.name == 'XSRF-TOKEN')
+        .lastOrNull
+        ?.expires
+        ?.difference(DateTime.now());
+
+    // A new session, with a token made for it.
+    final fresh = xsrfLeft(await _visit('unknown'));
+    expect(fresh, greaterThan(const Duration(seconds: 2)));
+    expect(fresh, lessThanOrEqualTo(const Duration(seconds: 4)));
+
+    // A returning browser gets it again on every page, as it does the
+    // session cookie, so the two run out together.
+    await store.storeSession('sid', _returning);
+    final renewed = xsrfLeft(await _visit('sid'));
+    expect(renewed, greaterThan(const Duration(seconds: 2)));
+    expect(renewed, lessThanOrEqualTo(const Duration(seconds: 4)));
   });
 
   test('expired session files and stray temporary files are swept', () async {

@@ -38,15 +38,18 @@ class SessionManager {
       (cookie) => cookie.name == 'XSRF-TOKEN',
       orElse: () => Cookie('XSRF-TOKEN', ''),
     );
-    if (requestCookie.value.isEmpty) {
+    final storedToken = allSessions['x_csrf_token']?.toString() ?? '';
+    final storedIv = allSessions['x_csrf_iv']?.toString() ?? '';
+    if (requestCookie.value.isEmpty ||
+        storedToken.isEmpty ||
+        storedIv.isEmpty) {
       await _generateNewCsrfToken(response);
     } else {
-      final storedToken = allSessions['x_csrf_token'];
-      if (storedToken == null || storedToken.toString().isEmpty) {
-        await _generateNewCsrfToken(response);
-      } else {
-        _setCsrfToken(storedToken.toString());
-      }
+      _setCsrfToken(storedToken);
+      // Sent again with every page, as the session cookie is, so the two
+      // expire together: a form left open as long as the session lasts
+      // can still be sent.
+      response.cookies.add(_xsrfCookie(storedToken, storedIv));
     }
   }
 
@@ -65,15 +68,18 @@ class SessionManager {
     await setSession('x_csrf_token', token);
     await setSession('x_csrf_iv', iv);
     _setCsrfToken(token);
-    final cookieValue = _computeCsrfCookieValue(token, iv);
-    final cookie = Cookie('XSRF-TOKEN', cookieValue)
-      ..expires = DateTime.now().add(const Duration(seconds: 9000))
-      ..sameSite = SameSite.lax
-      ..secure = secureSession
-      ..path = '/'
-      ..httpOnly = true;
-    response.cookies.add(cookie);
+    response.cookies.add(_xsrfCookie(token, iv));
   }
+
+  /// The cookie that pairs the browser with [token]. It lasts as long as
+  /// the session the token is kept in.
+  Cookie _xsrfCookie(String token, String iv) =>
+      Cookie('XSRF-TOKEN', _computeCsrfCookieValue(token, iv))
+        ..expires = DateTime.now().add(sessionLifetime)
+        ..sameSite = SameSite.lax
+        ..secure = secureSession
+        ..path = '/'
+        ..httpOnly = true;
 
   String _computeCsrfCookieValue(String token, String iv) {
     final hmac = Hmac(sha512, utf8.encode(iv));
