@@ -120,10 +120,7 @@ Future<bool> setStaticPathAsync(HttpRequest req) async {
 /// repeat visit into a 304 with no body, while never serving a stale asset.
 /// Apps that fingerprint their asset names can trade that for an immutable
 /// `max-age` through `STATIC_CACHE_CONTROL`.
-final String _cacheControl = env<String>(
-  'STATIC_CACHE_CONTROL',
-  'no-cache',
-);
+final String _cacheControl = env<String>('STATIC_CACHE_CONTROL', 'no-cache');
 
 DateTime _truncateToSeconds(DateTime t) =>
     DateTime.utc(t.year, t.month, t.day, t.hour, t.minute, t.second);

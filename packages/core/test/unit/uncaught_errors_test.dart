@@ -17,11 +17,10 @@ Future<void> _server((SendPort, bool) args) async {
 Future<Object?> _run({required bool guarded}) async {
   final messages = ReceivePort();
   final exited = ReceivePort();
-  await Isolate.spawn(
-    _server,
-    (messages.sendPort, guarded),
-    onExit: exited.sendPort,
-  );
+  await Isolate.spawn(_server, (
+    messages.sendPort,
+    guarded,
+  ), onExit: exited.sendPort);
   final outcome = await Future.any([
     messages.first,
     exited.first.then((_) => 'exited'),

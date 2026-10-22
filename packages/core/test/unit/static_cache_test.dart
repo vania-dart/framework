@@ -63,11 +63,13 @@ void main() {
     expect(res.bodyBytes, greaterThan(0));
     expect(res.headers.value(HttpHeaders.etagHeader), isNotNull);
     expect(res.headers.value(HttpHeaders.lastModifiedHeader), isNotNull);
-    expect(res.headers.value(HttpHeaders.cacheControlHeader), equals('no-cache'));
+    expect(
+      res.headers.value(HttpHeaders.cacheControlHeader),
+      equals('no-cache'),
+    );
   });
 
-  test('re-requesting with the returned ETag yields 304 and no body',
-      () async {
+  test('re-requesting with the returned ETag yields 304 and no body', () async {
     final first = await _get('app.css');
     final etag = first.headers.value(HttpHeaders.etagHeader)!;
 
@@ -123,9 +125,7 @@ void main() {
     // mtime pair the tag is built from.
     final file = File('${sandbox.path}/public/app.css');
     file.writeAsStringSync('body { color: blue; } /* longer now */');
-    file.setLastModifiedSync(
-      DateTime.now().add(const Duration(seconds: 5)),
-    );
+    file.setLastModifiedSync(DateTime.now().add(const Duration(seconds: 5)));
 
     final second = await _get(
       'app.css',

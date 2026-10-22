@@ -75,12 +75,14 @@ void main() {
     });
   });
 
-  test('an unencodable value still produces a response instead of hanging',
-      () async {
-    // DateTime has no toJson; both the old and new encoder throw on it, and
-    // the handler is expected to answer rather than leave the socket open.
-    final res = await _send(() => Response.json({'t': DateTime(2020)}));
-    expect(res.status, equals(HttpStatus.internalServerError));
-    expect(utf8.decode(res.body), '{"message":"Internal Server Error"}');
-  });
+  test(
+    'an unencodable value still produces a response instead of hanging',
+    () async {
+      // DateTime has no toJson; both the old and new encoder throw on it, and
+      // the handler is expected to answer rather than leave the socket open.
+      final res = await _send(() => Response.json({'t': DateTime(2020)}));
+      expect(res.status, equals(HttpStatus.internalServerError));
+      expect(utf8.decode(res.body), '{"message":"Internal Server Error"}');
+    },
+  );
 }
