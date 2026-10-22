@@ -20,6 +20,30 @@ int _resolveIsolateCount() {
   return (count == null || count < 1) ? 1 : count;
 }
 
+/// The longest a crashed server isolate waits to be replaced.
+const Duration maxIsolateRestartDelay = Duration(minutes: 1);
+
+/// When to replace a server isolate that exited, given [retryAfter], the
+/// wait set aside for it: the [wait] before starting its replacement, and
+/// the [next] wait, should that one exit too.
+///
+/// One that dies soon after starting is likely to die again — a failing
+/// boot, say — so each such death doubles the wait, up to
+/// [maxIsolateRestartDelay]. One that ran a while is replaced at once.
+({Duration wait, Duration next}) isolateRestartDelay(
+  Duration retryAfter, {
+  required bool crashedEarly,
+}) {
+  if (!crashedEarly) {
+    return (wait: const Duration(seconds: 1), next: const Duration(seconds: 1));
+  }
+  final doubled = retryAfter * 2;
+  return (
+    wait: retryAfter,
+    next: doubled < maxIsolateRestartDelay ? doubled : maxIsolateRestartDelay,
+  );
+}
+
 /// How long a shutdown waits for in-flight requests before closing the
 /// connections that remain, from `SHUTDOWN_TIMEOUT` in seconds.
 Duration get shutdownTimeout =>

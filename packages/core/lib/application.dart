@@ -181,18 +181,13 @@ class Application extends Container {
   }
 
   /// Starts a new isolate in place of [worker], which exited without being
-  /// asked to.
-  ///
-  /// One that dies soon after starting is likely to die again — a failing
-  /// boot, say — so each quick death doubles the wait before the next
-  /// attempt, up to a minute.
+  /// asked to, after the wait [isolateRestartDelay] gives.
   void _replace(_Worker worker, Duration retryAfter) {
     if (_closing != null) return;
-    final crashedEarly = worker.uptime.elapsed < const Duration(seconds: 10);
-    final wait = crashedEarly ? retryAfter : const Duration(seconds: 1);
-    final next = crashedEarly && retryAfter < const Duration(seconds: 30)
-        ? retryAfter * 2
-        : const Duration(seconds: 1);
+    final (:wait, :next) = isolateRestartDelay(
+      retryAfter,
+      crashedEarly: worker.uptime.elapsed < const Duration(seconds: 10),
+    );
     Logger.log(
       'Server isolate vania-http-${worker.index} exited; '
       'starting a new one in ${wait.inSeconds}s.',
