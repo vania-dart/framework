@@ -7,17 +7,22 @@ import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/http/session/session_file_store.dart';
 import 'package:vania/src/http/session/session_manager.dart';
 
-/// Serves one request with [handler] inside a started session, and
-/// returns the session id the response hands the browser.
+/// Serves one request with [handler] and returns the session id the
+/// response hands the browser, or the one it came with when it hands none.
+///
+/// The session is started first, as for a browser asking for a page,
+/// unless [started] is false: then [handler] meets the cookie as an API
+/// request does.
 Future<String> _visit(
   String sessionId,
-  Future<void> Function(SessionManager sessions) handler,
-) async {
+  Future<void> Function(SessionManager sessions) handler, {
+  bool started = true,
+}) async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
   server.listen((req) {
     runInRequestScope(req, () async {
       final sessions = SessionManager();
-      await sessions.sessionStart(req, req.response);
+      if (started) await sessions.sessionStart(req, req.response);
       await handler(sessions);
       await Response.json({}).makeResponse(req.response);
     });
@@ -30,8 +35,10 @@ Future<String> _visit(
   client.close(force: true);
   await server.close(force: true);
   return res.cookies
-      .lastWhere((c) => c.name == SessionManager().sessionKey)
-      .value;
+          .where((c) => c.name == SessionManager().sessionKey)
+          .lastOrNull
+          ?.value ??
+      sessionId;
 }
 
 void main() {
@@ -71,6 +78,29 @@ void main() {
   test('an existing session keeps its id', () async {
     await store.storeSession('issued', {'user': 1});
     expect(await _visit('issued', (_) async {}), 'issued');
+  });
+
+  test('nor is it taken up by a request that never started a session, '
+      'such as a fetch to an API route', () async {
+    final id = await _visit(
+      'chosen-by-an-attacker',
+      (sessions) => sessions.setSession('user', 7),
+      started: false,
+    );
+    expect(id, isNot('chosen-by-an-attacker'));
+    expect(await stored('chosen-by-an-attacker'), isNull);
+    expect(await stored(id), containsPair('user', 7));
+  });
+
+  test('such a request still writes to a session the server issued', () async {
+    await store.storeSession('issued', {'cart': 3});
+    final id = await _visit(
+      'issued',
+      (sessions) => sessions.setSession('user', 7),
+      started: false,
+    );
+    expect(id, 'issued');
+    expect(await stored('issued'), {'cart': 3, 'user': 7});
   });
 
   test(

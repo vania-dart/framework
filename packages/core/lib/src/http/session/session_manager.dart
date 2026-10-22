@@ -153,6 +153,7 @@ class SessionManager {
 
     final newId = _generateSessionId();
     scope.sessionId = newId;
+    scope.attributes.remove(_Unchecked);
     _setSessionCookie(scope.request.response, newId);
     final changes = _SessionChanges(scope, newId, replaces: oldId)
       ..cleared = true
@@ -172,6 +173,9 @@ class SessionManager {
         orElse: () => Cookie(sessionKey, ''),
       );
       scope.sessionId = cookie.value.isEmpty ? null : cookie.value;
+      // Taken from the cookie as it is: whether the server issued it is
+      // found out when the session is read.
+      if (scope.sessionId != null) scope.attributes[_Unchecked] = true;
       return scope.sessionId;
     }
     return null;
@@ -218,20 +222,36 @@ class SessionManager {
 
   Future<void> _load(RequestScope scope, String sessionId) async {
     if (scope.sessionLoaded) return;
-    scope.sessionData =
-        await SessionFileStore().retrieveSession(sessionId) ?? {};
+    final stored = await SessionFileStore().retrieveSession(sessionId);
+    scope.sessionData = stored ?? {};
     scope.sessionLoaded = true;
+    if (stored != null) scope.attributes.remove(_Unchecked);
   }
 
   /// The pending changes for this request's session, registering their
   /// save on first use. Null outside a request or without a session.
   Future<_SessionChanges?> _changesFor(RequestScope? scope) async {
-    final sessionId = getSessionId();
+    var sessionId = getSessionId();
     if (scope == null || sessionId == null) return null;
     final existing = scope.attributes[_SessionChanges];
     if (existing is _SessionChanges) return existing;
 
     await _load(scope, sessionId);
+    if (scope.attributes.remove(_Unchecked) != null) {
+      // The cookie names no session. Writing one under that id would let
+      // whoever put it in the browser into the session — a request that
+      // never went through [sessionStart], such as a `fetch` to an API
+      // route, takes the cookie as it is. A new id is issued instead.
+      sessionId = _generateSessionId();
+      try {
+        _setSessionCookie(scope.request.response, sessionId);
+      } on StateError {
+        // The response has gone out, so the client could not be told the
+        // new id: there is nothing to save the changes under.
+        return null;
+      }
+      scope.sessionId = sessionId;
+    }
     final changes = _SessionChanges(scope, sessionId);
     scope.attributes[_SessionChanges] = changes;
     scope.beforeResponse(changes.save);
@@ -241,6 +261,10 @@ class SessionManager {
 
 /// Marks a key deleted in [_SessionChanges.values].
 const Object _removed = Object();
+
+/// Key of the [RequestScope.attributes] flag set while the request's
+/// session id is one read from its cookie and not yet found in the store.
+abstract final class _Unchecked {}
 
 /// The session writes one request makes, saved together once.
 ///

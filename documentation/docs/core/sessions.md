@@ -62,7 +62,7 @@ await regenerateSession();
 await setSession('logged_in', true);
 ```
 
-The data stays; only the id changes, and the old one stops working. Someone who learned the old id — by planting a cookie in the browser before the user signed in, say — is left holding nothing. For the same reason, an id the server never issued is not taken up: a request carrying one starts a fresh session with an id of the server's choosing.
+The data stays; only the id changes, and the old one stops working. Someone who learned the old id — by planting a cookie in the browser before the user signed in, say — is left holding nothing. For the same reason, an id the server never issued is not taken up: a request carrying one starts a fresh session with an id of the server's choosing. That holds for an API call made with `fetch` as much as for a page, so a session written by a JSON login lands under a new id too.
 
 ## CSRF Tokens
 
