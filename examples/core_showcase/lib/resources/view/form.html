@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Form</title><style>body{font-family:system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;color:#222}input{display:block;margin:4px 0 2px;padding:6px;width:100%;box-sizing:border-box}.error{color:#b00020;font-size:.9em;min-height:1em}.flash{background:#e6f4ea;padding:8px 12px;border-radius:6px;min-height:1em}button{margin-top:12px;padding:8px 16px}code{background:#f3f3f3;padding:2px 4px}</style></head>
+<body>
+  <h1>Contact form</h1>
+  <p class="flash" id="flash">{@ session('status') @}</p>
+  <form method="POST" action="/form">
+    {@ csrf @}
+    <label>Name <input name="name" id="name" value="{@ old('name') @}"></label>
+    <div class="error" id="name-error">{@ error('name') @}</div>
+    <label>Email <input name="email" id="email" value="{@ old('email') @}"></label>
+    <div class="error" id="email-error">{@ error('email') @}</div>
+    <label>Password (never kept as old input) <input name="password" id="password" type="password"></label>
+    <button type="submit" id="submit">Send</button>
+  </form>
+  <p><a href="/console">Back to the console</a></p>
+</body></html>

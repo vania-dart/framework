@@ -2,7 +2,7 @@
 
 **Describe your API once, and serve interactive OpenAPI 3 docs from your own app.**
 
-`vania_swagger` turns a description of your endpoints into a full OpenAPI 3.0 spec and a live Swagger UI, served on your app's own HTTP port. You write the description with a set of small helper functions — one per endpoint, plus reusable schemas and tags — and the provider does the rest: `/docs` for the UI, and the raw spec as JSON and YAML.
+`vania_swagger` turns a description of your endpoints into a full OpenAPI 3.2 spec and a live Swagger UI, served on your app's own HTTP port. You write the description with a set of small helper functions — one per endpoint, plus reusable schemas and tags — and the provider does the rest: `/docs` for the UI, and the raw spec as JSON and YAML.
 
 ## Install
 
@@ -60,6 +60,7 @@ GET /docs/swagger.yaml → the spec (YAML)
 
 ## Good to know
 
+- HTTP `QUERY` routes are documented with `swaggerQuery`, in the `query` field OpenAPI 3.2 added. (`ApiQuery` stays the query-string parameter; the verb annotation is `ApiQueryMethod`.)
 - Typed response helpers (`ApiOkResponse`, `ApiCreatedResponse`, `ApiNotFoundResponse`, `ApiUnauthorizedResponse`, …) map to the right status codes.
 - `swaggerAddBearerAuth()` plus `security:` on a route adds the "Authorize" button so you can try protected endpoints.
 - The docs *describe* your API — they don't validate it. Keep them honest with a test that generates the spec and asserts on it.

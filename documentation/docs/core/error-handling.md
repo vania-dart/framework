@@ -24,7 +24,7 @@ throw ForbiddenException(message: 'You do not have access');
 // 401 Unauthorized
 throw Unauthenticated(message: 'Invalid credentials');
 
-// 500 Internal Server Error
+// 500 Internal Server Error — the client sees the message only in debug
 throw InternalServerError(message: 'Something went wrong');
 
 // Custom HTTP status — the class is HttpResponseException, with a `code`
@@ -66,6 +66,8 @@ class AdminMiddleware extends Middleware {
 
 See [Middleware](middleware.md) for the full `handle` / `process` model.
 
+An exception gets the same response whether a middleware or the controller threw it.
+
 ## Error Response Format
 
 ### JSON Requests
@@ -78,15 +80,17 @@ For API requests, exceptions are returned as JSON:
 }
 ```
 
+A 5xx exception you throw yourself is treated like any other server failure: it is logged, and its message reaches the client only when `APP_DEBUG=true`. Messages of 4xx exceptions are written for the client and always shown.
+
 ### HTML Requests
 
-For web requests, the framework renders error view templates if they exist:
+A request that asks for HTML, in an app that renders pages (it has views, or CSRF protection on), gets HTML instead:
 
-- `views/errors/404.html` for 404 errors
-- `views/errors/500.html` for 500 errors
-- `views/errors/419.html` for CSRF failures
+- `RedirectException` redirects to its `message`. So does an `Unauthenticated` created with `responseType: ResponseType.html`, which is how a session guard sends a browser to its login page: `Unauthenticated(message: '/login', responseType: ResponseType.html)`. Any other `Unauthenticated` is a `401`, even for a browser — its message is text for the client, not an address.
+- A 404, 500 or 419 (CSRF failure) renders `lib/resources/view/errors/404.html`, `500.html` or `419.html`, when it exists.
+- Anything else, or a missing view, is a plain HTML page with the status code and the escaped message.
 
-If the view file does not exist, a plain text response is returned.
+An app without views answers in JSON, even a browser.
 
 ## Validation Errors
 
@@ -102,7 +106,7 @@ Validation failures return a `422` response with structured error data:
 }
 ```
 
-For HTML requests, the user is redirected back with errors and old input in the session.
+For HTML requests, the user is redirected back with errors and old input in the session. An app without sessions (no views and CSRF off) has nowhere to keep them across a redirect, so it answers HTML requests with the `422` too.
 
 ## Database Errors
 
@@ -110,4 +114,4 @@ For HTML requests, the user is redirected back with errors and old input in the 
 
 ## Unhandled Exceptions
 
-Any exception not caught by your code is caught by the request pipeline. It logs the error and returns a 500 response. In debug mode, the exception message and stack trace are included in the response.
+Any exception not caught by your code is caught by the request pipeline. It logs the error with its stack trace and returns a 500 response. In debug mode, the exception message is included in the response; the stack trace only goes to the log.

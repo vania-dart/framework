@@ -121,7 +121,7 @@ Your server is now running at `http://localhost:8000`.
 | `vania_elasticsearch` | Elasticsearch client with query builder | 1.0.0 |
 | `vania_graphql` | GraphQL server with subscriptions | 1.0.0 |
 | `vania_grpc` | gRPC server and client | 1.0.0 |
-| `vania_swagger` | OpenAPI 3.0 documentation and Swagger UI | 1.0.0 |
+| `vania_swagger` | OpenAPI 3.2 documentation and Swagger UI | 1.0.0 |
 | `vania_websocket` | WebSocket channels, presence, and broadcasting | 1.0.0 |
 | `vania_cli` | CLI for scaffolding, serving, and migrations | 1.0.0 |
 

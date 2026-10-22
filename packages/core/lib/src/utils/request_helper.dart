@@ -34,7 +34,11 @@ Future requestBody() async {
   final req = _current;
   if (req == null) return <String, dynamic>{};
   final m = req.method.toLowerCase();
-  if (m == 'post' || m == 'patch' || m == 'put' || m == 'delete') {
+  if (m == 'post' ||
+      m == 'patch' ||
+      m == 'put' ||
+      m == 'delete' ||
+      m == 'query') {
     return await RequestBody.extractBody(request: req);
   }
   return <String, dynamic>{};

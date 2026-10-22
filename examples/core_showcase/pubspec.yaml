@@ -1,0 +1,11 @@
+name: core_showcase
+description: Exercises the HTTP core end to end — run it, then tool/check.dart.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  vania:
+    path: ../../packages/core

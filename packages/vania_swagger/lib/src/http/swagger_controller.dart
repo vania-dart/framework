@@ -25,13 +25,13 @@ class SwaggerController {
     return Response.html(html, headers: _headers('text/html; charset=utf-8'));
   }
 
-  /// Serves the OpenAPI 3.1 spec as JSON.
+  /// Serves the OpenAPI 3.2 spec as JSON.
   Future<Response> serveJson(Request request) async {
     final spec = _spec(request);
     return Response.jsonWithHeader(spec, headers: _headers('application/json'));
   }
 
-  /// Serves the OpenAPI 3.1 spec as YAML.
+  /// Serves the OpenAPI 3.2 spec as YAML.
   Future<Response> serveYaml(Request request) async {
     final spec = _spec(request);
     final yaml = encodeYaml(spec);

@@ -103,6 +103,44 @@ void swaggerPost(
   );
 }
 
+/// Documents an HTTP `QUERY` operation (RFC 10008): a read, like `GET`,
+/// that carries its query in the request [body]. List the media types the
+/// query may come in with [consumes].
+void swaggerQuery(
+  String path, {
+  ApiOperation? operation,
+  List<ApiParam>? params,
+  ApiBody? body,
+  List<ApiResponse>? responses,
+  List<ApiSecurity>? security,
+  List<ApiHeader>? headers,
+  List<ApiQuery>? query,
+  List<ApiFileUpload>? fileUploads,
+  bool hidden = false,
+  List<String>? tags,
+  List<String>? consumes,
+  List<String>? produces,
+  Map<String, dynamic>? extensions,
+}) {
+  swaggerRoute(
+    method: 'QUERY',
+    path: path,
+    operation: operation,
+    params: params,
+    body: body,
+    responses: responses,
+    security: security,
+    headers: headers,
+    query: query,
+    fileUploads: fileUploads,
+    hidden: hidden,
+    tags: tags,
+    consumes: consumes,
+    produces: produces,
+    extensions: extensions,
+  );
+}
+
 void swaggerPut(
   String path, {
   ApiOperation? operation,

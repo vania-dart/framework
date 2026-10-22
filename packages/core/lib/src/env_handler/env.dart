@@ -28,9 +28,17 @@ class Env {
   /// Evn.get<num>('PORT', 3000);
   /// Evn.get<String>('APP_KEY');
   /// ```
+  /// The types [get] parses a value into.
+  static const Set<String> _typed = {'int', 'double', 'num', 'bool'};
+
   static T get<T>(String key, [dynamic defaultValue]) {
     dynamic value = Env().env[key];
     value ??= Platform.environment[key];
+    // `KEY=` with nothing after it is a key left unset, not a number or a
+    // flag that failed to parse: a typed read falls back to the default.
+    if (value is String && value.trim().isEmpty && _typed.contains('$T')) {
+      value = null;
+    }
     value ??= defaultValue;
     if (T.toString() == 'int') {
       return int.parse(value.toString()) as T;

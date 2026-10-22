@@ -13,4 +13,7 @@ enum HttpRequestMethod {
   lock,
   unlock,
   propfind,
+
+  /// A safe, idempotent query carried in the request content (RFC 10008).
+  query,
 }

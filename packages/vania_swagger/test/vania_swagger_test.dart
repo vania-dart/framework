@@ -139,7 +139,7 @@ void main() {
       SwaggerMetadata().setApiInfo(const ApiInfo(title: 'Test API'));
       final spec = SwaggerGenerator().generate();
 
-      expect(spec['openapi'], equals('3.1.0'));
+      expect(spec['openapi'], equals('3.2.0'));
       expect(spec['info']['title'], equals('Test API'));
       expect(spec['paths'], isEmpty);
     });
@@ -468,7 +468,7 @@ void main() {
       final json = jsonEncode(spec);
       final decoded = jsonDecode(json);
 
-      expect(decoded['openapi'], equals('3.1.0'));
+      expect(decoded['openapi'], equals('3.2.0'));
       expect(decoded['info']['title'], equals('Test API'));
     });
   });

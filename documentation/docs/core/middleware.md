@@ -47,7 +47,39 @@ class Timing extends Middleware {
 }
 ```
 
-Not calling `next()` stops the chain: no later middleware runs, the controller is never invoked, and your middleware becomes responsible for the response. Override **either** `handle` or `process`, not both — if you define `process`, `handle` is ignored.
+The response is written only once every middleware has finished, so the header above still reaches the client. An exception from the controller or a later middleware comes back out of `await next()`: a `process` middleware can catch it to log or measure it, and should rethrow it so it is still answered.
+
+Not calling `next()` stops the chain: no later middleware runs, the controller is never invoked, and your middleware becomes responsible for the response. Calling it twice is an error, since it would run the controller twice. Override **either** `handle` or `process`, not both — if you define `process`, `handle` is ignored.
+
+## Reading the body in middleware
+
+Middleware runs **before** the request body is read, so `req.input(...)` in a middleware sees only the query string and route parameters. This is deliberate: CSRF protection checks the token before it lets the framework read a possibly large body. (With CSRF protection on, a `POST`, `PUT`, `PATCH` or `DELETE` that passed the check has had its body read by it — but don't rely on that.) A middleware that needs the body reads it first:
+
+```dart
+@override
+Future<void> handle(Request req) async {
+  await req.extractBody();
+  final email = req.input('email');
+  // ...
+}
+```
+
+Reading it here costs nothing extra later: the body is read once, and the controller gets the same input.
+
+## One instance for every request
+
+The middleware objects you attach to routes are created once, when routes are registered, and shared by every request — including requests running at the same time. Keep per-request data out of their fields:
+
+```dart
+class Bad extends Middleware {
+  String? userId; // another request can overwrite this before you read it
+
+  @override
+  Future<void> handle(Request req) async => userId = req.header('x-user');
+}
+```
+
+Pass such data on with `req.merge({...})` instead, as in the first example. Fields that hold configuration, or state meant to be shared such as `Throttle`'s counters, are fine.
 
 ## Attaching middleware to routes
 
@@ -75,10 +107,12 @@ Group middleware runs before route middleware, and each list runs in order.
 import 'package:vania/http/middleware.dart';
 
 Router.post('/login', authController.login)
-    .middleware([Throttle(maxRequests: 5, perMinutes: 1)]);
+    .middleware([Throttle(maxAttempts: 5, duration: Duration(minutes: 1))]);
 ```
 
-Five requests per minute per client; excess requests get `429 Too Many Requests`.
+Five requests per minute per client; excess requests get `429 Too Many Requests` with a `Retry-After` header. Every response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` (what is left after this request) and `X-RateLimit-Reset` (when the count starts over).
+
+Clients are told apart by IP address, which behind a reverse proxy is the proxy's unless it is listed in `TRUSTED_PROXIES`. Pass `includeUserIdentifier: true` to count each signed-in user separately. Pass `bypassInDevelopment: true` to skip throttling while `APP_ENV` is `local` or `development`; it is off by default, so a production app that kept a development `.env` is still rate limited. The counts are kept in memory, so they are per process, and per isolate with `APP_ISOLATES`.
 
 ### Security headers
 
@@ -122,9 +156,10 @@ Router.websocket('/ws', eventHandler, middleware: [WsAuth()]);
 
 ## Execution order
 
-1. Group middleware (outer groups first, then inner)
-2. Route middleware, in the order listed
-3. The controller action
+1. CSRF protection, when it is on and the request changes state (see [Sessions](sessions.md#csrf-tokens))
+2. Group middleware (outer groups first, then inner)
+3. Route middleware, in the order listed
+4. The controller action
 
 A middleware that throws, or that overrides `process` and doesn't call `next()`, stops the chain there.
 

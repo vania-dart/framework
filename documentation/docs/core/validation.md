@@ -210,4 +210,4 @@ When validation fails, the framework returns a `422` response with this structur
 }
 ```
 
-For HTML requests (web routes), the user is redirected back with errors and old input available in the session.
+For HTML requests (web routes), the user is redirected back with errors and old input available in the session. They are kept for the next request only. Fields whose name contains `password` are never kept as old input, and neither are uploaded files. An app without sessions (no views and CSRF off) has nowhere to keep them across a redirect, so it answers HTML requests with the `422` too.

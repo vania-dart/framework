@@ -7,7 +7,7 @@ import 'config/swagger_config.dart';
 import 'http/swagger_controller.dart';
 import 'metadata/swagger_metadata.dart';
 
-/// Wires Swagger UI + the OpenAPI 3.1 spec into a Vania application.
+/// Wires Swagger UI + the OpenAPI 3.2 spec into a Vania application.
 ///
 /// `register()` seeds `SwaggerMetadata()` with the provider's [info] and
 /// [config]. `boot()` mounts three routes on the app's `Router`:
@@ -15,8 +15,8 @@ import 'metadata/swagger_metadata.dart';
 /// | Route                    | Response                           |
 /// | ------------------------ | ---------------------------------- |
 /// | `GET {basePath}`         | Swagger UI HTML                    |
-/// | `GET {basePath}/swagger.json` | OpenAPI 3.1 spec as JSON       |
-/// | `GET {basePath}/swagger.yaml` | OpenAPI 3.1 spec as YAML       |
+/// | `GET {basePath}/swagger.json` | OpenAPI 3.2 spec as JSON       |
+/// | `GET {basePath}/swagger.yaml` | OpenAPI 3.2 spec as YAML       |
 ///
 /// Because those are just Router entries, the Swagger UI shares the app's
 /// HTTP port. No second HttpServer.

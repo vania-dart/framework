@@ -33,6 +33,14 @@ class _Wrapping extends Middleware {
   }
 }
 
+class _CallsNextTwice extends Middleware {
+  @override
+  Future<void> process(Request req, Next next) async {
+    await next();
+    await next();
+  }
+}
+
 void main() {
   setUp(log.clear);
 
@@ -86,6 +94,14 @@ void main() {
     await run([]);
     expect(log, equals(['controller']));
   });
+
+  test(
+    'calling next() twice is an error, and the controller runs once',
+    () async {
+      await expectLater(run([_CallsNextTwice()]), throwsA(isA<StateError>()));
+      expect(log.where((e) => e == 'controller').length, equals(1));
+    },
+  );
 
   test('each middleware runs exactly once', () async {
     await run([_Wrapping('w'), _Legacy('a'), _Legacy('b')]);

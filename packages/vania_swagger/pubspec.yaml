@@ -1,7 +1,7 @@
 name: vania_swagger
-description: Full OpenAPI 3.0 Swagger documentation for Vania framework - annotations, spec generation, and Swagger UI.
-version: 1.0.0
-repository: https://github.com/vania-dart/framework/packages/vania_websocket
+description: Full OpenAPI 3.2 Swagger documentation for Vania framework - annotations, spec generation, and Swagger UI.
+version: 1.1.0
+repository: https://github.com/vania-dart/framework
 homepage: https://vdart.dev
 documentation: https://vdart.dev/docs
 issue_tracker: https://github.com/vania-dart/framework/issues

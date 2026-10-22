@@ -1,6 +1,20 @@
 import '../metadata/swagger_metadata.dart';
 import '../annotations/annotations.dart';
 
+/// The methods an OpenAPI 3.2 Path Item has a field of its own for. Any
+/// other goes under `additionalOperations`.
+const Set<String> _pathItemMethods = {
+  'get',
+  'put',
+  'post',
+  'delete',
+  'options',
+  'head',
+  'patch',
+  'trace',
+  'query',
+};
+
 class SwaggerGenerator {
   static final SwaggerGenerator _instance = SwaggerGenerator._internal();
   factory SwaggerGenerator() => _instance;
@@ -11,7 +25,7 @@ class SwaggerGenerator {
     final info = metadata.apiInfo;
 
     final spec = <String, dynamic>{
-      'openapi': '3.1.0',
+      'openapi': '3.2.0',
       'info': _buildInfo(info),
       if (serverUrl != null || metadata.servers.isNotEmpty)
         'servers': _buildServers(metadata, serverUrl),
@@ -52,7 +66,15 @@ class SwaggerGenerator {
       }
 
       final operation = _buildOperation(route, securitySchemes);
-      (paths[path] as Map<String, dynamic>)[method] = operation;
+      final pathItem = paths[path] as Map<String, dynamic>;
+      if (_pathItemMethods.contains(method)) {
+        pathItem[method] = operation;
+      } else {
+        // OpenAPI 3.2 keys these by the method exactly as it is sent.
+        (pathItem['additionalOperations'] ??=
+                <String, dynamic>{})[route.method] =
+            operation;
+      }
 
       final tags = route.tags.isNotEmpty
           ? route.tags

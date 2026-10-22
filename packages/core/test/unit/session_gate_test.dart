@@ -18,6 +18,8 @@ Future<void> _hammerWithHtmlAccept({int count = 5}) async {
     if (isHtml) {
       await runInRequestScope(req, () async {
         await SessionManager().sessionStart(req, req.response);
+        // RequestHandler saves session writes once the request is done.
+        await currentRequestScope!.runBeforeResponse();
       });
     }
     await req.response.close();
@@ -74,8 +76,9 @@ void main() {
     });
 
     test('is true once the app has a view directory', () {
-      Directory('${sandbox.path}/lib/resources/view')
-          .createSync(recursive: true);
+      Directory(
+        '${sandbox.path}/lib/resources/view',
+      ).createSync(recursive: true);
       resetSessionGate();
       expect(sessionsEnabled(), isTrue);
     });
@@ -90,8 +93,9 @@ void main() {
     });
 
     test('SESSION_ENABLED overrides the inference', () {
-      Directory('${sandbox.path}/lib/resources/view')
-          .createSync(recursive: true);
+      Directory(
+        '${sandbox.path}/lib/resources/view',
+      ).createSync(recursive: true);
       Env().env['SESSION_ENABLED'] = 'false';
       addTearDown(() => Env().env.remove('SESSION_ENABLED'));
       resetSessionGate();
@@ -100,11 +104,13 @@ void main() {
   });
 
   group('API-only app', () {
-    test('writes no session files however many html-Accept requests arrive',
-        () async {
-      await _hammerWithHtmlAccept();
-      expect(sessionFileCount(), isZero);
-    });
+    test(
+      'writes no session files however many html-Accept requests arrive',
+      () async {
+        await _hammerWithHtmlAccept();
+        expect(sessionFileCount(), isZero);
+      },
+    );
 
     test('creates no session storage directory at all', () async {
       await _hammerWithHtmlAccept();
@@ -114,8 +120,9 @@ void main() {
 
   group('web app', () {
     setUp(() {
-      Directory('${sandbox.path}/lib/resources/view')
-          .createSync(recursive: true);
+      Directory(
+        '${sandbox.path}/lib/resources/view',
+      ).createSync(recursive: true);
       resetSessionGate();
     });
 

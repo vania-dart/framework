@@ -76,6 +76,8 @@ return Response.back('status', 'Profile updated');
 return Response.backWithInput('email', 'That address is already taken');
 ```
 
+The previous page is taken from the `Referer` header, and only when it points at this same site, so a link from elsewhere cannot use `back()` to redirect off your site. Without one, `back()` from a form post returns to the page at the same path, and from anything else goes to `/` — never to the URL it was called from, which would redirect to itself.
+
 ## File Responses
 
 ### Stream a File
@@ -101,6 +103,25 @@ return Response.download(
 );
 ```
 
+### Serve a File from Disk
+
+`Response.file` and `Response.download` send bytes you already hold in memory. For a file on disk — a video, a large export — use `Response.fromPath`, which streams it without loading it into memory:
+
+```dart
+return Response.fromPath('storage/videos/intro.mp4');
+
+// Saved by the browser, under a name of your choosing
+return Response.fromPath(
+  'storage/exports/2026-10.csv',
+  download: true,
+  fileName: 'october.csv',
+);
+```
+
+It answers `Range` requests with `206 Partial Content`, so video players can seek and interrupted downloads can resume. A path that is not a file gets a 404.
+
+The path is read as given. Never build it from request input without confining it to a directory you mean to serve.
+
 ## Server-Sent Events (SSE)
 
 Stream real-time events to the client:
@@ -121,6 +142,8 @@ Future<Response> notifications(Request req) async {
   return Response.sse(stream);
 }
 ```
+
+Each event is sent as soon as the stream yields it. While the stream is quiet, a comment line goes out every `SSE_HEARTBEAT` seconds (default 15), which keeps proxies from closing the connection. When the client goes away, the subscription to your stream is cancelled, so a `StreamController`'s `onCancel` is the place to release whatever feeds it. An error from the stream ends the response and is logged.
 
 ## Empty / No Content
 

@@ -1,4 +1,4 @@
-/// A tiny YAML emitter that covers what OpenAPI 3.1 needs — maps, lists,
+/// A tiny YAML emitter that covers what OpenAPI 3.2 needs — maps, lists,
 /// scalars (String / num / bool / null). No anchors, no flow style, no
 /// custom tags. Keys are emitted as unquoted identifiers when safe,
 /// otherwise as double-quoted strings.

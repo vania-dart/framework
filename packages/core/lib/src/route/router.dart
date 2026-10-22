@@ -16,6 +16,12 @@ class Router {
   final List<Middleware> _groupMiddleware = [];
   final List<RouteData> _routes = [];
 
+  /// What the last registration added: one route, or one per method for
+  /// [any]. Everything chained after it — middleware, constraints, a name —
+  /// applies to all of these, so no method of an `any` route is left
+  /// without the middleware meant to guard it.
+  List<RouteData> _lastAdded = const [];
+
   static final RegExp _requestVarRegex = RegExp(r'Closure: \(([^)]*)\) =>');
   static final RegExp _closureStartRegex = RegExp(r'Closure: \(');
 
@@ -75,17 +81,17 @@ class Router {
     }
 
     final normalizedPath = _normalizePath(path);
-    _routes.add(
-      RouteData(
-        method: method.name,
-        path: normalizedPath,
-        action: action,
-        prefix: _prefix,
-        paramTypes: paramTypes,
-        regex: regex,
-        hasRequest: hasRequest,
-      ),
+    final route = RouteData(
+      method: method.name,
+      path: normalizedPath,
+      action: action,
+      prefix: _prefix,
+      paramTypes: paramTypes,
+      regex: regex,
+      hasRequest: hasRequest,
     );
+    _routes.add(route);
+    _lastAdded = [route];
     return this;
   }
 
@@ -106,79 +112,90 @@ class Router {
   }
 
   Router middleware([List<Middleware>? middleware]) {
-    if (middleware != null && _routes.isNotEmpty) {
-      _routes.last.preMiddleware = [
-        ..._routes.last.preMiddleware,
-        ...middleware,
-      ];
+    if (middleware != null) {
+      for (final route in _lastAdded) {
+        route.preMiddleware = [...route.preMiddleware, ...middleware];
+      }
     }
     return this;
   }
 
   Router prefix([String? prefix]) {
-    if (prefix != null && _routes.isNotEmpty) {
-      final route = _routes.last;
-      final basePath = route.path.startsWith('/')
-          ? route.path.substring(1)
-          : route.path;
+    if (prefix != null) {
+      for (final route in _lastAdded) {
+        final basePath = route.path.startsWith('/')
+            ? route.path.substring(1)
+            : route.path;
 
-      route.path = prefix.endsWith("/")
-          ? "$prefix$basePath"
-          : "$prefix/$basePath";
+        route.path = prefix.endsWith("/")
+            ? "$prefix$basePath"
+            : "$prefix/$basePath";
+      }
     }
     return this;
   }
 
   Router name([String? name]) {
-    if (name != null && _routes.isNotEmpty) {
-      _routes.last.name = name;
+    if (name != null) {
+      for (final route in _lastAdded) {
+        route.name = name;
+      }
     }
     return this;
   }
 
   Router domain([String? domain]) {
-    if (domain != null && _routes.isNotEmpty) {
-      _routes.last.domain = domain;
+    if (domain != null) {
+      for (final route in _lastAdded) {
+        route.domain = domain;
+      }
+    }
+    return this;
+  }
+
+  /// The media types this `QUERY` route takes, such as
+  /// `application/json`; `type/*` and `*/*` match a family or anything. A
+  /// request with another type is answered with a 415, and the list is
+  /// advertised in the `Accept-Query` header.
+  Router acceptQuery(List<String> mediaTypes) {
+    final accepted = [for (final type in mediaTypes) type.trim().toLowerCase()];
+    for (final route in _lastAdded) {
+      route.acceptQuery = accepted;
     }
     return this;
   }
 
   Router whereInt(String paramName) {
-    if (_routes.isNotEmpty) {
-      _routes.last.paramTypes ??= {};
-      _routes.last.paramTypes![paramName] = int;
+    for (final route in _lastAdded) {
+      (route.paramTypes ??= {})[paramName] = int;
     }
     return this;
   }
 
   Router whereString(String paramName) {
-    if (_routes.isNotEmpty) {
-      _routes.last.paramTypes ??= {};
-      _routes.last.paramTypes![paramName] = String;
+    for (final route in _lastAdded) {
+      (route.paramTypes ??= {})[paramName] = String;
     }
     return this;
   }
 
   Router whereDouble(String paramName) {
-    if (_routes.isNotEmpty) {
-      _routes.last.paramTypes ??= {};
-      _routes.last.paramTypes![paramName] = double;
+    for (final route in _lastAdded) {
+      (route.paramTypes ??= {})[paramName] = double;
     }
     return this;
   }
 
   Router whereBool(String paramName) {
-    if (_routes.isNotEmpty) {
-      _routes.last.paramTypes ??= {};
-      _routes.last.paramTypes![paramName] = bool;
+    for (final route in _lastAdded) {
+      (route.paramTypes ??= {})[paramName] = bool;
     }
     return this;
   }
 
   Router where(String paramName, String regex) {
-    if (_routes.isNotEmpty) {
-      _routes.last.regex ??= {};
-      _routes.last.regex![paramName] = regex;
+    for (final route in _lastAdded) {
+      (route.regex ??= {})[paramName] = regex;
     }
     return this;
   }
@@ -222,25 +239,27 @@ class Router {
   static Router propfind(String path, Function action) =>
       _addRoute(HttpRequestMethod.propfind, path, action);
 
+  /// A `QUERY` route (RFC 10008): a safe, idempotent read like `GET`, with
+  /// the query in the request content instead of the URL — so it is not
+  /// limited in length, and is less often written to logs on the way.
+  ///
+  /// The request must say what its content is with `Content-Type`; one
+  /// that does not, or whose content does not parse as that type, is
+  /// answered with a 400. Content the framework does not parse into
+  /// fields, such as `application/sql`, is in `Request.rawBody`.
+  static Router query(String path, Function action) =>
+      _addRoute(HttpRequestMethod.query, path, action);
+
+  /// A route for every HTTP method. Anything chained after it applies to
+  /// all of them.
   static Router any(String path, Function action) {
     final router = Router();
-
-    final currentPrefix = router._prefix;
-
-    for (HttpRequestMethod method in HttpRequestMethod.values) {
-      final routeData = RouteData(
-        method: method.name,
-        path: router._normalizePath(path),
-        action: action,
-        prefix: currentPrefix,
-        hasRequest: router._getRequestVar(action.toString()),
-        preMiddleware: List.from(router._groupMiddleware),
-        domain: router._groupDomain,
-      );
-
-      router._routes.add(routeData);
+    final added = <RouteData>[];
+    for (final method in HttpRequestMethod.values) {
+      _addRoute(method, path, action);
+      added.addAll(router._lastAdded);
     }
-
+    router._lastAdded = added;
     return router;
   }
 
@@ -250,7 +269,7 @@ class Router {
     String? prefix,
     List<Middleware>? middleware,
     String? domain,
-    String regex = r'\d+(.\d+)?',
+    String regex = r'\d+(\.\d+)?',
   }) {
     Router.get(
       path,
@@ -278,6 +297,50 @@ class Router {
     ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
 
     Router.put(
+      "$path/{id}",
+      controller.update,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
+
+    Router.delete(
+      "$path/{id}",
+      controller.destroy,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
+  }
+
+  /// The routes of a JSON API resource: `index`, `store`, `show`,
+  /// `update` (under both PUT and PATCH) and `destroy`.
+  ///
+  /// [resource] without `create` and `edit`, which only serve HTML forms,
+  /// so the controller does not need them.
+  static void apiResource(
+    String path,
+    dynamic controller, {
+    String? prefix,
+    List<Middleware>? middleware,
+    String? domain,
+    String regex = r'\d+(\.\d+)?',
+  }) {
+    Router.get(
+      path,
+      controller.index,
+    ).middleware(middleware).domain(domain).prefix(prefix);
+
+    Router.post(
+      path,
+      controller.store,
+    ).middleware(middleware).domain(domain).prefix(prefix);
+
+    Router.get(
+      "$path/{id}",
+      controller.show,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
+
+    Router.put(
+      "$path/{id}",
+      controller.update,
+    ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
+
+    Router.patch(
       "$path/{id}",
       controller.update,
     ).middleware(middleware).domain(domain).prefix(prefix).where('id', regex);
@@ -321,14 +384,18 @@ class Router {
     if (middleware.isNotEmpty) {
       router._groupMiddleware.addAll(middleware);
     }
-    callback();
+    try {
+      callback();
+    } finally {
+      // Restored even when the callback fails, so the group's prefix and
+      // middleware never reach routes registered after it.
+      router._groupDomain = previousDomain;
+      router._groupPrefix = previousPrefix;
 
-    router._groupDomain = previousDomain;
-    router._groupPrefix = previousPrefix;
-
-    router._groupMiddleware
-      ..clear()
-      ..addAll(previousMiddleware);
+      router._groupMiddleware
+        ..clear()
+        ..addAll(previousMiddleware);
+    }
   }
 
   static String _joinPrefixes(String basePrefix, String newPrefix) {

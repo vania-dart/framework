@@ -14,6 +14,10 @@ class RouteData {
   Map<String, Type>? paramTypes;
   Map<String, String>? regex;
 
+  /// The media types a `QUERY` route takes, from `acceptQuery`; null to
+  /// take any.
+  List<String>? acceptQuery;
+
   RouteData({
     required this.method,
     required this.path,
@@ -27,6 +31,7 @@ class RouteData {
     this.paramTypes,
     this.name,
     this.regex,
+    this.acceptQuery,
   });
 
   @override

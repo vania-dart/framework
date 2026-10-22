@@ -8,21 +8,27 @@ import 'middleware.dart';
 /// either side of it — or skip the remainder by not calling it.
 ///
 /// A middleware that throws aborts the chain; [terminal] does not run.
+/// One that calls `next` a second time gets a [StateError]: running the
+/// rest of the chain twice would run the controller twice.
 Future<void> middlewareHandler(
   List<Middleware> middlewares,
   Request request, [
   Future<void> Function()? terminal,
-]) async {
-  var index = 0;
-
-  Future<void> next() async {
-    if (index >= middlewares.length) {
-      if (terminal != null) await terminal();
-      return;
-    }
-    final middleware = middlewares[index++];
-    await middleware.process(request, next);
+]) {
+  Future<void> run(int index) {
+    if (index >= middlewares.length) return terminal?.call() ?? Future.value();
+    final middleware = middlewares[index];
+    var called = false;
+    return middleware.process(request, () {
+      if (called) {
+        throw StateError(
+          '${middleware.runtimeType} called next() more than once.',
+        );
+      }
+      called = true;
+      return run(index + 1);
+    });
   }
 
-  await next();
+  return run(0);
 }

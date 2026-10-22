@@ -1,3 +1,5 @@
+import 'dart:convert' show htmlEscape;
+
 import 'package:vania/src/http/response/response.dart';
 
 class BaseHttpResponseException {
@@ -12,6 +14,14 @@ class BaseHttpResponseException {
   });
 
   Response response(bool isHtml) => isHtml
-      ? Response.html(message)
+      ? Response.html(htmlText, statusCode: code)
       : Response.json(message is Map ? message : {'message': message}, code);
+
+  /// [message] as text for an HTML page, escaped: it may echo request
+  /// input. A map message shows its `message` entry.
+  String get htmlText {
+    final m = message;
+    final text = m is Map && m.containsKey('message') ? m['message'] : m;
+    return htmlEscape.convert(text.toString());
+  }
 }

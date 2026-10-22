@@ -39,45 +39,49 @@ void main() {
     await server.close(force: true);
   });
 
-  test('with no driver installed, an upgrade is refused rather than served',
-      () async {
-    final status = Completer<int>();
-    server.listen((req) async {
-      await WebSocketUpgradeDispatcher().dispatch(req);
-      if (!status.isCompleted) status.complete(req.response.statusCode);
-    });
-
-    _sendUpgrade(server);
-
-    // Core ships no WebSocket implementation; without a driver such as
-    // vania_websocket there is nothing to hand the socket to.
-    expect(await status.future, equals(HttpStatus.notImplemented));
-  });
-
-  test('a handler that throws surfaces the error to the awaiting caller',
-      () async {
-    WebSocketUpgradeDispatcher().override((req) async {
-      throw StateError('handler blew up');
-    });
-
-    final caught = Completer<Object?>();
-    server.listen((req) async {
-      // Mirrors the WebSocket branch of RequestHandler.handle: the error has
-      // to be catchable there, otherwise it escapes as an unhandled async
-      // error with no response left to write.
-      Object? error;
-      try {
+  test(
+    'with no driver installed, an upgrade is refused rather than served',
+    () async {
+      final status = Completer<int>();
+      server.listen((req) async {
         await WebSocketUpgradeDispatcher().dispatch(req);
-      } catch (e) {
-        error = e;
-      }
-      if (!caught.isCompleted) caught.complete(error);
-    });
+        if (!status.isCompleted) status.complete(req.response.statusCode);
+      });
 
-    _sendUpgrade(server);
+      _sendUpgrade(server);
 
-    expect(await caught.future, isA<StateError>());
-  });
+      // Core ships no WebSocket implementation; without a driver such as
+      // vania_websocket there is nothing to hand the socket to.
+      expect(await status.future, equals(HttpStatus.notImplemented));
+    },
+  );
+
+  test(
+    'a handler that throws surfaces the error to the awaiting caller',
+    () async {
+      WebSocketUpgradeDispatcher().override((req) async {
+        throw StateError('handler blew up');
+      });
+
+      final caught = Completer<Object?>();
+      server.listen((req) async {
+        // Mirrors the WebSocket branch of RequestHandler.handle: the error has
+        // to be catchable there, otherwise it escapes as an unhandled async
+        // error with no response left to write.
+        Object? error;
+        try {
+          await WebSocketUpgradeDispatcher().dispatch(req);
+        } catch (e) {
+          error = e;
+        }
+        if (!caught.isCompleted) caught.complete(error);
+      });
+
+      _sendUpgrade(server);
+
+      expect(await caught.future, isA<StateError>());
+    },
+  );
 
   test('an installed handler receives the upgrade', () async {
     final seen = Completer<String>();
