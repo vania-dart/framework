@@ -188,7 +188,7 @@ The server then binds with a `SecurityContext` built from those files. In most d
 APP_ISOLATES=auto      # isolates serving HTTP: a number, or auto for one per CPU core (default 1)
 HTTP_IDLE_TIMEOUT=120  # seconds an idle keep-alive connection is kept; 0 keeps it forever
 HTTP_BACKLOG=1024      # connections the OS queues while the server is busy
-REQUEST_TIMEOUT=0      # seconds a request may take to start answering before it gets a 503; 0 is off
+REQUEST_TIMEOUT=0      # seconds a request may take to start answering, upload included, before it gets a 503; 0 is off
 SHUTDOWN_TIMEOUT=10    # seconds a shutdown waits for in-flight requests
 SSE_HEARTBEAT=15       # seconds between keep-alive comments on a quiet event stream
 MAX_BODY_SIZE=10485760 # largest request body in bytes, multipart uploads included
@@ -225,6 +225,8 @@ An isolate that exits unexpectedly is replaced. One that keeps dying right after
 **`HTTP_BACKLOG`** is how many incoming connections wait while the server is busy accepting; a burst beyond it is refused. The OS caps it at its own limit: `net.core.somaxconn` on Linux (usually 4096), `kern.ipc.somaxconn` on macOS (128 unless raised).
 
 **`REQUEST_TIMEOUT`** limits how long the app takes to start answering — a hung database call, say. Once the response has begun, it is left to finish: a stream of server-sent events or a large download is not cut off.
+
+The time it takes the client to send the request body counts too, since the app cannot answer before it has read it. That keeps a client trickling a body in byte by byte from holding a connection forever, but it also means a large upload over a slow connection is cut off with a 503. If the app takes uploads, set the timeout to what the largest one (`MAX_BODY_SIZE`) needs on the slowest connection you mean to serve, or leave it at 0.
 
 **Shutdown.** On `SIGINT` or `SIGTERM` the server stops accepting connections, lets in-flight requests finish for up to `SHUTDOWN_TIMEOUT`, writes out buffered log entries and exits. A second signal exits at once.
 

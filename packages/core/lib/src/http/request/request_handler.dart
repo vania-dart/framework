@@ -51,7 +51,8 @@ final bool _debug = () {
 }();
 
 /// Longest a routed request may take to start answering, from
-/// `REQUEST_TIMEOUT` in seconds; off when unset. A response already being
+/// `REQUEST_TIMEOUT` in seconds; off when unset. Reading the request body
+/// counts, so a slow upload can run out of it. A response already being
 /// written — an event stream, a large download — runs to its end.
 final Duration? _requestTimeout = () {
   final seconds = env<int>('REQUEST_TIMEOUT', 0);
