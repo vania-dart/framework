@@ -1,17 +1,6 @@
-import 'dart:convert' show htmlEscape;
-
-import 'package:vania/env.dart' show env;
-import 'package:vania/src/exception/database_exception.dart';
-import 'package:vania/src/logger/logger.dart';
-import 'package:vania/src/exception/query_exception.dart';
-import 'package:vania/src/exception/validation_exception.dart';
 import 'package:vania/src/http/request/request.dart';
 import 'package:vania/src/http/response/response.dart';
 import 'package:vania/src/route/route_data.dart';
-import 'package:vania/src/route/route_history.dart';
-
-import '../../exception/base_http_exception.dart';
-import '../../exception/invalid_argument_exception.dart';
 
 class ControllerHandler {
   /// Converts a route parameter from its URL text to the value passed to
@@ -67,97 +56,44 @@ class ControllerHandler {
     return _isPlainInteger(whole) || whole == '0' || whole == '-0';
   }
 
-  Future<void> create({
+  /// Calls the route's action and returns its [Response], unwritten.
+  ///
+  /// Writing it is left to the request handler, once the middleware chain
+  /// has finished, so a middleware wrapping the chain can still add to
+  /// the response after `next()` returns. An error is not handled here
+  /// either: it travels back out through the middleware, which may want
+  /// to see it, to the one place that turns errors into responses.
+  Future<Response> create({
     required RouteData route,
     required Request request,
   }) async {
-    List<dynamic> positionalArguments = [];
-    if (route.params != null) {
-      try {
-        positionalArguments = route.params!.values
-            .map((param) => _getParamValue(param.toString()))
-            .toList();
-      } on FormatException catch (e, stack) {
-        return _fail(request, e, stack, 500);
-      }
-    }
-
-    if (route.hasRequest) {
-      positionalArguments.insert(0, request);
-    }
-
-    try {
-      Response response = await Function.apply(
-        route.action,
-        positionalArguments,
-        {},
+    final positionalArguments = <dynamic>[if (route.hasRequest) request];
+    final declared = route.paramTypes;
+    route.params?.forEach((name, value) {
+      // A `where*` type was already checked and applied when the route
+      // matched; only undeclared params are inferred from their text.
+      positionalArguments.add(
+        declared != null && declared.containsKey(name)
+            ? value
+            : _getParamValue(value.toString()),
       );
-
-      await response.makeResponse(request.response);
-    } on ValidationException catch (error) {
-      bool isHtml = request.request.headers
-          .value('accept')
-          .toString()
-          .contains('html');
-      if (isHtml) {
-        await Response.redirect(
-          RouteHistory().previousRoute,
-        ).makeResponse(request.response);
-      } else {
-        await error.response(false).makeResponse(request.response);
-      }
-    } on BaseHttpResponseException catch (error, stack) {
-      // Exceptions the application raised deliberately (401, 403, 404,
-      // 419, 429 …). Their message is written for the client, so it is
-      // safe to pass through — but a 5xx raised this way is still an
-      // internal failure and gets the same treatment as any other.
-      if (error.code >= 500) {
-        await _fail(request, error, stack, error.code);
-      } else {
-        await _send(request, error.message, error.code);
-      }
-    } on InvalidArgumentException catch (error, stack) {
-      await _fail(request, error, stack, 500);
-    } on DatabaseException catch (error, stack) {
-      await _fail(request, error, stack, 500);
-    } on QueryException catch (error, stack) {
-      await _fail(request, error, stack, 500);
-    } catch (error, stack) {
-      await _fail(request, error, stack, 500);
-    }
+    });
+    return await _invoke(route.action, positionalArguments);
   }
 }
 
-/// Handles an internal failure: logs it with its stack trace, and only
-/// reveals the underlying message when `APP_DEBUG` is on.
+/// Calls [action] with [args].
 ///
-/// Driver errors routinely carry SQL text, table and column names, so
-/// they are not returned to the client outside debug mode.
-Future<void> _fail(
-  Request req,
-  Object error,
-  StackTrace stack,
-  int statusCode,
-) async {
-  Logger.log('$error\n$stack', type: Logger.ERROR);
-  final message = env<bool>('APP_DEBUG', false)
-      ? error.toString()
-      : 'Internal Server Error';
-  await _send(req, message, statusCode);
-}
-
-Future<void> _send(Request req, String message, int statusCode) async {
-  if (req.headers['accept'].toString().contains('html')) {
-    // Escape before embedding in HTML. Error text routinely contains
-    // caller-supplied input (a bad route param, a rejected field value),
-    // so writing it raw turned any error path into reflected XSS.
-    await Response.html(
-      htmlEscape.convert(message),
-      statusCode: statusCode,
-    ).makeResponse(req.response);
-  } else {
-    await Response.json({
-      "message": message,
-    }, statusCode).makeResponse(req.response);
-  }
+/// A direct call for the arities routes use in practice: `Function.apply`
+/// costs some thirty times as much and runs on every request.
+dynamic _invoke(Function action, List<dynamic> args) {
+  final dynamic f = action;
+  return switch (args.length) {
+    0 => f(),
+    1 => f(args[0]),
+    2 => f(args[0], args[1]),
+    3 => f(args[0], args[1], args[2]),
+    4 => f(args[0], args[1], args[2], args[3]),
+    _ => Function.apply(action, args),
+  };
 }
