@@ -37,11 +37,13 @@ set staticPublicRoot(String root) {
 /// at most once per [_publicDirRecheck] window and every GET short-circuits
 /// on a cached bool until then.
 Future<bool> setStaticPathAsync(HttpRequest req) async {
-  // Only GET serves static content. Compared against the raw method,
-  // which may arrive in either case, without allocating a copy.
+  // Only GET and HEAD serve static content. Compared against the raw
+  // method, which may arrive in either case, without allocating a copy.
   final m = req.method;
-  if (m.length != 3 ||
-      !(m == 'GET' || m == 'get' || m.toLowerCase() == 'get')) {
+  final isHead = m == 'HEAD' || (m.length == 4 && m.toLowerCase() == 'head');
+  if (!isHead &&
+      (m.length != 3 ||
+          !(m == 'GET' || m == 'get' || m.toLowerCase() == 'get'))) {
     return false;
   }
 
@@ -52,11 +54,11 @@ Future<bool> setStaticPathAsync(HttpRequest req) async {
 
   if (!_publicDirAvailable()) return false;
 
-  final String routePath = rawPath == '/' || rawPath.isEmpty
+  final String? routePath = rawPath == '/' || rawPath.isEmpty
       ? 'index.html'
-      : _stripLeadingSlash(rawPath);
+      : _decodeFilePath(_stripLeadingSlash(rawPath));
 
-  if (_hasHiddenSegment(routePath)) return false;
+  if (routePath == null || _hasHiddenSegment(routePath)) return false;
 
   final file = File('$_publicRoot/$routePath');
   // Most requests to an app that also serves an API are routed, not static,
@@ -105,7 +107,8 @@ Future<bool> setStaticPathAsync(HttpRequest req) async {
       : ContentType('application', 'octet-stream');
   res.headers.contentLength = length;
 
-  await res.addStream(file.openRead());
+  // A HEAD gets the headers alone, so there is no reason to read the file.
+  if (!isHead) await res.addStream(file.openRead());
   await res.close();
   return true;
 }
@@ -201,6 +204,34 @@ bool _publicDirAvailable() {
 void resetStaticPathCache() {
   _publicDirExists = false;
   _publicDirClock = null;
+}
+
+/// [p] as the file path it names: a URL arrives percent-encoded, while a
+/// file is named in text — `my%20file.css` is `my file.css`.
+///
+/// Each segment is decoded on its own, and a segment that decodes to
+/// anything able to change the path — a `/`, a `\`, a NUL — names no
+/// file: `%2F` and `%5C` are separators in disguise. A decoded `..` or
+/// `.env` begins with a dot, which the caller then turns away like any
+/// hidden segment. A raw `\` is refused outright, being a separator on
+/// Windows. Null when the path names no file.
+String? _decodeFilePath(String p) {
+  if (p.contains('\\')) return null;
+  if (!p.contains('%')) return p;
+  final decoded = <String>[];
+  for (final segment in p.split('/')) {
+    final String text;
+    try {
+      text = Uri.decodeComponent(segment);
+    } catch (_) {
+      return null;
+    }
+    if (text.contains('/') || text.contains('\\') || text.contains('\x00')) {
+      return null;
+    }
+    decoded.add(text);
+  }
+  return decoded.join('/');
 }
 
 /// True when any segment of [p] starts with a dot.
