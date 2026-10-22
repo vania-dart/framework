@@ -25,6 +25,7 @@ void main() {
       '/files/{name}',
       (String name) => Response.json(name),
     ).whereString('name');
+    Router.get('/files/a/b.txt', () => Response.json('static'));
     initializeRoutes();
 
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -69,6 +70,11 @@ void main() {
   });
 
   test('an encoded slash stays inside its parameter', () async {
+    expect(await get('/files/a%2Fb.txt'), (200, 'a/b.txt'));
+  });
+
+  test('and does not reach the static route it would spell out', () async {
+    expect(await get('/files/a/b.txt'), (200, 'static'));
     expect(await get('/files/a%2Fb.txt'), (200, 'a/b.txt'));
   });
 

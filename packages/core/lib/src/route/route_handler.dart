@@ -11,7 +11,9 @@ final RegExp _domainPlaceholder = RegExp(r'{([^}]+)}');
 
 final Map<String, RegExp> _regexCache = {};
 
-final Map<String, Map<String, RouteData>> _staticPathIndex = {};
+/// Static routes by method and path. A path can have several routes, one
+/// per domain: those for a domain first, then the one for any host.
+final Map<String, Map<String, List<RouteData>>> _staticPathIndex = {};
 
 final Map<String, Map<int, _DynamicBucket>> _dynamicByMethodAndSegments = {};
 
@@ -101,7 +103,18 @@ void initializeRoutes() {
     }
 
     if (!normalized.contains('{')) {
-      (_staticPathIndex[method] ??= <String, RouteData>{})[normalized] = route;
+      final routes =
+          (_staticPathIndex[method] ??=
+                  <String, List<RouteData>>{})[normalized] ??=
+              <RouteData>[];
+      // Registered again for the same domain, the path keeps its latest
+      // route; for another domain, the two stand side by side.
+      routes.removeWhere((r) => r.domain == route.domain);
+      if (route.domain == null) {
+        routes.add(route);
+      } else {
+        routes.insert(0, route);
+      }
     } else {
       final parts = normalized.split('/');
       _methodsWithDynamics.add(method);
@@ -194,7 +207,13 @@ _RequestPath? _decodePath(String rawPath) {
       for (final segment in _splitPath(rawPath))
         segment.contains('%') ? Uri.decodeComponent(segment) : segment,
     ];
-    return (key: segments.join('/'), segments: segments);
+    // Joined back up, a segment holding an encoded `/` would read as two,
+    // and `a%2Fb` would find the static route `a/b`. Such a path is looked
+    // up in the static index as it came.
+    final key = segments.any((s) => s.contains('/'))
+        ? rawPath
+        : segments.join('/');
+    return (key: key, segments: segments);
   } catch (_) {
     return null;
   }
@@ -205,10 +224,10 @@ RouteData? _findMatchingRoute(
   String method,
   String domain,
 ) {
-  final staticIndex = _staticPathIndex[method];
-  if (staticIndex != null) {
-    final hit = staticIndex[requestPath.key];
-    if (hit != null && _domainMatches(domain, hit.domain)) {
+  final hits = _staticPathIndex[method]?[requestPath.key];
+  if (hits != null) {
+    for (final hit in hits) {
+      if (!_domainMatches(domain, hit.domain)) continue;
       if (hit.domain != null && hit.domain!.contains('{')) {
         return _applyDomainParams(hit, domain);
       }

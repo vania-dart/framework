@@ -115,5 +115,54 @@ void main() {
       );
       expect(other, isNull);
     });
+
+    for (final (order, domainFirst) in [
+      ('the domain route first', true),
+      ('the route for any host first', false),
+    ]) {
+      test('one path on a domain and for any host keeps both routes, '
+          'registered with $order', () async {
+        Router.basePrefix(null);
+        final path = '/home-${domainFirst ? 'd' : 'a'}';
+        if (domainFirst) {
+          Router.get(path, () {}).domain('admin.site.com');
+          Router.get(path, () {});
+        } else {
+          Router.get(path, () {});
+          Router.get(path, () {}).domain('admin.site.com');
+        }
+        initializeRoutes();
+
+        final admin = await _resolve(
+          method: 'GET',
+          path: path,
+          host: 'admin.site.com',
+        );
+        expect(admin?.domain, 'admin.site.com');
+
+        final other = await _resolve(
+          method: 'GET',
+          path: path,
+          host: 'www.site.com',
+        );
+        expect(other, isNotNull);
+        expect(other!.domain, isNull);
+      });
+    }
+
+    test(
+      'a path registered twice for the same host keeps the later route',
+      () async {
+        Router.basePrefix(null);
+        void first() {}
+        void second() {}
+        Router.get('/twice', first);
+        Router.get('/twice', second);
+        initializeRoutes();
+
+        final route = await _resolve(method: 'GET', path: '/twice');
+        expect(route?.action, same(second));
+      },
+    );
   });
 }
