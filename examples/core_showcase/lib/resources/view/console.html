@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{@ csrf_token() @}">
+<title>Core showcase</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 980px; margin: 32px auto; padding: 0 16px; color: #222; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  td, th { border-bottom: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+  .PASS { color: #0a7d32; font-weight: 600; }
+  .FAIL { color: #b00020; font-weight: 600; }
+  #summary { font-size: 18px; margin: 12px 0; }
+  #events { font-family: ui-monospace, monospace; font-size: 13px; background: #f6f6f6; padding: 8px; min-height: 5em; }
+  code { background: #f3f3f3; padding: 1px 4px; }
+</style>
+</head>
+<body>
+<h1>Vania core — browser checks</h1>
+<p>Each row is a real request sent by this browser. Run again with the button.</p>
+<button id="run">Run checks</button>
+<div id="summary">running…</div>
+<table><thead><tr><th>Check</th><th>Result</th><th>Detail</th></tr></thead><tbody id="results"></tbody></table>
+
+<h2>Server-sent events, live</h2>
+<div id="events"></div>
+
+<h2>By hand</h2>
+<ul>
+  <li><a href="/form">Form</a>: validation errors, old input, flash message, CSRF token</li>
+  <li><a href="/dashboard">Dashboard</a>: sends you to sign in; signing in changes the session id</li>
+  <li><a href="/my file.css">/my file.css</a> and <a href="/گزارش.txt">/گزارش.txt</a>: static files with a space and a Persian name</li>
+  <li><a href="/api/download?name=گزارش ماهانه.pdf">Download “گزارش ماهانه.pdf”</a></li>
+  <li><a href="/nope">A 404 page</a>, <a href="/boom">a 500 page</a>, <a href="/expired">a 419 page</a></li>
+</ul>
+
+<script>
+const token = document.querySelector('meta[name="csrf-token"]').content;
+const results = [];
+
+function record(name, pass, detail) {
+  results.push({ name, pass, detail });
+  const row = document.createElement('tr');
+  row.innerHTML = `<td>${name}</td><td class="${pass ? 'PASS' : 'FAIL'}">${pass ? 'PASS' : 'FAIL'}</td><td><code></code></td>`;
+  row.querySelector('code').textContent = detail;
+  document.getElementById('results').appendChild(row);
+}
+
+async function check(name, fn) {
+  try {
+    const [pass, detail] = await fn();
+    record(name, pass, detail);
+  } catch (e) {
+    record(name, false, 'threw ' + e);
+  }
+}
+
+const json = { 'Accept': 'application/json' };
+
+async function runAll() {
+  results.length = 0;
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('summary').textContent = 'running…';
+
+  // CSRF, now covering DELETE.
+  await check('CSRF: DELETE without a token is refused', async () => {
+    const r = await fetch('/items/5', { method: 'DELETE', headers: json });
+    return [r.status === 419, `status ${r.status}`];
+  });
+  await check('CSRF: DELETE with the page token goes through', async () => {
+    const r = await fetch('/items/5', { method: 'DELETE', headers: { ...json, 'X-CSRF-TOKEN': token } });
+    return [r.status === 200, `status ${r.status} ${await r.text()}`];
+  });
+  await check('csrf_except: /webhooks/stripe needs no token', async () => {
+    const r = await fetch('/webhooks/stripe', { method: 'POST', headers: json });
+    return [r.status === 200, `status ${r.status}`];
+  });
+  await check('csrf_except: /webhooks-admin/purge still does', async () => {
+    const r = await fetch('/webhooks-admin/purge', { method: 'POST', headers: json });
+    return [r.status === 419, `status ${r.status}`];
+  });
+
+  // QUERY.
+  await check('QUERY with JSON content', async () => {
+    const r = await fetch('/api/contacts', { method: 'QUERY', headers: { ...json, 'Content-Type': 'application/json' }, body: '{"surname":"Smith"}' });
+    const b = await r.json();
+    return [r.status === 200 && b.via === 'QUERY' && b.input.surname === 'Smith', `status ${r.status} ${JSON.stringify(b)}`];
+  });
+  await check('QUERY with SQL content, read raw', async () => {
+    const r = await fetch('/api/contacts', { method: 'QUERY', headers: { ...json, 'Content-Type': 'application/sql' }, body: 'SELECT 1' });
+    const b = await r.json();
+    return [r.status === 200 && b.raw === 'SELECT 1', `status ${r.status} ${JSON.stringify(b)}`];
+  });
+  await check('QUERY of an unaccepted type: 415 + Accept-Query', async () => {
+    const r = await fetch('/api/contacts', { method: 'QUERY', headers: { ...json, 'Content-Type': 'text/plain' }, body: 'x' });
+    return [r.status === 415 && r.headers.get('accept-query') === 'application/json, application/sql', `status ${r.status}, Accept-Query: ${r.headers.get('accept-query')}`];
+  });
+  await check('OPTIONS lists HEAD and QUERY', async () => {
+    const r = await fetch('/api/contacts', { method: 'OPTIONS' });
+    return [r.headers.get('allow') === 'GET, HEAD, QUERY, OPTIONS', `Allow: ${r.headers.get('allow')}`];
+  });
+
+  // HEAD, Range, files.
+  await check('HEAD answers like GET, without a body', async () => {
+    const r = await fetch('/api/json', { method: 'HEAD' });
+    const body = await r.text();
+    return [r.status === 200 && body === '' && r.headers.get('content-length') === '11', `status ${r.status}, content-length ${r.headers.get('content-length')}, body "${body}"`];
+  });
+  await check('Range: bytes=0-9 gives 206 and 10 bytes', async () => {
+    const r = await fetch('/api/video', { headers: { Range: 'bytes=0-9' } });
+    const n = (await r.arrayBuffer()).byteLength;
+    return [r.status === 206 && n === 10, `status ${r.status}, ${n} bytes, ${r.headers.get('content-range')}`];
+  });
+  await check('Download named in Persian', async () => {
+    const r = await fetch('/api/download?name=' + encodeURIComponent('گزارش ماهانه.pdf'));
+    const d = r.headers.get('content-disposition') || '';
+    const m = /filename\*=UTF-8''([^;]+)/.exec(d);
+    const saved = m ? decodeURIComponent(m[1]) : null;
+    return [r.status === 200 && saved === 'گزارش ماهانه.pdf', `status ${r.status}, saved as "${saved}"`];
+  });
+  await check('Static file with a space in its name', async () => {
+    const r = await fetch('/my file.css');
+    return [r.status === 200 && (await r.text()).includes('spaced'), `status ${r.status}`];
+  });
+  await check('Static file with a Persian name', async () => {
+    const r = await fetch('/گزارش.txt');
+    return [r.status === 200 && (await r.text()).includes('persian'), `status ${r.status}`];
+  });
+
+  // Routing.
+  await check('A route written in Persian', async () => {
+    const r = await fetch('/api/مقالات/7', { headers: json });
+    return [r.status === 200 && (await r.json()).article === 7, `status ${r.status}`];
+  });
+  await check('A parameter arrives decoded', async () => {
+    const r = await fetch('/api/posts/' + encodeURIComponent('سلام دنیا'), { headers: json });
+    const b = await r.json();
+    return [b === 'سلام دنیا', `got ${JSON.stringify(b)}`];
+  });
+  await check('Router.any + middleware guards every method', async () => {
+    const statuses = [];
+    for (const m of ['GET', 'POST', 'PUT', 'DELETE']) {
+      statuses.push((await fetch('/api/guarded', { method: m, headers: json })).status);
+    }
+    return [statuses.every(s => s === 401), `statuses ${statuses.join(', ')}`];
+  });
+
+  // Middleware and responses.
+  await check('A header added after next() reaches the browser', async () => {
+    const r = await fetch('/api/timed', { headers: json });
+    return [r.headers.get('x-duration-ms') !== null, `X-Duration-Ms: ${r.headers.get('x-duration-ms')}`];
+  });
+  await check('A middleware sees the controller error', async () => {
+    const r = await fetch('/api/observed', { headers: json });
+    return [r.status === 500 && r.headers.get('x-observed-error') === 'StateError', `status ${r.status}, X-Observed-Error: ${r.headers.get('x-observed-error')}`];
+  });
+
+  // Errors.
+  await check('Error pages keep their status: 404, 500, 419', async () => {
+    const got = [];
+    for (const p of ['/nope', '/boom', '/expired']) {
+      const r = await fetch(p, { headers: { Accept: 'text/html' } });
+      got.push(`${r.status}${(await r.text()).includes("the app's own errors") ? '+page' : ''}`);
+    }
+    return [got.join(',') === '404+page,500+page,419+page', got.join(', ')];
+  });
+  await check('A token guard is a 401 for a browser, not a redirect', async () => {
+    const r = await fetch('/api/token-guard', { headers: { Accept: 'text/html' }, redirect: 'manual' });
+    return [r.status === 401, `status ${r.status}, type ${r.type}`];
+  });
+  await check('A session guard sends a browser to /login', async () => {
+    const r = await fetch('/dashboard', { headers: { Accept: 'text/html' }, redirect: 'manual' });
+    return [r.type === 'opaqueredirect', `type ${r.type} (opaqueredirect = 302)`];
+  });
+  await check('A 5xx message is not shown, from controller or middleware', async () => {
+    const a = await (await fetch('/api/leaky', { headers: json })).text();
+    const b = await (await fetch('/api/leaky-mw', { headers: json })).text();
+    return [!a.includes('hunter2') && !b.includes('hunter2'), `${a} | ${b}`];
+  });
+
+  const passed = results.filter(r => r.pass).length;
+  document.getElementById('summary').textContent = `${passed} of ${results.length} passed`;
+  window.__results = results;
+}
+
+function watchEvents() {
+  const box = document.getElementById('events');
+  box.textContent = '';
+  const started = performance.now();
+  const arrivals = [];
+  const ticks = [];
+  const source = new EventSource('/api/events');
+  source.onmessage = (e) => {
+    const at = Math.round(performance.now() - started);
+    arrivals.push(at);
+    ticks.push(JSON.parse(e.data).tick);
+    box.textContent += `+${at} ms  ${e.data}\n`;
+    if (arrivals.length === 5) {
+      source.close();
+      // Live means one by one, about 700 ms apart — not all at once at the
+      // end — and all five of one stream, not a reconnect's first.
+      const spread = arrivals[4] - arrivals[0];
+      const allFive = ticks.join(',') === '1,2,3,4,5';
+      record('SSE: all five events, each as it happens', arrivals[0] < 1500 && spread > 2000 && spread < 4000 && allFive, `ticks ${ticks.join(',')} at ${arrivals.join(', ')} ms`);
+      const passed = results.filter(r => r.pass).length;
+      document.getElementById('summary').textContent = `${passed} of ${results.length} passed`;
+      window.__sseDone = true;
+    }
+  };
+}
+
+document.getElementById('run').onclick = async () => { await runAll(); watchEvents(); };
+runAll().then(watchEvents);
+</script>
+</body>
+</html>
