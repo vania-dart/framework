@@ -43,3 +43,8 @@ Future<void> deleteSession(String key) async =>
     await IoCContainer().resolve<SessionManager>().deleteSession(key);
 Future<void> destroyAllSessions() async =>
     await IoCContainer().resolve<SessionManager>().destroyAllSessions();
+
+/// Moves the session to a new id, keeping its data. Call it when a user
+/// signs in — see [SessionManager.regenerateSession].
+Future<void> regenerateSession() async =>
+    await IoCContainer().resolve<SessionManager>().regenerateSession();

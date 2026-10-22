@@ -63,6 +63,16 @@ class ThrottleRequests {
     return DateTime.now().add(duration);
   }
 
+  /// When [identifier]'s current window ends and its count starts over.
+  DateTime resetAt(String identifier) {
+    final data = _requests[identifier];
+    final now = DateTime.now();
+    if (data == null || now.difference(data.firstAttempt) >= duration) {
+      return now.add(duration);
+    }
+    return data.firstAttempt.add(duration);
+  }
+
   void _maybeCleanup() {
     _sinceLastCleanup++;
     if (_sinceLastCleanup < _cleanupEveryNRequests &&

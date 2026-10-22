@@ -7,6 +7,11 @@ import 'package:vania/env.dart' show env;
 import '../../exception/throttle_exception.dart';
 import '../throttle_requests.dart';
 
+/// `APP_ENV` values that count as development for
+/// [Throttle.bypassInDevelopment]: the documented `local`, and
+/// `development`.
+const Set<String> _developmentEnvironments = {'local', 'development'};
+
 class Throttle extends Middleware {
   final int maxAttempts;
   final Duration duration;
@@ -33,16 +38,23 @@ class Throttle extends Middleware {
     // Fails closed: an unset APP_ENV is treated as production, so an app
     // that never sets it still gets rate limiting.
     if (bypassInDevelopment &&
-        env<String>('APP_ENV', 'production') == 'development') {
+        _developmentEnvironments.contains(
+          env<String>('APP_ENV', 'production'),
+        )) {
       return;
     }
 
     final String identifier = await _getRequestIdentifier(req);
-    final remaining = _throttle.remainingAttempts(identifier);
+    final allowed = _throttle.request(identifier);
 
-    _addRateLimitHeaders(req.response, remaining);
+    // Counted after this request, so the last one allowed says 0 left.
+    _addRateLimitHeaders(
+      req.response,
+      _throttle.remainingAttempts(identifier),
+      _throttle.resetAt(identifier),
+    );
 
-    if (!_throttle.request(identifier)) {
+    if (!allowed) {
       final retryAfter = _throttle.retryAfter(identifier);
       throw ThrottleException(
         message: customMessage ?? 'Too Many Requests. Please try again later.',
@@ -65,12 +77,13 @@ class Throttle extends Middleware {
     return parts.join(':');
   }
 
-  void _addRateLimitHeaders(HttpResponse response, int remaining) {
+  void _addRateLimitHeaders(
+    HttpResponse response,
+    int remaining,
+    DateTime resetAt,
+  ) {
     response.headers.add('X-RateLimit-Limit', maxAttempts.toString());
     response.headers.add('X-RateLimit-Remaining', remaining.toString());
-    response.headers.add(
-      'X-RateLimit-Reset',
-      _throttle.resetTime().toIso8601String(),
-    );
+    response.headers.add('X-RateLimit-Reset', resetAt.toIso8601String());
   }
 }

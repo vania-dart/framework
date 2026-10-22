@@ -23,10 +23,19 @@ class CsrfMiddleware extends Middleware {
   final SessionManager _sessionManager = IoCContainer()
       .resolve<SessionManager>();
 
+  /// The methods that change state, and so need a token. The request
+  /// handler attaches this middleware to routes by the same set, so the
+  /// two cannot disagree about which requests are checked.
+  static const Set<String> protectedMethods = {
+    'post',
+    'put',
+    'patch',
+    'delete',
+  };
+
   @override
   Future<void> handle(Request req) async {
-    final method = req.method?.toLowerCase();
-    if (method != 'post' && method != 'put' && method != 'patch') return;
+    if (!protectedMethods.contains(req.method?.toLowerCase())) return;
 
     // `api/*` is excluded by default: API routes are normally
     // token-authenticated, where CSRF does not apply. Apps that
@@ -105,21 +114,25 @@ class CsrfMiddleware extends Middleware {
     return value;
   }
 
+  /// Whether [path] is one `csrf_except` leaves out.
+  ///
+  /// A pattern names a path and everything under it — `webhooks` covers
+  /// `webhooks/stripe`, not `webhooks-admin`. In a pattern with `*`, the
+  /// `*` matches anything and every other character only itself.
   bool _isUrlExcluded(String path, List<String> csrfExcept) {
-    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    final cleanPath = (path.startsWith('/') ? path.substring(1) : path)
+        .toLowerCase();
     for (final pattern in csrfExcept) {
-      final cleanPattern = pattern.startsWith('/')
-          ? pattern.substring(1)
-          : pattern;
+      final cleanPattern =
+          (pattern.startsWith('/') ? pattern.substring(1) : pattern)
+              .toLowerCase();
       if (cleanPattern.contains('*')) {
-        final regexStr = cleanPattern
-            .replaceAll('*', '.*')
-            .replaceAll('/', '\\/');
-        final regex = RegExp('^$regexStr\$', caseSensitive: false);
+        final regex = RegExp(
+          '^${RegExp.escape(cleanPattern).replaceAll(r'\*', '.*')}\$',
+        );
         if (regex.hasMatch(cleanPath)) return true;
-      } else if (cleanPath.toLowerCase().startsWith(
-        cleanPattern.toLowerCase(),
-      )) {
+      } else if (cleanPath == cleanPattern ||
+          cleanPath.startsWith('$cleanPattern/')) {
         return true;
       }
     }

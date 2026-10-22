@@ -18,6 +18,8 @@ Future<void> _hammerWithHtmlAccept({int count = 5}) async {
     if (isHtml) {
       await runInRequestScope(req, () async {
         await SessionManager().sessionStart(req, req.response);
+        // RequestHandler saves session writes once the request is done.
+        await currentRequestScope!.runBeforeResponse();
       });
     }
     await req.response.close();
