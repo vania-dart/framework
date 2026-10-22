@@ -36,16 +36,38 @@ class Application extends Container {
 
   final List<_Worker> _workers = <_Worker>[];
 
-  /// A copy of the config taken before this isolate's providers boot, for
-  /// starting a replacement worker later: by then the original may hold
-  /// things that cannot be sent to another isolate, such as a connection.
-  late final (Map<String, dynamic>, List<String>) _workerBoot;
+  /// A copy of the config and setup taken before this isolate's providers
+  /// boot, for starting a replacement worker later: by then the original
+  /// may hold things that cannot be sent to another isolate, such as a
+  /// connection.
+  late final _WorkerBoot _workerBoot;
 
   Future<void>? _closing;
 
+  /// Boots the app and starts serving.
+  ///
+  /// [setup] runs once in every isolate that serves requests, before the
+  /// config's providers boot. Put there what would otherwise sit in
+  /// `main()` ahead of this call — registering a database driver, an auth
+  /// provider — because with `APP_ISOLATES` above 1 each extra isolate
+  /// starts from scratch and never runs `main()`:
+  ///
+  /// ```dart
+  /// await Application().initialize(
+  ///   config: config,
+  ///   setup: () async {
+  ///     registerMySqlDriver();
+  ///     await AuthServiceProvider().register(...);
+  ///   },
+  /// );
+  /// ```
+  ///
+  /// It is sent to each isolate, so it must not capture anything that
+  /// cannot be: an open connection or socket, say.
   Future<void> initialize({
     required Map<String, dynamic> config,
     List<String> args = const [],
+    FutureOr<void> Function()? setup,
   }) async {
     keepServingOnUncaughtErrors(log: !_isWorker);
     await Localization().init();
@@ -66,12 +88,16 @@ class Application extends Container {
       );
     }
 
+    // Here first, so a setup that fails stops the app before any other
+    // isolate has started.
+    await setup?.call();
+
     // Workers get the config before this isolate's providers boot, so
     // each one boots from the same untouched config.
     if (!_isWorker &&
         serverIsolateCount > 1 &&
         Platform.environment[routeDumpEnvVar] != '1') {
-      await _spawnWorkers(config, args);
+      await _spawnWorkers(config, args, setup);
     }
 
     final server = BaseHttpServer(
@@ -110,11 +136,12 @@ class Application extends Container {
   Future<void> _spawnWorkers(
     Map<String, dynamic> config,
     List<String> args,
+    FutureOr<void> Function()? setup,
   ) async {
     // Sending a message copies it, even within one isolate.
     final copy = ReceivePort();
-    copy.sendPort.send((config, args));
-    _workerBoot = await copy.first as (Map<String, dynamic>, List<String>);
+    copy.sendPort.send((config, args, setup));
+    _workerBoot = await copy.first as _WorkerBoot;
     copy.close();
 
     for (var i = 1; i < serverIsolateCount; i++) {
@@ -132,14 +159,15 @@ class Application extends Container {
     try {
       await Isolate.spawn(
         _workerMain,
-        (_workerBoot.$1, _workerBoot.$2, worker.ready.sendPort),
+        (_workerBoot, worker.ready.sendPort),
         onExit: worker.exitPort.sendPort,
         onError: worker.errors.sendPort,
         debugName: 'vania-http-$index',
       );
     } catch (e) {
-      // Most likely the config holds something that cannot be copied to
-      // another isolate, which every further spawn would hit as well.
+      // Most likely the config or the setup holds something that cannot be
+      // copied to another isolate, which every further spawn would hit as
+      // well.
       worker.dispose();
       Logger.log(
         'APP_ISOLATES: could not start a server isolate ($e); '
@@ -236,14 +264,20 @@ class _Worker {
   }
 }
 
-Future<void> _workerMain(
-  (Map<String, dynamic>, List<String>, SendPort) boot,
-) async {
-  final (config, args, ready) = boot;
+/// What a server isolate boots from: the config, the command-line args and
+/// the app's setup.
+typedef _WorkerBoot = (
+  Map<String, dynamic>,
+  List<String>,
+  FutureOr<void> Function()?,
+);
+
+Future<void> _workerMain((_WorkerBoot, SendPort) boot) async {
+  final ((config, args, setup), ready) = boot;
   _isWorker = true;
 
   final app = Application();
-  await app.initialize(config: config, args: args);
+  await app.initialize(config: config, args: args, setup: setup);
 
   final control = ReceivePort();
   ready.send(control.sendPort);

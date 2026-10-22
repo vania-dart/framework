@@ -203,6 +203,23 @@ MAX_BODY_SIZE=10485760 # largest request body in bytes, multipart uploads includ
 
 Keep the default of 1 if the app relies on any of these, or move that state somewhere shared, such as Redis.
 
+The extra isolates boot from the config but never run `main()`. Whatever `main()` does before `initialize` — registering a database driver, setting up auth — happens only in the first one, and the others serve without it. Pass that code as `setup`, which runs in every isolate before the providers boot:
+
+```dart
+void main(List<String> args) async {
+  await Application().initialize(
+    config: config,
+    args: args,
+    setup: () async {
+      registerMySqlDriver();
+      await AuthServiceProvider().register(/* ... */);
+    },
+  );
+}
+```
+
+`setup` is copied to each isolate, so it must not capture anything that cannot be, such as an open connection.
+
 An isolate that exits unexpectedly is replaced. One that keeps dying right after it starts, because its boot fails for instance, is retried less and less often, up to once a minute.
 
 **`HTTP_BACKLOG`** is how many incoming connections wait while the server is busy accepting; a burst beyond it is refused. The OS caps it at its own limit: `net.core.somaxconn` on Linux (usually 4096), `kern.ipc.somaxconn` on macOS (128 unless raised).
