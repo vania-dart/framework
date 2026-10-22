@@ -153,6 +153,8 @@ CORSConfig cors = CORSConfig(
 
 In production, set `origin` to your actual domain(s). Browsers reject `origin: '*'` together with `credentials: true`, so pick one.
 
+A browser sends a cross-origin `QUERY` request only after a preflight that lists it, so add `QUERY` to `methods` if other origins call your [`QUERY` routes](../core/routing.md#query-routes).
+
 ## File storage
 
 Storage is chosen by the `STORAGE` environment variable, not the config map. It is `local` by default; set it to `s3` to use AWS S3, and supply the S3 credentials via their own keys:
@@ -179,6 +181,35 @@ APP_PRIVATE_KEY_PASSWORD=   # only if the key is encrypted
 ```
 
 The server then binds with a `SecurityContext` built from those files. In most deployments you will instead terminate TLS at a reverse proxy or load balancer and leave the app on plain HTTP behind it.
+
+## Server tuning
+
+```env
+APP_ISOLATES=auto      # isolates serving HTTP: a number, or auto for one per CPU core (default 1)
+HTTP_IDLE_TIMEOUT=120  # seconds an idle keep-alive connection is kept; 0 keeps it forever
+HTTP_BACKLOG=1024      # connections the OS queues while the server is busy
+REQUEST_TIMEOUT=0      # seconds a request may take to start answering before it gets a 503; 0 is off
+SHUTDOWN_TIMEOUT=10    # seconds a shutdown waits for in-flight requests
+SSE_HEARTBEAT=15       # seconds between keep-alive comments on a quiet event stream
+MAX_BODY_SIZE=10485760 # largest request body in bytes, multipart uploads included
+```
+
+**`APP_ISOLATES`.** A single isolate runs on a single CPU core. With more than one, each isolate boots the app from the same config and they share the port, so throughput grows with the number of cores. Each isolate has its own memory, though, so anything kept in memory is per isolate:
+
+- **Rate limits** (`Throttle`) count per isolate, so a client gets up to that many times the configured allowance.
+- **WebSocket rooms and broadcasts** reach only the clients connected to the same isolate.
+- **The session cache** is switched off, and sessions are read from disk on every request so that no isolate serves a stale one.
+- Anything your own code keeps in static fields or singletons.
+
+Keep the default of 1 if the app relies on any of these, or move that state somewhere shared, such as Redis.
+
+An isolate that exits unexpectedly is replaced. One that keeps dying right after it starts, because its boot fails for instance, is retried less and less often, up to once a minute.
+
+**`HTTP_BACKLOG`** is how many incoming connections wait while the server is busy accepting; a burst beyond it is refused. The OS caps it at its own limit: `net.core.somaxconn` on Linux (usually 4096), `kern.ipc.somaxconn` on macOS (128 unless raised).
+
+**`REQUEST_TIMEOUT`** limits how long the app takes to start answering — a hung database call, say. Once the response has begun, it is left to finish: a stream of server-sent events or a large download is not cut off.
+
+**Shutdown.** On `SIGINT` or `SIGTERM` the server stops accepting connections, lets in-flight requests finish for up to `SHUTDOWN_TIMEOUT`, writes out buffered log entries and exits. A second signal exits at once.
 
 ## Reading config at runtime
 

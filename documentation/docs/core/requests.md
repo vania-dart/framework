@@ -192,6 +192,16 @@ Parse a specific field as JSON:
 Map<String, dynamic> metadata = req.json('metadata');
 ```
 
+## Raw Content
+
+`req.rawBody` is the request content exactly as received, as bytes. Use it for a media type the framework does not read into fields (the SQL or GraphQL of a [`QUERY`](routing.md#query-routes) request, say) or to verify a webhook signature over the bytes that were signed:
+
+```dart
+final text = utf8.decode(req.rawBody);
+```
+
+It is empty for multipart uploads, which are streamed rather than held in memory.
+
 ## Authenticated User
 
 If the authentication package is installed and the route uses auth middleware:

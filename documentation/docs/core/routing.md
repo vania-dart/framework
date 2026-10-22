@@ -42,10 +42,38 @@ Router.put(path, action);
 Router.patch(path, action);
 Router.delete(path, action);
 Router.options(path, action);
+Router.query(path, action);    // HTTP QUERY, see below
 Router.any(path, action);      // matches all methods
 ```
 
 Additional methods for specialized protocols: `Router.purge`, `Router.copy`, `Router.link`, `Router.unlink`, `Router.lock`, `Router.unlock`, `Router.propfind`.
+
+### QUERY Routes
+
+`QUERY` ([RFC 10008](https://www.rfc-editor.org/rfc/rfc10008)) is a read like `GET`, safe and idempotent, that carries the query in the request content as `POST` does. Use it when a query is too large or too complex for a URL, or too sensitive to leave in one: URLs end up in logs and browser history, request content generally does not.
+
+```dart
+Router.query('/contacts', contactController.search)
+    .acceptQuery(['application/json', 'application/x-www-form-urlencoded']);
+```
+
+A JSON or form-encoded query reaches the action as ordinary input, so `req.input('surname')` and `req.validate(...)` work as they do for a `POST`. Any other media type, such as SQL or GraphQL, is in `req.rawBody`:
+
+```dart
+Router.query('/reports', (Request req) {
+  final sql = utf8.decode(req.rawBody); // Content-Type: application/sql
+  // ...
+});
+```
+
+The framework applies the RFC's rules for you:
+
+- A `QUERY` without a `Content-Type`, or whose content does not parse as that type, is answered with **400**.
+- With `acceptQuery`, a request of any other media type gets **415**, and responses carry an `Accept-Query` header listing the accepted types. `type/*` and `*/*` are allowed.
+- An `OPTIONS` request to the path answers with an `Allow` header naming its methods (`GET, QUERY, OPTIONS`) and, when set, `Accept-Query`. That is how a client finds out a resource supports `QUERY`.
+- `QUERY` is safe, so CSRF protection does not apply to it, and `Response.fromPath` honours `Range` for it as for `GET`.
+
+Browsers cannot send `QUERY` from an HTML form, only with `fetch()`. A cross-origin `QUERY` is preflighted, so add `QUERY` to the CORS `methods` (see [Configuration](../getting-started/configuration.md#cors)).
 
 ## Route Actions
 
@@ -73,11 +101,11 @@ Router.get('/users/{id}', userController.show);
 Router.get('/posts/{postId}/comments/{commentId}', commentController.show);
 ```
 
-Parameters are passed as positional arguments to the action. The framework auto-parses `int`, `double`, and `bool` values based on the action's type signature.
+Parameters are passed as positional arguments to the action, decoded: a request for `/posts/%D8%B3%D9%84%D8%A7%D9%85` gives `سلام`. Routes may be written in any script — `Router.get('/مقالات/{id}', ...)` matches the encoded request a browser sends for it. An unconstrained parameter is converted from its text: `42` arrives as an `int`, `4.2` as a `double`, `true` or `false` as a `bool`, and anything else as a `String`. To receive digits as a `String` (a slug such as `2024`, say), constrain it with `whereString`.
 
 ### Parameter Type Constraints
 
-Constrain parameter types to reject non-matching requests early:
+Constrain parameter types to reject non-matching requests early. A constrained parameter reaches the action as that type, and a value that does not fit is a 404:
 
 ```dart
 Router.get('/users/{id}', userController.show)
@@ -89,10 +117,15 @@ Router.get('/price/{amount}', handler)
 Router.get('/active/{flag}', handler)
     .whereBool('flag');
 
+Router.get('/archive/{year}', handler)
+    .whereString('year'); // "2024" stays a String
+
 // Custom regex constraint
 Router.get('/slug/{slug}', handler)
     .where('slug', r'[a-z0-9-]+');
 ```
+
+A `where` pattern has to match the whole segment: `r'\d+'` takes `123` but not `abc123`.
 
 ## Route Groups
 
