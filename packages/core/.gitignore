@@ -7,3 +7,6 @@
 # Avoid committing pubspec.lock for library packages; see
 # https://dart.dev/guides/libraries/private-files#pubspeclock.
 pubspec.lock
+
+# Sessions and logs written by the tests.
+/storage/

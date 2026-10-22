@@ -1,3 +1,103 @@
+## 2.1.0
+
+This release is mostly about the HTTP layer: what happens between a request
+arriving and the response leaving. It is faster, it no longer falls over when
+a handler misbehaves, and a few long-standing bugs around CSRF, sessions and
+flash messages are gone. It also adds the new HTTP `QUERY` method.
+
+Vania is API-first, and this release leans into that: JSON with a real status
+code is the default everywhere, and redirects or HTML pages only happen when
+the app actually has views or asks for them.
+
+### Things that behave differently
+
+- **The response is written after the middleware chain.** Your controller
+  returns a `Response` and Vania writes it once every middleware is done, so
+  a middleware can still add headers after `await next()`. If the controller
+  throws, the error now comes back out of `await next()` where a middleware
+  can see it. Calling `next()` twice throws a `StateError` instead of running
+  the controller a second time.
+- **Errors get one answer, wherever they're thrown.** Throwing from a
+  middleware or from a controller gives the same response. An app with no
+  views answers in JSON even if a browser asks for HTML. The message of a 5xx
+  is only shown when `APP_DEBUG` is on. `Unauthenticated` only redirects to a
+  login page when you create it with `responseType: ResponseType.html`;
+  otherwise it's a plain 401.
+- **`where()` matches the whole segment.** `r'\d+'` used to accept `abc123`;
+  it doesn't anymore. `whereString`, `whereDouble` and `whereBool` are
+  actually enforced now, and the controller gets the declared type.
+- **Paths are decoded before matching.** Route parameters reach the
+  controller decoded (`سلام دنیا`, not `%D8%B3...`), and a route written in
+  Persian or any other script matches.
+- **CSRF** runs before any other middleware and now covers `DELETE` too. An
+  entry in `csrf_except` covers that path and what's under it, so `webhooks`
+  no longer accidentally covers `webhooks-admin`. A `.` in a wildcard pattern
+  means a literal dot.
+- **Sessions.** A session id the server never handed out is ignored instead
+  of adopted. The stored session lives for `SESSION_LIFETIME` (it used to be
+  a fixed hour) and gets extended once it's past half of that. Changes are
+  saved once, right before the response, and only the keys that changed are
+  written.
+- `Router.any(...).middleware(...)` (and `.where()`, `.name()` and friends)
+  now applies to every method `any` registered, not just the last one. Inside
+  a group, `any` also picks up the group's prefix.
+- A response whose data can't be encoded as JSON is a 500, not a 200 with a
+  broken body. `Response()` with no data sends an empty body instead of
+  `null`.
+- `env<int>`, `env<bool>` and the other typed reads treat an empty value
+  (`KEY=`) as not set and return your default.
+- `ROUTE_LOOK_UP_SIZE` is gone, along with the route cache it sized. Route
+  lookup is indexed now and doesn't need it.
+
+### New
+
+- Serve from several isolates with `APP_ISOLATES` (a number, or `auto`). If
+  one crashes, a new one takes its place.
+- Graceful shutdown on `SIGINT`/`SIGTERM`: requests in flight get up to
+  `SHUTDOWN_TIMEOUT` seconds to finish.
+- `REQUEST_TIMEOUT`, `HTTP_IDLE_TIMEOUT` and `HTTP_BACKLOG` settings.
+- The HTTP `QUERY` method (RFC 10008): `Router.query(...)`,
+  `.acceptQuery([...])` to say which content types a route takes, the
+  `Accept-Query` header, and an `Allow` header on `OPTIONS`.
+- `HEAD` requests are answered by the matching `GET` route.
+- `Request.rawBody` for bodies that aren't JSON or forms.
+- `Response.fromPath(...)` streams a file from disk and supports `Range`, so
+  large downloads and video seeking don't load the file into memory.
+- `Router.apiResource(...)`: a resource without the `create`/`edit` form
+  pages.
+- `regenerateSession()` to give a session a new id, e.g. right after login.
+- `Logger.flush()`.
+- Server-sent events are actually delivered as they happen now, with a
+  heartbeat (`SSE_HEARTBEAT`), and the stream is cancelled when the client
+  goes away.
+
+### Fixed
+
+- An error thrown after the response had started could take the whole server
+  down. It doesn't anymore, and neither does a stray future that fails with
+  nobody awaiting it.
+- With CSRF protection on, every `POST` was rejected because the cookie was
+  read before it was parsed.
+- Flash messages, validation errors and old input now survive the redirect.
+- HTML error responses and the `errors/*.html` pages are sent with the real
+  error status instead of 200.
+- Downloads with a non-ASCII name (`گزارش.pdf`) failed with a 500. They now
+  use `filename*` so browsers save them under the right name.
+- Static files with spaces or non-Latin letters in their name weren't found.
+- `MAX_BODY_SIZE` is enforced for chunked multipart uploads as well.
+- Session files are written atomically, and a damaged one is treated as no
+  session rather than an error.
+- `Response.back()` only follows a same-site `Referer` and no longer loops on
+  `GET`.
+- `Request.has`, `except`, `headers`, `file` and `files` misbehaved on some
+  inputs.
+- `Throttle` reports `X-RateLimit-Remaining` after counting the request,
+  sends the real reset time, and is skipped while `APP_ENV` is `local`.
+- A middleware that neither calls `next()` nor returns a response now gets a
+  500 instead of leaving the request hanging.
+- A `Router.group` callback that throws no longer leaks its prefix and
+  middleware into the routes registered after it.
+
 ## 2.0.0
 
 Vania 2.0 makes the framework driver-agnostic. Everything portable — the ORM,
