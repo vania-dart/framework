@@ -1,3 +1,19 @@
+## 1.1.0
+
+- The generated spec is now **OpenAPI 3.2.0** (it was 3.1.0). If you feed the
+  spec to other tools, make sure they understand 3.2; Swagger UI does from
+  5.32 on.
+- Support for the new HTTP `QUERY` method (RFC 10008). Use
+  `swaggerQuery(...)`, or `registerRoute(method: 'QUERY')`, and the operation
+  lands in the path's `query` field. There's also an `@ApiQueryMethod`
+  annotation next to `@ApiGet`, `@ApiPost` and the rest. `@ApiQuery` hasn't
+  changed: it still describes a query-string parameter.
+- Methods OpenAPI has no field for, like `PURGE`, are written under the
+  path's `additionalOperations`. Before, they ended up as top-level keys on
+  the path, which isn't valid in any OpenAPI version.
+- Swagger UI bumped from 5.11.0 to 5.33.3. It renders 3.2 specs and can send
+  `QUERY` requests from "Try it out".
+
 ## 1.0.0
 
 First stable release.
